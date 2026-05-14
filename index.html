@@ -66,25 +66,65 @@
     }
     .nav-links .cta-nav:hover { background:var(--sunset); color:#fff!important; border-color:var(--sunset); }
     @media(max-width:650px){ .nav-links { display:none; } }
-    .owner-nav { font-size:1.1rem; opacity:.65; transition:opacity .3s !important; text-decoration:none; }
-    .owner-nav:hover { opacity:1; }
+    .owner-nav {
+      font-size:.78rem; letter-spacing:.06em; opacity:.72;
+      transition:opacity .3s !important; text-decoration:none;
+      display:flex; align-items:center; gap:.45rem;
+      color:rgba(249,244,236,.75);
+    }
+    .owner-nav:hover { opacity:1; color:var(--gold); }
+    .owner-nav .ms { font-size:.95rem; color:#C9A84C; }
+    .mtg-mini-card {
+      display:inline-block; width:9px; height:13px; border-radius:2px;
+      background:linear-gradient(135deg,#1a3a9a,#0c1e5a);
+      border:1px solid rgba(201,168,76,.65);
+      vertical-align:middle; position:relative; flex-shrink:0;
+    }
+    .mtg-mini-card::before {
+      content:''; position:absolute; inset:2px;
+      border:1px solid rgba(255,255,255,.18); border-radius:1px;
+    }
 
     /* ── HERO ────────────────────────────────────────── */
     .hero {
       min-height:100vh;
-      background:
-        radial-gradient(ellipse at 28% 72%, rgba(224,120,64,.18) 0%, transparent 55%),
-        radial-gradient(ellipse at 72% 20%, rgba(42,100,148,.28) 0%, transparent 50%),
-        linear-gradient(158deg, var(--ocean-deep) 0%, var(--ocean-mid) 38%, #2A5580 58%, #C87040 82%, var(--gold) 100%);
+      background:var(--ocean-deep);
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       text-align:center; padding:2rem;
       position:relative; overflow:hidden;
     }
+    /* gradient overlay sits above the video */
+    .hero::before {
+      content:'';
+      position:absolute; inset:0; z-index:1; pointer-events:none;
+      background:
+        radial-gradient(ellipse at 28% 72%, rgba(224,120,64,.22) 0%, transparent 55%),
+        radial-gradient(ellipse at 72% 20%, rgba(42,100,148,.32) 0%, transparent 50%),
+        linear-gradient(158deg, rgba(13,33,55,.85) 0%, rgba(22,58,95,.82) 38%, rgba(42,85,128,.78) 58%, rgba(200,112,64,.72) 82%, rgba(212,163,64,.8) 100%);
+    }
     .hero::after {
       content:'';
-      position:absolute; bottom:-1px; left:0; right:0; height:90px;
+      position:absolute; bottom:-1px; left:0; right:0; height:90px; z-index:3;
       background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 90'%3E%3Cpath fill='%23FDF8F0' d='M0,45 C360,90 720,0 1080,45 C1260,68 1380,20 1440,45 L1440,90 L0,90 Z'/%3E%3C/svg%3E") no-repeat bottom center/cover;
     }
+    /* background drone video */
+    .hero-video {
+      position:absolute; inset:0; z-index:0;
+      width:100%; height:100%; object-fit:cover;
+      opacity:.55;
+    }
+    /* sound toggle */
+    .sound-btn {
+      position:absolute; bottom:130px; right:1.8rem; z-index:4;
+      width:40px; height:40px; border-radius:50%;
+      background:rgba(13,33,55,.65); border:1px solid rgba(249,244,236,.28);
+      color:rgba(249,244,236,.8); font-size:1rem;
+      cursor:pointer; backdrop-filter:blur(10px);
+      transition:var(--ease); display:flex; align-items:center; justify-content:center;
+    }
+    .sound-btn:hover { background:rgba(13,33,55,.88); border-color:rgba(249,244,236,.6); }
+    /* push all hero content above overlay */
+    .hero-logo,.hero-title,.hero-location,.hero-tagline,.hero-cta,.scroll-line { position:relative; z-index:2; }
     .hero-logo {
       width:180px; height:180px;
       object-fit:cover; object-position:center;
@@ -201,6 +241,24 @@
       border-top:1px solid rgba(224,120,64,.3); padding-top:.72rem;
     }
 
+    /* ── VIDEO TILES ────────────────────────────────── */
+    .tile-back.video-back { background:#000; padding:0; }
+    .video-tile-player {
+      position:absolute; inset:0; width:100%; height:100%;
+      border:none; display:block;
+    }
+    .video-tile-header {
+      position:absolute; top:0; left:0; right:0; z-index:2; pointer-events:none;
+      padding:.75rem 1rem;
+      background:linear-gradient(to bottom, rgba(0,0,0,.75) 0%, transparent 100%);
+      font-family:'Playfair Display',serif; font-size:.95rem; font-weight:600; color:#fff;
+    }
+    .video-tile-hint {
+      position:absolute; bottom:0; left:0; right:0; z-index:2; pointer-events:none;
+      padding:.5rem; text-align:center; font-size:.62rem; color:rgba(255,255,255,.4);
+      background:linear-gradient(to top, rgba(0,0,0,.5) 0%, transparent 100%);
+    }
+
     /* ── ROOMS SECTION ──────────────────────────────── */
     .rooms-bg { background:var(--sand-light); }
     .tile-back.room-back {
@@ -310,19 +368,24 @@
 
 <!-- NAV -->
 <nav id="nav">
-  <img src="assets/logo.png" alt="The Gathering Silveira" class="nav-logo">
+  <img src="assets/logo-circle.png" alt="The Gathering Silveira" class="nav-logo">
   <div class="nav-links">
     <a href="#experiences">Experiences</a>
     <a href="#suites">Suites</a>
     <a href="#location">Location</a>
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="cta-nav">Book Now</a>
-    <a href="owner.html" class="owner-nav" title="Owner Access">🔐</a>
+    <a href="owner.html" class="owner-nav">owner access <span class="mtg-mini-card"></span> 🔐</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero" id="home">
-  <img src="assets/logo.png" alt="The Gathering Silveira" class="hero-logo">
+  <video class="hero-video" autoplay muted loop playsinline>
+    <source src="assets/birds-eye.mov" type="video/mp4">
+    <source src="assets/birds-eye.mov" type="video/quicktime">
+  </video>
+  <button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Toggle ambient sound">🔇</button>
+  <img src="assets/logo-circle.png" alt="The Gathering Silveira" class="hero-logo">
   <h1 class="hero-title">
     THE GATHERING
     <span class="sub">Silveira</span>
@@ -395,10 +458,10 @@
       <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Planície">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_suite1.jpg')">
-            <div class="fc"><span class="ico">⬜</span><div class="name">Suite Planície</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">🔆</span><div class="name">Suite Planície</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
-            <div class="b-ico">⬜</div>
+            <div class="b-ico">🔆</div>
             <div class="b-title">Suite Planície · Plains</div>
             <p class="b-desc">The premium suite — warm timber, slatted wood partitions, and plains-inspired art. King bed with custom closet. The grandest rest in the house at nearly 20 m².</p>
             <span class="b-tag">King Bed · 19.9 m² · Premium Mezzanine</span>
@@ -410,10 +473,10 @@
       <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Ilha">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_suite2.jpg')">
-            <div class="fc"><span class="ico">🔵</span><div class="name">Suite Ilha</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">💧</span><div class="name">Suite Ilha</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
-            <div class="b-ico">🔵</div>
+            <div class="b-ico">💧</div>
             <div class="b-title">Suite Ilha · Island</div>
             <p class="b-desc">Cool, dark, and deeply restful — this Island suite features a King bed with ocean-wave art, moody dark headboard, and the focused calm of deep blue water.</p>
             <span class="b-tag">King Bed · 13.5 m² · Ocean Mood</span>
@@ -425,10 +488,10 @@
       <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Montanha">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_suite3.jpg')">
-            <div class="fc"><span class="ico">🔴</span><div class="name">Suite Montanha</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">🌄</span><div class="name">Suite Montanha</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
-            <div class="b-ico">🔴</div>
+            <div class="b-ico">🌄</div>
             <div class="b-title">Suite Montanha · Mountain</div>
             <p class="b-desc">Bold red accents, bunk-style flex beds, and a full glass door opening to the Garopaba panorama. A breathtaking view of the ocean and city stretches beyond the deck.</p>
             <span class="b-tag">Flex Bunk Beds · 13.5 m² · Panoramic Balcony</span>
@@ -440,10 +503,10 @@
       <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Floresta">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_suite4.jpg')">
-            <div class="fc"><span class="ico">🟢</span><div class="name">Suite Floresta</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">🌴</span><div class="name">Suite Floresta</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
-            <div class="b-ico">🟢</div>
+            <div class="b-ico">🌴</div>
             <div class="b-title">Suite Floresta · Forest</div>
             <p class="b-desc">Lush forest-green tones, flex bunk beds, and a glass door framing the hillside Atlantic Forest beyond. Grounding, natural, and perfectly calm.</p>
             <span class="b-tag">Flex Bunk Beds · 13.6 m² · Forest Panorama</span>
@@ -511,16 +574,17 @@
       </div>
 
       <!-- 2 Surfland Day -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Surfland Day">
+      <div class="tile-wrap video-tile" tabindex="0" role="button" aria-label="Surfland Day">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1MvBNMqLaoc4w44S4veuE8KDyFlLKqgGc&sz=w800')">
-            <div class="fc"><span class="ico">🏄</span><div class="name">Surfland Day</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">🏄</span><div class="name">Surfland Day</div><div class="hint">tap to watch clip</div></div>
           </div>
-          <div class="tile-face tile-back">
-            <div class="b-ico">🌊</div>
-            <div class="b-title">Surfland Day</div>
-            <p class="b-desc">Praia da Silveira is one of SC's premier surf breaks. Rent a board, take a lesson, or watch masters read the swells below our perch. Surf is life here.</p>
-            <span class="b-tag">World-Class Surf · Lessons Nearby · Right at Your Door</span>
+          <div class="tile-face tile-back video-back">
+            <div class="video-tile-header">🌊 Surfland Day</div>
+            <iframe class="video-tile-player"
+              data-src="https://drive.google.com/file/d/1wjuhZNU6dQaWpPqn9ns6FGa59Qlevbmj/preview"
+              allow="autoplay; fullscreen" allowfullscreen></iframe>
+            <div class="video-tile-hint">tap tile to go back</div>
           </div>
         </div>
       </div>
@@ -571,16 +635,17 @@
       </div>
 
       <!-- 6 Movie Night -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Movie Night">
+      <div class="tile-wrap video-tile" tabindex="0" role="button" aria-label="Movie Night">
         <div class="tile">
           <div class="tile-face tile-front" style="background:radial-gradient(ellipse at 40% 35%, #1a1a4e 0%, #06060f 100%)">
-            <div class="fc"><span class="ico">🎬</span><div class="name">Movie Night</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">🎬</span><div class="name">Movie Night</div><div class="hint">tap to watch clip</div></div>
           </div>
-          <div class="tile-face tile-back" style="background:linear-gradient(138deg,#06060f,#1a1a4e)">
-            <div class="b-ico">🎬</div>
-            <div class="b-title">Movie Night</div>
-            <p class="b-desc">Fire up the 75″ Samsung Frame TV with Sonos surround. Movie nights in the mountains hit different — dim the lights, grab a blanket, and disappear into another world.</p>
-            <span class="b-tag">75″ Frame TV · Sonos Surround · Cinematic Feel</span>
+          <div class="tile-face tile-back video-back">
+            <div class="video-tile-header">🎬 Movie Night</div>
+            <iframe class="video-tile-player"
+              data-src="https://drive.google.com/file/d/1ZPtKB7zGlw43OZnRVftjDhYP8sWUAzM3/preview"
+              allow="autoplay; fullscreen" allowfullscreen></iframe>
+            <div class="video-tile-hint">tap tile to go back</div>
           </div>
         </div>
       </div>
@@ -616,16 +681,16 @@
       </div>
 
       <!-- 9 Réveillon Party -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Réveillon Party">
+      <div class="tile-wrap video-tile" tabindex="0" role="button" aria-label="Réveillon Party">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=17J4QG9D9yduLyTDQnT9u_3arflg3acHr&sz=w800')">
-            <div class="fc"><span class="ico">🎆</span><div class="name">Réveillon Party</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">🎆</span><div class="name">Réveillon Party</div><div class="hint">tap to watch clip</div></div>
           </div>
-          <div class="tile-face tile-back">
-            <div class="b-ico">🎆</div>
-            <div class="b-title">Réveillon Party Watch</div>
-            <p class="b-desc">Ring in the New Year from the best seat in the house. Watch Garopaba's fireworks explode across the ocean horizon — from our dramatic hillside perch. Unforgettable every time.</p>
-            <span class="b-tag">New Year's Eve · Firework Views · A Night to Remember</span>
+          <div class="tile-face tile-back video-back">
+            <div class="video-tile-header">🎆 Réveillon Party Watch</div>
+            <video class="video-tile-player" data-src="assets/reveillon.mov"
+              loop playsinline controls></video>
+            <div class="video-tile-hint">tap tile to go back</div>
           </div>
         </div>
       </div>
@@ -648,7 +713,7 @@
       <div class="suite-card fu d1">
         <div class="suite-bar mw"></div>
         <div class="suite-body">
-          <div class="suite-mana"><i class="ms ms-w ms-cost ms-shadow"></i></div>
+          <div class="suite-mana">🔆</div>
           <div class="suite-pt">Planície</div>
           <div class="suite-en">Plains · Premium Mezzanine Suite 1</div>
           <div class="suite-hr"></div>
@@ -666,7 +731,7 @@
       <div class="suite-card fu d2">
         <div class="suite-bar mu"></div>
         <div class="suite-body">
-          <div class="suite-mana"><i class="ms ms-u ms-cost ms-shadow"></i></div>
+          <div class="suite-mana">💧</div>
           <div class="suite-pt">Ilha</div>
           <div class="suite-en">Island · Mezzanine Suite 2</div>
           <div class="suite-hr"></div>
@@ -684,7 +749,7 @@
       <div class="suite-card fu d3">
         <div class="suite-bar mr"></div>
         <div class="suite-body">
-          <div class="suite-mana"><i class="ms ms-r ms-cost ms-shadow"></i></div>
+          <div class="suite-mana">🌄</div>
           <div class="suite-pt">Montanha</div>
           <div class="suite-en">Mountain · Flex Suite 3</div>
           <div class="suite-hr"></div>
@@ -702,7 +767,7 @@
       <div class="suite-card fu d1">
         <div class="suite-bar mg"></div>
         <div class="suite-body">
-          <div class="suite-mana"><i class="ms ms-g ms-cost ms-shadow"></i></div>
+          <div class="suite-mana">🌴</div>
           <div class="suite-pt">Floresta</div>
           <div class="suite-en">Forest · Flex Suite 4</div>
           <div class="suite-hr"></div>
@@ -716,23 +781,6 @@
         </div>
       </div>
 
-      <!-- Swamp / Black -->
-      <div class="suite-card fu d2">
-        <div class="suite-bar mb"></div>
-        <div class="suite-body">
-          <div class="suite-mana"><i class="ms ms-b ms-cost ms-shadow"></i></div>
-          <div class="suite-pt">Pântano</div>
-          <div class="suite-en">Swamp · Container Office</div>
-          <div class="suite-hr"></div>
-          <p class="suite-desc">A one-of-a-kind space inspired by the dark stones of the southern cove. Housed in the converted container — intimate, mysterious, and unlike anything else in the house.</p>
-          <div class="suite-meta">
-            <span>🏗️ Container Design</span>
-            <span>🌑 Unique Space</span>
-            <span>🔒 Private Entry</span>
-          </div>
-          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
-        </div>
-      </div>
 
     </div>
   </div>
@@ -815,7 +863,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <img src="assets/logo.png" alt="The Gathering" class="foot-logo">
+  <img src="assets/logo-circle.png" alt="The Gathering" class="foot-logo">
   <div class="foot-links">
     <a href="https://www.instagram.com/thegatheringsilveira/" target="_blank" rel="noopener">📸 Instagram</a>
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener">🏡 Airbnb</a>
@@ -838,12 +886,40 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.fu').forEach(el => obs.observe(el));
 
-  // Tile keyboard support
-  document.querySelectorAll('.tile-wrap').forEach(t => {
+  // Standard tile keyboard support (non-video) — onclick already in HTML
+  document.querySelectorAll('.tile-wrap:not(.video-tile)').forEach(t => {
     t.addEventListener('keydown', e => {
       if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t.classList.toggle('flipped'); }
     });
   });
+
+  // Video tile flip — lazy-load player on flip, unload on flip-back
+  document.querySelectorAll('.video-tile').forEach(tile => {
+    const flip = () => {
+      const wasFlipped = tile.classList.contains('flipped');
+      tile.classList.toggle('flipped');
+      const iframe = tile.querySelector('iframe.video-tile-player');
+      const video  = tile.querySelector('video.video-tile-player');
+      if (!wasFlipped) {
+        if (iframe) iframe.src = iframe.dataset.src;
+        if (video)  { video.src = video.dataset.src; video.play().catch(()=>{}); }
+      } else {
+        if (iframe) iframe.src = 'about:blank';
+        if (video)  { video.pause(); video.removeAttribute('src'); video.load(); }
+      }
+    };
+    tile.addEventListener('click', flip);
+    tile.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); flip(); } });
+  });
+
+  // Hero background video sound toggle
+  function toggleSound() {
+    const v = document.querySelector('.hero-video');
+    const btn = document.getElementById('sound-btn');
+    if (!v) return;
+    v.muted = !v.muted;
+    btn.textContent = v.muted ? '🔇' : '🔊';
+  }
 </script>
 </body>
 </html>
