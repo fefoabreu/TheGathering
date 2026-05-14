@@ -7,372 +7,464 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
   <style>
-    /* ── TOKENS ─────────────────────────────────────── */
+    /* ══ BATTLEFIELD TOKENS ══════════════════════════════════ */
     :root {
-      --bg:        #0E1420;
-      --panel:     #161E2E;
-      --panel2:    #1C2638;
-      --border:    rgba(201,168,76,.22);
+      --bg:        #04060A;
+      --panel:     rgba(14,20,32,0.97);
+      --panel2:    rgba(20,28,44,0.95);
+      --border:    rgba(201,168,76,0.25);
+      --border-hi: rgba(201,168,76,0.58);
       --gold:      #C9A84C;
-      --gold-dim:  rgba(201,168,76,.55);
+      --gold-glow: rgba(201,168,76,0.35);
+      --gold-dim:  rgba(201,168,76,0.15);
       --text:      #E8DCC8;
-      --text-dim:  rgba(232,220,200,.55);
-      --text-mute: rgba(232,220,200,.32);
-      --accent:    #4A8CB4;
-      --success:   #5BAA72;
-      --warn:      #E07840;
-      --danger:    #C45050;
-      --r:         10px;
-      --ease:      all .3s cubic-bezier(.23,1,.32,1);
-      /* mana */
-      --mw: #E8E4A8; --mu: #6BBEDD; --mr: #D05840;
-      --mg: #4A9040; --mb: #6858A0;
+      --text-dim:  rgba(232,220,200,0.52);
+      --text-mute: rgba(232,220,200,0.28);
+      --mw: #E8E4A8; --mu: #5BAAD4; --mr: #D05840;
+      --mg: #4A9040; --mb: #7858A8; --mc: #C0B8B0;
+      --success: #5BAA72; --warn: #E07840; --danger: #C45050;
+      --r: 10px;
     }
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior:smooth; }
-    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-    /* ── LOGIN GATE ──────────────────────────────────── */
+    /* ══ BATTLEFIELD BACKGROUND ════════════════════════════════ */
+    body {
+      font-family:'Inter',sans-serif; color:var(--text);
+      min-height:100vh; overflow-x:hidden;
+      background:
+        radial-gradient(ellipse 1600px 700px at 10% 8%,  rgba(201,168,76,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 1000px 900px at 90% 90%, rgba(74,100,200,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse  700px 500px at 50% 42%, rgba(140,50,180,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 1200px 300px at 50% 50%, rgba(201,168,76,0.04) 0%, transparent 60%),
+        linear-gradient(180deg,
+          #030508 0%, #050A12 18%, #07101A 35%,
+          #0B1810 50%, #070E08 65%, #040906 100%);
+      background-attachment:fixed;
+    }
+
+    /* Atmospheric texture overlay */
+    body::before {
+      content:'';
+      position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(201,168,76,0.007) 2px, rgba(201,168,76,0.007) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(201,168,76,0.005) 2px, rgba(201,168,76,0.005) 4px);
+      opacity:.4;
+    }
+
+    /* ══ FLOATING MANA PARTICLES ════════════════════════════════ */
+    #particles { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+    .particle {
+      position:absolute; border-radius:50%;
+      animation:pfloat linear infinite;
+    }
+    @keyframes pfloat {
+      0%   { transform:translateY(0) translateX(0) scale(0); opacity:0; }
+      8%   { opacity:var(--op,.5); transform:translateY(-8vh) translateX(var(--dA,0px)) scale(1); }
+      92%  { opacity:var(--op,.4); }
+      100% { transform:translateY(-105vh) translateX(var(--dB,20px)) scale(0.2); opacity:0; }
+    }
+
+    /* ══ ARCANE RINGS (login) ════════════════════════════════════ */
+    .arcane-wrap { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; overflow:hidden; }
+    .aring { position:absolute; border-radius:50%; border:1px solid; }
+    @keyframes aspin     { from{transform:rotate(0deg)}   to{transform:rotate(360deg)}  }
+    @keyframes aspin-rev { from{transform:rotate(0deg)}   to{transform:rotate(-360deg)} }
+    .aring-1 { width:560px;height:560px; border-color:rgba(201,168,76,.16); animation:aspin 28s linear infinite; box-shadow:0 0 60px rgba(201,168,76,.05), inset 0 0 60px rgba(201,168,76,.03); }
+    .aring-2 { width:430px;height:430px; border-color:rgba(201,168,76,.11); animation:aspin-rev 20s linear infinite; }
+    .aring-3 { width:320px;height:320px; border-color:rgba(201,168,76,.19); animation:aspin 14s linear infinite; }
+    .aring-4 { width:220px;height:220px; border-color:rgba(201,168,76,.13); animation:aspin-rev 9s  linear infinite; }
+    /* Tick marks on outer ring */
+    .aring-1::before,.aring-1::after { content:'✦'; position:absolute; color:rgba(201,168,76,.45); font-size:.5rem; top:50%; left:-7px; transform:translateY(-50%); }
+    .aring-1::after  { left:auto; right:-7px; }
+    /* Inner glow portal */
+    .aring-3::before { content:''; position:absolute; inset:20px; border-radius:50%; background:radial-gradient(ellipse at center, rgba(201,168,76,.06) 0%, transparent 70%); }
+
+    /* ══ LOGIN GATE ══════════════════════════════════════════════ */
     #gate {
       position:fixed; inset:0; z-index:1000;
-      background:radial-gradient(ellipse at 50% 40%, #1a2540 0%, var(--bg) 70%);
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       padding:2rem;
+      background:
+        radial-gradient(ellipse 1200px 900px at 50% 38%, rgba(201,168,76,.08) 0%, transparent 65%),
+        radial-gradient(ellipse  900px 700px at 50% 62%, rgba(74,80,200,.06)  0%, transparent 60%),
+        radial-gradient(ellipse  600px 400px at 30% 20%, rgba(200,60,60,.04)  0%, transparent 50%),
+        linear-gradient(180deg, #03050A 0%, #06090F 100%);
     }
-    #gate img { width:110px; margin-bottom:1.8rem; filter:brightness(0) invert(1); opacity:.7; }
-    #gate h1 {
-      font-family:'Cinzel Decorative',serif; font-size:1.5rem; font-weight:400;
-      color:var(--gold); letter-spacing:.12em; margin-bottom:.4rem;
-      text-align:center;
+    .gate-logo {
+      width:100px; height:100px; border-radius:50%; object-fit:cover; object-position:center;
+      margin-bottom:1.6rem; position:relative; z-index:2;
+      box-shadow:0 0 0 2px var(--border), 0 0 30px rgba(201,168,76,.22), 0 0 60px rgba(201,168,76,.08);
     }
-    #gate p { color:var(--text-dim); font-size:.85rem; letter-spacing:.1em; margin-bottom:2.5rem; text-align:center; }
+    .gate-title { font-family:'Cinzel Decorative',serif; font-size:1.5rem; font-weight:700; color:var(--gold); letter-spacing:.14em; text-align:center; position:relative; z-index:2; text-shadow:0 0 25px rgba(201,168,76,.45); }
+    .gate-sub   { font-size:.75rem; letter-spacing:.22em; text-transform:uppercase; color:var(--text-dim); margin-top:.4rem; margin-bottom:2.2rem; position:relative; z-index:2; text-align:center; }
+
+    /* MTG card frame for login box */
     .gate-card {
-      background:var(--panel); border:1px solid var(--border);
-      border-radius:var(--r); padding:2.5rem; width:100%; max-width:360px;
-      box-shadow:0 20px 60px rgba(0,0,0,.5);
+      position:relative; z-index:2;
+      width:100%; max-width:385px;
+      background:linear-gradient(160deg, rgba(16,22,36,.99) 0%, rgba(10,14,24,.99) 100%);
+      border-radius:var(--r); padding:2.6rem;
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,.48),
+        0 0 0 3px rgba(0,0,0,.9),
+        0 0 60px rgba(0,0,0,.7),
+        inset 0 0 80px rgba(201,168,76,.025);
     }
-    .gate-card label { display:block; font-size:.78rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-dim); margin-bottom:.6rem; }
-    .gate-card input {
-      width:100%; padding:.85rem 1rem; border-radius:8px;
-      background:var(--panel2); border:1px solid var(--border);
-      color:var(--text); font-size:1rem; outline:none;
-      transition:border-color .3s;
+    .gate-card::before {
+      content:''; position:absolute; inset:-1px; border-radius:calc(var(--r)+1px); z-index:-1;
+      background:linear-gradient(135deg, rgba(201,168,76,.55) 0%, rgba(201,168,76,.08) 35%, rgba(201,168,76,.04) 50%, rgba(201,168,76,.08) 65%, rgba(201,168,76,.48) 100%);
     }
-    .gate-card input:focus { border-color:var(--gold); }
-    .gate-card button {
-      width:100%; margin-top:1.2rem; padding:.9rem;
-      background:var(--gold); color:var(--bg); border:none; border-radius:8px;
-      font-family:'Cinzel',serif; font-size:.95rem; font-weight:600; letter-spacing:.08em;
-      cursor:pointer; transition:var(--ease);
-    }
-    .gate-card button:hover { background:#e0b858; transform:translateY(-1px); }
-    #gate-err { color:var(--danger); font-size:.82rem; margin-top:.8rem; text-align:center; display:none; }
-    .gate-rule { border:none; border-top:1px solid var(--border); margin:1.8rem 0; }
-    .gate-quote { font-style:italic; font-size:.82rem; color:var(--text-mute); text-align:center; line-height:1.6; }
+    .gate-card::after { content:'❖'; position:absolute; bottom:.7rem; right:.85rem; color:rgba(201,168,76,.28); font-size:.65rem; pointer-events:none; }
+    .gate-card .corner-tl { position:absolute; top:.6rem; left:.8rem; color:rgba(201,168,76,.25); font-size:.6rem; }
 
-    /* ── APP SHELL ───────────────────────────────────── */
-    #app { display:none; min-height:100vh; }
+    .gate-label { font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-dim); margin-bottom:.6rem; display:block; }
+    .gate-input {
+      width:100%; padding:.9rem 1rem; border-radius:8px;
+      background:rgba(6,10,18,.95); border:1px solid var(--border);
+      color:var(--text); font-size:1rem; outline:none; font-family:'Inter',sans-serif;
+      transition:border-color .3s, box-shadow .3s; color-scheme:dark;
+    }
+    .gate-input:focus { border-color:var(--gold); box-shadow:0 0 18px rgba(201,168,76,.15); }
+    .gate-btn {
+      width:100%; margin-top:1.2rem; padding:1rem;
+      background:linear-gradient(180deg, #C9A84C 0%, #A48030 100%);
+      color:#080604; border:none; border-radius:8px;
+      font-family:'Cinzel',serif; font-size:.95rem; font-weight:700; letter-spacing:.12em;
+      cursor:pointer; transition:all .3s ease;
+      box-shadow:0 4px 22px rgba(201,168,76,.22);
+    }
+    .gate-btn:hover {
+      background:linear-gradient(180deg, #DDBC60 0%, #B89040 100%);
+      box-shadow:0 0 35px rgba(201,168,76,.5), 0 6px 24px rgba(201,168,76,.3);
+      transform:translateY(-1px);
+    }
+    #gate-err { color:#E08080; font-size:.82rem; margin-top:.75rem; text-align:center; display:none; }
+    .gate-divider { border:none; border-top:1px solid var(--border); margin:1.8rem 0; }
+    .gate-quote { font-size:.8rem; color:var(--text-mute); text-align:center; line-height:1.7; font-style:italic; }
 
-    /* TOP BAR */
+    /* ══ APP SHELL ═══════════════════════════════════════════════ */
+    #app { display:none; min-height:100vh; position:relative; z-index:2; }
+
+    /* ══ TOP BAR ══════════════════════════════════════════════════ */
     .topbar {
-      background:var(--panel); border-bottom:1px solid var(--border);
-      padding:.85rem 1.8rem;
+      background:linear-gradient(90deg, rgba(12,16,26,.99) 0%, rgba(16,20,32,.98) 100%);
+      border-bottom:1px solid var(--border);
+      padding:.8rem 1.8rem;
       display:flex; align-items:center; justify-content:space-between;
       position:sticky; top:0; z-index:100;
+      box-shadow:0 2px 24px rgba(0,0,0,.55), 0 1px 0 rgba(201,168,76,.08);
     }
-    .topbar-brand { display:flex; align-items:center; gap:.85rem; }
-    .topbar-brand img { width:34px; filter:brightness(0) invert(1); opacity:.65; }
-    .topbar-brand span { font-family:'Cinzel',serif; font-size:.95rem; color:var(--gold); letter-spacing:.1em; }
-    .topbar-right { display:flex; align-items:center; gap:1.2rem; }
-    .topbar-season { font-size:.78rem; color:var(--text-dim); letter-spacing:.1em; }
-    .logout-btn {
-      font-size:.78rem; letter-spacing:.1em; text-transform:uppercase;
-      color:var(--text-mute); cursor:pointer; transition:color .3s; background:none; border:none;
-    }
-    .logout-btn:hover { color:var(--text); }
+    .topbar-brand { display:flex; align-items:center; gap:.9rem; }
+    .topbar-brand img { width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--border); box-shadow:0 0 10px rgba(201,168,76,.15); }
+    .brand-name { font-family:'Cinzel',serif; font-size:.88rem; color:var(--gold); letter-spacing:.12em; text-shadow:0 0 12px rgba(201,168,76,.3); }
+    .brand-sub  { font-size:.65rem; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mute); }
+    .topbar-right { display:flex; align-items:center; gap:1.4rem; }
+    .mana-pool { display:flex; gap:.4rem; align-items:center; }
+    .mana-pool .ms { font-size:1.05rem; opacity:.5; transition:opacity .3s, transform .3s; }
+    .mana-pool .ms:hover { opacity:1; transform:scale(1.2); }
+    .topbar-season { font-size:.72rem; letter-spacing:.1em; color:var(--text-dim); border:1px solid var(--border); padding:.22rem .65rem; border-radius:20px; }
+    .logout-btn { font-size:.73rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mute); cursor:pointer; background:none; border:none; transition:color .3s; font-family:'Cinzel',serif; }
+    .logout-btn:hover { color:var(--gold); }
 
-    /* TABS NAV */
+    /* ══ ARENA TAB NAV ════════════════════════════════════════════ */
     .tabs-nav {
-      background:var(--panel2); border-bottom:1px solid var(--border);
-      display:flex; overflow-x:auto; gap:0;
-      scrollbar-width:none;
+      background:linear-gradient(90deg, rgba(8,12,20,.99) 0%, rgba(10,14,24,.98) 100%);
+      border-bottom:1px solid var(--border);
+      display:flex; overflow-x:auto; scrollbar-width:none;
+      box-shadow:inset 0 -1px 0 rgba(201,168,76,.06);
     }
     .tabs-nav::-webkit-scrollbar { display:none; }
     .tab-btn {
-      flex-shrink:0; padding:.9rem 1.5rem;
-      font-size:.82rem; letter-spacing:.09em; text-transform:uppercase;
+      flex-shrink:0; padding:.88rem 1.4rem;
+      font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:.13em; text-transform:uppercase;
       color:var(--text-dim); cursor:pointer; background:none; border:none;
-      border-bottom:2px solid transparent; transition:var(--ease);
-      white-space:nowrap;
+      border-bottom:2px solid transparent; transition:all .3s ease;
+      white-space:nowrap; display:flex; align-items:center; gap:.55rem; position:relative;
     }
-    .tab-btn:hover { color:var(--text); }
-    .tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+    .tab-btn .ms { font-size:1rem; transition:transform .3s; }
+    .tab-btn:hover { color:var(--text); background:rgba(201,168,76,.03); }
+    .tab-btn:hover .ms { transform:scale(1.15); }
+    .tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); background:rgba(201,168,76,.05); text-shadow:0 0 14px rgba(201,168,76,.45); }
+    .tab-btn.active::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:var(--gold); box-shadow:0 0 10px rgba(201,168,76,.65); }
+    .tab-btn[data-tab="calendar"].active    { color:var(--mu); border-bottom-color:var(--mu); text-shadow:0 0 14px rgba(91,170,212,.45); }
+    .tab-btn[data-tab="calendar"].active::after    { background:var(--mu); box-shadow:0 0 10px rgba(91,170,212,.6); }
+    .tab-btn[data-tab="guests"].active      { color:var(--mg); border-bottom-color:var(--mg); text-shadow:0 0 14px rgba(74,144,64,.45); }
+    .tab-btn[data-tab="guests"].active::after      { background:var(--mg); box-shadow:0 0 10px rgba(74,144,64,.6); }
+    .tab-btn[data-tab="housekeeping"].active{ color:var(--mr); border-bottom-color:var(--mr); text-shadow:0 0 14px rgba(208,88,64,.45); }
+    .tab-btn[data-tab="housekeeping"].active::after{ background:var(--mr); box-shadow:0 0 10px rgba(208,88,64,.6); }
+    .tab-btn[data-tab="vendors"].active     { color:var(--mc); border-bottom-color:var(--mc); text-shadow:0 0 14px rgba(192,184,176,.35); }
+    .tab-btn[data-tab="vendors"].active::after     { background:var(--mc); box-shadow:0 0 10px rgba(192,184,176,.5); }
+    .tab-btn[data-tab="projects"].active    { color:var(--mb); border-bottom-color:var(--mb); text-shadow:0 0 14px rgba(120,88,168,.45); }
+    .tab-btn[data-tab="projects"].active::after    { background:var(--mb); box-shadow:0 0 10px rgba(120,88,168,.6); }
+    .tab-btn[data-tab="links"].active       { color:var(--mw); border-bottom-color:var(--mw); text-shadow:0 0 14px rgba(232,228,168,.4); }
+    .tab-btn[data-tab="links"].active::after       { background:var(--mw); box-shadow:0 0 10px rgba(232,228,168,.55); }
 
-    /* CONTENT AREA */
+    /* ══ CONTENT AREA ════════════════════════════════════════════ */
     .content { max-width:1100px; margin:0 auto; padding:2rem 1.5rem; }
     .tab-panel { display:none; }
-    .tab-panel.active { display:block; }
+    .tab-panel.active { display:block; animation:panel-in .38s cubic-bezier(.23,1,.32,1); }
+    @keyframes panel-in { from{opacity:0;transform:translateX(22px)} to{opacity:1;transform:translateX(0)} }
 
-    /* ── SHARED COMPONENTS ───────────────────────────── */
-    .section-title {
-      font-family:'Cinzel',serif; font-size:1.1rem; color:var(--gold);
-      letter-spacing:.12em; margin-bottom:1.5rem; display:flex; align-items:center; gap:.7rem;
-    }
-    .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
-
-    .card {
-      background:var(--panel); border:1px solid var(--border);
+    /* ══ MTG CARD PANEL ══════════════════════════════════════════ */
+    .mtg-card {
+      position:relative; overflow:hidden;
+      background:linear-gradient(160deg, rgba(16,22,36,.98) 0%, rgba(10,14,24,.99) 100%);
       border-radius:var(--r); padding:1.5rem;
-      transition:border-color .3s;
+      box-shadow: 0 0 0 1px rgba(201,168,76,.28), 0 8px 32px rgba(0,0,0,.5), inset 0 0 80px rgba(201,168,76,.018);
+      transition:box-shadow .3s ease;
     }
-    .card:hover { border-color:var(--gold-dim); }
+    .mtg-card:hover {
+      box-shadow: 0 0 0 1px rgba(201,168,76,.5), 0 0 24px rgba(201,168,76,.08), 0 12px 40px rgba(0,0,0,.6), inset 0 0 80px rgba(201,168,76,.025);
+    }
+    /* Gradient border frame */
+    .mtg-card::before {
+      content:''; position:absolute; inset:-1px; border-radius:calc(var(--r)+1px); z-index:-1;
+      background:linear-gradient(135deg, rgba(201,168,76,.48) 0%, rgba(201,168,76,.07) 32%, rgba(201,168,76,.03) 50%, rgba(201,168,76,.07) 68%, rgba(201,168,76,.38) 100%);
+    }
+    /* Corner rune */
+    .mtg-card::after { content:'✦'; position:absolute; bottom:.52rem; right:.7rem; color:rgba(201,168,76,.18); font-size:.58rem; pointer-events:none; }
+    /* old .card alias */
+    .card { position:relative; overflow:hidden; background:linear-gradient(160deg,rgba(16,22,36,.98) 0%,rgba(10,14,24,.99) 100%); border-radius:var(--r); padding:1.5rem; box-shadow:0 0 0 1px rgba(201,168,76,.28),0 8px 32px rgba(0,0,0,.5); transition:box-shadow .3s; }
+    .card:hover { box-shadow:0 0 0 1px rgba(201,168,76,.5),0 0 20px rgba(201,168,76,.08),0 12px 40px rgba(0,0,0,.6); }
 
+    /* ══ SECTION TITLE ═══════════════════════════════════════════ */
+    .section-title {
+      font-family:'Cinzel',serif; font-size:.95rem; color:var(--gold);
+      letter-spacing:.16em; margin-bottom:1.4rem;
+      display:flex; align-items:center; gap:.8rem;
+      text-shadow:0 0 10px rgba(201,168,76,.22);
+    }
+    .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg, rgba(201,168,76,.3) 0%, transparent 100%); }
+    .section-title .ms { font-size:1rem; }
+
+    /* ══ GRIDS ════════════════════════════════════════════════════ */
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
     .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
-    @media(max-width:800px){ .grid-2,.grid-3 { grid-template-columns:1fr; } }
+    @media(max-width:800px){  .grid-2,.grid-3 { grid-template-columns:1fr; } }
     @media(max-width:1000px){ .grid-3 { grid-template-columns:1fr 1fr; } }
 
-    /* stat cards */
-    .stat { text-align:center; padding:1.8rem 1rem; }
-    .stat .val { font-family:'Cinzel',serif; font-size:2.2rem; color:var(--gold); line-height:1; }
-    .stat .lbl { font-size:.76rem; letter-spacing:.15em; text-transform:uppercase; color:var(--text-dim); margin-top:.5rem; }
+    /* ══ LIFE TOTAL STATS ════════════════════════════════════════ */
+    .stat { text-align:center; padding:2rem 1rem; }
+    .stat .val { font-family:'Cinzel Decorative',serif; font-size:3rem; color:var(--gold); line-height:1; text-shadow:0 0 28px rgba(201,168,76,.4); }
+    .stat .lbl { font-family:'Cinzel',serif; font-size:.66rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-dim); margin-top:.65rem; }
 
-    /* badge */
-    .badge {
-      display:inline-block; padding:.22rem .65rem; border-radius:20px;
-      font-size:.72rem; font-weight:600; letter-spacing:.06em;
-    }
-    .badge-green  { background:rgba(91,170,114,.18); color:#7DD49A; border:1px solid rgba(91,170,114,.3); }
-    .badge-blue   { background:rgba(74,140,180,.18); color:#7BBCD4; border:1px solid rgba(74,140,180,.3); }
-    .badge-orange { background:rgba(224,120,64,.18); color:#F09A6A; border:1px solid rgba(224,120,64,.3); }
-    .badge-gold   { background:rgba(201,168,76,.18); color:var(--gold); border:1px solid rgba(201,168,76,.3); }
-    .badge-mute   { background:rgba(232,220,200,.08); color:var(--text-dim); border:1px solid rgba(232,220,200,.12); }
+    /* ══ BADGES ══════════════════════════════════════════════════ */
+    .badge { display:inline-block; padding:.22rem .65rem; border-radius:20px; font-size:.72rem; font-weight:600; letter-spacing:.06em; }
+    .badge-green  { background:rgba(91,170,114,.14); color:#7DD49A; border:1px solid rgba(91,170,114,.26); }
+    .badge-blue   { background:rgba(74,140,180,.14); color:#7BBCD4; border:1px solid rgba(74,140,180,.26); }
+    .badge-orange { background:rgba(224,120,64,.14);  color:#F09A6A; border:1px solid rgba(224,120,64,.26); }
+    .badge-gold   { background:rgba(201,168,76,.14);  color:var(--gold); border:1px solid rgba(201,168,76,.26); }
+    .badge-mute   { background:rgba(232,220,200,.06); color:var(--text-dim); border:1px solid rgba(232,220,200,.1); }
 
-    /* table */
-    table { width:100%; border-collapse:collapse; font-size:.88rem; }
-    th { text-align:left; font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); padding:.7rem 1rem; border-bottom:1px solid var(--border); }
-    td { padding:.85rem 1rem; border-bottom:1px solid rgba(232,220,200,.06); color:var(--text); vertical-align:middle; }
+    /* ══ TABLES ══════════════════════════════════════════════════ */
+    table { width:100%; border-collapse:collapse; font-size:.87rem; }
+    th { text-align:left; font-family:'Cinzel',serif; font-size:.65rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); padding:.75rem 1rem; border-bottom:1px solid rgba(201,168,76,.22); }
+    td { padding:.85rem 1rem; border-bottom:1px solid rgba(232,220,200,.05); color:var(--text); vertical-align:middle; }
     tr:last-child td { border-bottom:none; }
-    tr:hover td { background:rgba(255,255,255,.02); }
+    tr:hover td { background:rgba(201,168,76,.03); }
     .avail-row td { color:var(--text-mute); font-style:italic; }
 
-    /* mana dots */
-    .mana { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:.35rem; vertical-align:middle; }
-    .mw-dot { background:var(--mw); }
-    .mu-dot { background:var(--mu); }
-    .mr-dot { background:var(--mr); }
-    .mg-dot { background:var(--mg); }
-    .mb-dot { background:var(--mb); }
-
-    /* link button */
+    /* ══ LINK BUTTONS ════════════════════════════════════════════ */
     .link-btn {
       display:flex; align-items:center; gap:.9rem;
-      padding:1.1rem 1.3rem; background:var(--panel); border:1px solid var(--border);
-      border-radius:var(--r); text-decoration:none; color:var(--text);
-      transition:var(--ease);
+      padding:1.1rem 1.3rem; border-radius:var(--r);
+      background:linear-gradient(160deg,rgba(16,22,36,.97) 0%,rgba(10,14,24,.98) 100%);
+      border:1px solid var(--border); text-decoration:none; color:var(--text);
+      transition:all .3s ease; position:relative; overflow:hidden;
     }
-    .link-btn:hover { border-color:var(--gold); background:var(--panel2); transform:translateY(-2px); }
-    .link-btn .link-ico { font-size:1.4rem; flex-shrink:0; }
-    .link-btn .link-title { font-weight:600; font-size:.9rem; }
-    .link-btn .link-desc { font-size:.78rem; color:var(--text-dim); margin-top:.15rem; }
+    .link-btn::before { content:''; position:absolute; inset:-1px; border-radius:calc(var(--r)+1px); z-index:-1; background:linear-gradient(135deg,rgba(201,168,76,.35) 0%,transparent 38%,transparent 62%,rgba(201,168,76,.22) 100%); }
+    .link-btn:hover { border-color:var(--border-hi); box-shadow:0 0 20px rgba(201,168,76,.12); transform:translateY(-2px); color:var(--text); }
+    .link-ico { font-size:1.4rem; flex-shrink:0; }
+    .link-title { font-weight:600; font-size:.9rem; }
+    .link-desc { font-size:.77rem; color:var(--text-dim); margin-top:.12rem; }
 
-    /* vendor card */
+    /* ══ VENDOR CARDS ════════════════════════════════════════════ */
     .vendor-card {
-      background:var(--panel); border:1px solid var(--border); border-radius:var(--r);
-      padding:1.3rem; transition:var(--ease);
+      background:linear-gradient(160deg,rgba(16,22,36,.96) 0%,rgba(10,14,24,.97) 100%);
+      border:1px solid var(--border); border-radius:var(--r); padding:1.3rem; transition:all .3s;
     }
-    .vendor-card:hover { border-color:var(--gold-dim); }
-    .vendor-role { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:.3rem; }
-    .vendor-name { font-size:1rem; font-weight:600; color:var(--text); }
+    .vendor-card:hover { border-color:var(--border-hi); box-shadow:0 0 16px rgba(201,168,76,.1); }
+    .vendor-role { font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:.3rem; }
+    .vendor-name { font-size:1rem; font-weight:600; }
     .vendor-phone { font-size:.85rem; color:var(--text-dim); margin-top:.4rem; }
     .vendor-cost  { font-size:.78rem; color:var(--success); margin-top:.25rem; }
 
-    /* calendar */
+    /* ══ CALENDAR ════════════════════════════════════════════════ */
     .cal-wrap { overflow-x:auto; }
     .cal-month { margin-bottom:2.5rem; }
-    .cal-month-title { font-family:'Cinzel',serif; font-size:.95rem; color:var(--gold); letter-spacing:.1em; margin-bottom:1rem; }
+    .cal-month-title { font-family:'Cinzel',serif; font-size:.88rem; color:var(--gold); letter-spacing:.12em; margin-bottom:1rem; text-shadow:0 0 10px rgba(201,168,76,.2); }
     .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
-    .cal-day-hdr { text-align:center; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mute); padding:.4rem 0; }
-    .cal-day {
-      min-height:62px; padding:.4rem .5rem; border-radius:6px;
-      background:var(--panel2); font-size:.8rem; color:var(--text-dim);
-      border:1px solid transparent; transition:background .2s; position:relative;
-    }
-    .cal-day .dn { font-size:.75rem; font-weight:600; color:var(--text-mute); }
-    .cal-day.booked { background:rgba(74,140,180,.15); border-color:rgba(74,140,180,.3); }
-    .cal-day.booked .dn { color:var(--accent); }
-    .cal-day.owner-block { background:rgba(201,168,76,.12); border-color:rgba(201,168,76,.3); }
+    .cal-day-hdr { text-align:center; font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mute); padding:.4rem 0; }
+    .cal-day { min-height:60px; padding:.4rem .5rem; border-radius:6px; background:rgba(16,22,36,.7); font-size:.78rem; border:1px solid rgba(232,220,200,.04); transition:background .2s; }
+    .cal-day .dn { font-size:.72rem; font-weight:600; color:var(--text-mute); }
+    .cal-day.booked { background:rgba(74,140,180,.13); border-color:rgba(74,140,180,.26); }
+    .cal-day.booked .dn { color:var(--mu); }
+    .cal-day.owner-block { background:rgba(201,168,76,.1); border-color:rgba(201,168,76,.28); }
     .cal-day.owner-block .dn { color:var(--gold); }
-    .cal-day.available { background:rgba(91,170,114,.08); border-color:rgba(91,170,114,.18); }
-    .cal-day.today { border-color:var(--gold) !important; }
+    .cal-day.available { background:rgba(91,170,114,.07); border-color:rgba(91,170,114,.18); }
+    .cal-day.today { border-color:var(--gold) !important; box-shadow:0 0 8px rgba(201,168,76,.22); }
     .cal-day.empty { background:transparent; border:none; }
-    .cal-day .booking-tag { font-size:.62rem; line-height:1.3; margin-top:.25rem; color:rgba(125,180,212,.85); }
-    .cal-day .owner-tag  { font-size:.62rem; line-height:1.3; margin-top:.25rem; color:var(--gold); }
+    .booking-tag { font-size:.6rem; line-height:1.3; margin-top:.22rem; color:rgba(91,170,212,.82); }
+    .owner-tag   { font-size:.6rem; line-height:1.3; margin-top:.22rem; color:var(--gold); }
     .cal-legend { display:flex; gap:1.5rem; flex-wrap:wrap; margin-top:1.2rem; }
-    .cal-legend span { display:flex; align-items:center; gap:.5rem; font-size:.78rem; color:var(--text-dim); }
+    .cal-legend span { display:flex; align-items:center; gap:.5rem; font-size:.77rem; color:var(--text-dim); }
     .leg-dot { width:10px; height:10px; border-radius:3px; }
 
-    /* block dates form */
-    .block-form { display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end; margin-top:1.2rem; }
-    .block-form input[type=date] {
-      padding:.6rem .9rem; border-radius:8px;
-      background:var(--panel2); border:1px solid var(--border);
-      color:var(--text); font-size:.88rem; outline:none;
-      color-scheme:dark;
-    }
-    .block-form input[type=date]:focus { border-color:var(--gold); }
-    .block-form label { font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); display:block; margin-bottom:.35rem; }
-    .btn-sm {
-      padding:.6rem 1.2rem; border-radius:8px; border:none; cursor:pointer;
-      font-size:.82rem; font-weight:600; letter-spacing:.06em; transition:var(--ease);
-    }
-    .btn-gold { background:var(--gold); color:var(--bg); }
-    .btn-gold:hover { background:#e0b858; }
-    .btn-danger { background:rgba(196,80,80,.2); color:#E08080; border:1px solid rgba(196,80,80,.3); }
-    .btn-danger:hover { background:rgba(196,80,80,.35); }
-
-    /* house projects */
-    .project-form { display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1.5rem; }
-    .project-form input[type=text], .project-form select {
+    /* ══ FORMS ════════════════════════════════════════════════════ */
+    input[type=date], input[type=text], select {
       padding:.65rem .9rem; border-radius:8px;
-      background:var(--panel2); border:1px solid var(--border);
-      color:var(--text); font-size:.88rem; outline:none; transition:border-color .3s;
+      background:rgba(6,10,18,.95); border:1px solid var(--border);
+      color:var(--text); font-size:.88rem; outline:none;
+      font-family:'Inter',sans-serif; transition:border-color .3s, box-shadow .3s; color-scheme:dark;
     }
-    .project-form input[type=text] { flex:1; min-width:200px; }
-    .project-form select option { background:var(--panel2); }
-    .project-form input:focus, .project-form select:focus { border-color:var(--gold); }
-    .project-item {
-      display:flex; align-items:center; gap:.8rem;
-      padding:.85rem 1rem; background:var(--panel2); border-radius:8px;
-      border:1px solid var(--border); margin-bottom:.5rem;
-      transition:var(--ease);
-    }
-    .project-item:hover { border-color:var(--gold-dim); }
+    input[type=date]:focus, input[type=text]:focus, select:focus { border-color:var(--gold); box-shadow:0 0 12px rgba(201,168,76,.12); }
+    select option { background:rgba(12,16,26,.99); }
+    .form-row { display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end; }
+    .form-field label { font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); display:block; margin-bottom:.35rem; }
+
+    /* ══ BUTTONS ══════════════════════════════════════════════════ */
+    .btn-sm { padding:.62rem 1.2rem; border-radius:8px; border:none; cursor:pointer; font-size:.82rem; font-weight:600; letter-spacing:.06em; transition:all .3s; font-family:'Inter',sans-serif; }
+    .btn-gold { background:linear-gradient(180deg,#C9A84C 0%,#A48030 100%); color:#080604; box-shadow:0 2px 12px rgba(201,168,76,.2); }
+    .btn-gold:hover { background:linear-gradient(180deg,#DDBC60 0%,#B89040 100%); box-shadow:0 0 20px rgba(201,168,76,.38); transform:translateY(-1px); }
+    .btn-ghost { background:rgba(232,220,200,.06); color:var(--text); border:1px solid var(--border); }
+    .btn-ghost:hover { background:rgba(232,220,200,.1); border-color:var(--border-hi); }
+    .btn-danger { background:rgba(196,80,80,.17); color:#E08080; border:1px solid rgba(196,80,80,.28); }
+    .btn-danger:hover { background:rgba(196,80,80,.3); }
+
+    /* ══ HOUSEKEEPING CARDS ══════════════════════════════════════ */
+    .sched-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1.2rem; }
+    .sched-card { background:linear-gradient(160deg,rgba(16,22,36,.96) 0%,rgba(10,14,24,.97) 100%); border:1px solid var(--border); border-radius:var(--r); padding:1.4rem; transition:all .3s; }
+    .sched-card:hover { border-color:var(--border-hi); box-shadow:0 0 16px rgba(201,168,76,.1); }
+    .sched-type   { font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:.35rem; }
+    .sched-name   { font-size:.95rem; font-weight:600; }
+    .sched-detail { font-size:.82rem; color:var(--text-dim); margin-top:.3rem; }
+    .sched-cost   { font-size:.8rem; color:var(--success); margin-top:.3rem; }
+    .sched-next   { font-size:.77rem; color:var(--text-mute); margin-top:.65rem; padding-top:.65rem; border-top:1px solid rgba(201,168,76,.14); }
+
+    /* ══ PROJECT ITEMS ═══════════════════════════════════════════ */
+    .project-item { display:flex; align-items:center; gap:.8rem; padding:.85rem 1rem; background:rgba(16,22,36,.82); border-radius:8px; border:1px solid var(--border); margin-bottom:.5rem; transition:all .3s; }
+    .project-item:hover { border-color:var(--border-hi); }
     .project-item .pi-title { flex:1; font-size:.9rem; }
     .project-item .pi-title.done { text-decoration:line-through; color:var(--text-mute); }
-    .project-item button { background:none; border:none; cursor:pointer; font-size:.85rem; color:var(--text-mute); padding:.2rem .4rem; border-radius:4px; transition:var(--ease); }
+    .project-item button { background:none; border:none; cursor:pointer; font-size:.85rem; color:var(--text-mute); padding:.2rem .4rem; border-radius:4px; transition:all .3s; }
     .project-item button:hover { color:var(--danger); background:rgba(196,80,80,.12); }
-    .empty-state { text-align:center; padding:3rem 1rem; color:var(--text-mute); font-size:.9rem; font-style:italic; }
+    .empty-state { text-align:center; padding:3rem 1rem; color:var(--text-mute); font-size:.88rem; font-style:italic; }
 
-    /* schedule */
-    .sched-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1.2rem; }
-    .sched-card {
-      background:var(--panel); border:1px solid var(--border); border-radius:var(--r);
-      padding:1.4rem; transition:var(--ease);
-    }
-    .sched-card:hover { border-color:var(--gold-dim); }
-    .sched-type { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:.35rem; }
-    .sched-name { font-size:.95rem; font-weight:600; }
-    .sched-detail { font-size:.82rem; color:var(--text-dim); margin-top:.3rem; }
-    .sched-cost { font-size:.8rem; color:var(--success); margin-top:.3rem; }
-    .sched-next { font-size:.78rem; color:var(--text-mute); margin-top:.6rem; padding-top:.6rem; border-top:1px solid var(--border); }
+    code { background:rgba(201,168,76,.1); padding:.2rem .5rem; border-radius:4px; font-size:.85em; color:var(--gold); border:1px solid rgba(201,168,76,.2); }
 
-    /* scrollbar */
-    ::-webkit-scrollbar { width:6px; height:6px; }
-    ::-webkit-scrollbar-track { background:var(--bg); }
-    ::-webkit-scrollbar-thumb { background:rgba(201,168,76,.25); border-radius:3px; }
+    /* ══ SCROLLBAR ════════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width:5px; height:5px; }
+    ::-webkit-scrollbar-track { background:rgba(4,6,8,.8); }
+    ::-webkit-scrollbar-thumb { background:rgba(201,168,76,.2); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:rgba(201,168,76,.38); }
   </style>
 </head>
 <body>
 
-<!-- ── LOGIN GATE ── -->
+<div id="particles"></div>
+
+<!-- ══ LOGIN GATE ══════════════════════════════════════════════ -->
 <div id="gate">
-  <img src="assets/logo.png" alt="The Gathering">
-  <h1>Owner Portal</h1>
-  <p>The Gathering Silveira &nbsp;·&nbsp; Private Access</p>
+  <div class="arcane-wrap">
+    <div class="aring aring-1"></div>
+    <div class="aring aring-2"></div>
+    <div class="aring aring-3"></div>
+    <div class="aring aring-4"></div>
+  </div>
+
+  <img src="assets/logo.png" alt="The Gathering" class="gate-logo">
+  <div class="gate-title">The Gathering</div>
+  <div class="gate-sub">Owner Portal &nbsp;·&nbsp; Private Access</div>
+
   <div class="gate-card">
-    <label>Access Code</label>
-    <input type="password" id="pwd" placeholder="Enter password" autocomplete="current-password">
-    <button onclick="tryLogin()">Enter the Gathering</button>
-    <div id="gate-err">Incorrect password. Please try again.</div>
-    <hr class="gate-rule">
-    <p class="gate-quote">"One will corrupt, two will divide.<br>With three there is balance."<br><small style="opacity:.6">— J.R.R. Tolkien</small></p>
+    <span class="corner-tl">✦</span>
+    <label class="gate-label">Access Code</label>
+    <input type="password" id="pwd" class="gate-input" placeholder="Enter your password" autocomplete="current-password">
+    <button class="gate-btn" onclick="tryLogin()">Enter the Battlefield</button>
+    <div id="gate-err">❌ Incorrect password. Try again.</div>
+    <hr class="gate-divider">
+    <p class="gate-quote">
+      "One will corrupt, two will divide.<br>With three there is balance."
+      <br><small style="opacity:.5;font-style:normal">— J.R.R. Tolkien</small>
+    </p>
   </div>
 </div>
 
-<!-- ── APP ── -->
+<!-- ══ APP ════════════════════════════════════════════════════ -->
 <div id="app">
 
-  <!-- Top bar -->
+  <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-brand">
       <img src="assets/logo.png" alt="">
-      <span>The Gathering Silveira</span>
+      <div>
+        <div class="brand-name">The Gathering Silveira</div>
+        <div class="brand-sub">Owner Command</div>
+      </div>
     </div>
     <div class="topbar-right">
+      <div class="mana-pool" title="Five colors of mana">
+        <i class="ms ms-w ms-cost" title="Plains — Planície"></i>
+        <i class="ms ms-u ms-cost" title="Island — Ilha"></i>
+        <i class="ms ms-b ms-cost" title="Swamp — Pântano"></i>
+        <i class="ms ms-r ms-cost" title="Mountain — Montanha"></i>
+        <i class="ms ms-g ms-cost" title="Forest — Floresta"></i>
+      </div>
       <span class="topbar-season">🌊 2026 Season</span>
-      <button class="logout-btn" onclick="logout()">Sign out</button>
+      <button class="logout-btn" onclick="logout()">↩ Exit</button>
     </div>
   </div>
 
-  <!-- Tabs -->
+  <!-- Arena Tab Nav -->
   <div class="tabs-nav">
-    <button class="tab-btn active" data-tab="overview">📊 Overview</button>
-    <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
-    <button class="tab-btn" data-tab="guests">👥 Guests</button>
-    <button class="tab-btn" data-tab="housekeeping">🧹 Housekeeping</button>
-    <button class="tab-btn" data-tab="vendors">🔧 Vendors</button>
-    <button class="tab-btn" data-tab="projects">🏗️ Projects</button>
-    <button class="tab-btn" data-tab="links">🔗 Quick Links</button>
+    <button class="tab-btn active" data-tab="overview">    <i class="ms ms-tap"></i> Command</button>
+    <button class="tab-btn" data-tab="calendar">           <i class="ms ms-u ms-cost"></i> Scry</button>
+    <button class="tab-btn" data-tab="guests">             <i class="ms ms-g ms-cost"></i> Creatures</button>
+    <button class="tab-btn" data-tab="housekeeping">       <i class="ms ms-r ms-cost"></i> Upkeep</button>
+    <button class="tab-btn" data-tab="vendors">            <i class="ms ms-c ms-cost"></i> Artifacts</button>
+    <button class="tab-btn" data-tab="projects">           <i class="ms ms-b ms-cost"></i> Sorceries</button>
+    <button class="tab-btn" data-tab="links">              <i class="ms ms-w ms-cost"></i> Portals</button>
   </div>
 
   <div class="content">
 
-    <!-- ═══ OVERVIEW ═══ -->
+    <!-- ══ COMMAND (Overview) ══ -->
     <div class="tab-panel active" id="tab-overview">
       <div class="grid-3" style="margin-bottom:1.5rem">
-        <div class="card stat">
-          <div class="val" id="stat-booked">9</div>
-          <div class="lbl">Weeks Booked</div>
-        </div>
-        <div class="card stat">
-          <div class="val" id="stat-avail">3</div>
-          <div class="lbl">Weeks Available</div>
-        </div>
-        <div class="card stat">
-          <div class="val" id="stat-next">Jun 7</div>
-          <div class="lbl">Next Arrival</div>
-        </div>
+        <div class="mtg-card stat"><div class="val">9</div><div class="lbl">Weeks Booked</div></div>
+        <div class="mtg-card stat"><div class="val">3</div><div class="lbl">Weeks Available</div></div>
+        <div class="mtg-card stat"><div class="val">Jun 7</div><div class="lbl">Next Arrival</div></div>
       </div>
 
-      <div class="section-title">⚔️ Active Season — 2026</div>
-      <div class="card" style="margin-bottom:1.5rem">
+      <div class="section-title"><i class="ms ms-tap"></i> Active Season — 2026</div>
+      <div class="mtg-card" style="margin-bottom:1.5rem;overflow-x:auto">
         <table>
-          <thead>
-            <tr>
-              <th>Week</th>
-              <th>Dates</th>
-              <th>Guests</th>
-              <th>Origin</th>
-              <th>Pets</th>
-              <th>Channel</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Week</th><th>Dates</th><th>Guests</th><th>Origin</th><th>Pets</th><th>Channel</th></tr></thead>
           <tbody id="booking-table-body"></tbody>
         </table>
       </div>
 
       <div class="grid-2">
         <div>
-          <div class="section-title">🌐 Airbnb Sync</div>
-          <div class="card">
-            <p style="font-size:.88rem;color:var(--text-dim);margin-bottom:1rem">Sync The Gathering calendar with external platforms using the iCal link below.</p>
-            <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;font-size:.78rem;color:var(--gold);word-break:break-all;font-family:monospace;margin-bottom:1rem">
+          <div class="section-title"><i class="ms ms-u ms-cost"></i> Airbnb Sync</div>
+          <div class="mtg-card">
+            <p style="font-size:.87rem;color:var(--text-dim);margin-bottom:1rem">Sync the calendar via iCal with external booking platforms.</p>
+            <div style="background:rgba(6,10,18,.9);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;font-size:.72rem;color:var(--gold);word-break:break-all;font-family:monospace;margin-bottom:1rem;line-height:1.5">
               https://www.airbnb.com/calendar/ical/1608023407293236428.ics?t=6d82fb3056d34c7dbf06fb04bf33fce9
             </div>
             <div style="display:flex;gap:.7rem;flex-wrap:wrap">
               <a href="https://www.airbnb.com/hosting/listings" class="btn-sm btn-gold" target="_blank" rel="noopener" style="text-decoration:none">Open Airbnb Host</a>
-              <button class="btn-sm" style="background:var(--panel2);border:1px solid var(--border);color:var(--text)"
-                onclick="navigator.clipboard.writeText('https://www.airbnb.com/calendar/ical/1608023407293236428.ics?t=6d82fb3056d34c7dbf06fb04bf33fce9');this.textContent='Copied ✓'">
-                Copy iCal Link
-              </button>
+              <button class="btn-sm btn-ghost" onclick="navigator.clipboard.writeText('https://www.airbnb.com/calendar/ical/1608023407293236428.ics?t=6d82fb3056d34c7dbf06fb04bf33fce9');this.textContent='✓ Copied'">Copy iCal Link</button>
             </div>
           </div>
         </div>
         <div>
-          <div class="section-title">💰 Monthly Costs</div>
-          <div class="card">
+          <div class="section-title"><i class="ms ms-c ms-cost"></i> Monthly Costs</div>
+          <div class="mtg-card">
             <table>
               <thead><tr><th>Service</th><th>Provider</th><th style="text-align:right">R$/mo</th></tr></thead>
               <tbody>
@@ -380,9 +472,9 @@
                 <tr><td>⚡ Electricity</td><td style="color:var(--text-dim)">CELESC</td><td style="text-align:right;color:var(--success)">R$450</td></tr>
                 <tr><td>💧 Water</td><td style="color:var(--text-dim)">CASAN</td><td style="text-align:right;color:var(--success)">R$250</td></tr>
                 <tr><td>🏊 Pool Maintenance</td><td style="color:var(--text-dim)">Emerson Alves</td><td style="text-align:right;color:var(--success)">R$500</td></tr>
-                <tr style="border-top:1px solid var(--border)">
-                  <td colspan="2" style="font-weight:600;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.08em">TOTAL MONTHLY</td>
-                  <td style="text-align:right;font-weight:700;color:var(--gold)">R$1,390</td>
+                <tr style="border-top:1px solid rgba(201,168,76,.2)">
+                  <td colspan="2" style="font-family:'Cinzel',serif;font-size:.73rem;letter-spacing:.1em;color:var(--gold)">TOTAL MONTHLY</td>
+                  <td style="text-align:right;font-weight:700;color:var(--gold);text-shadow:0 0 10px rgba(201,168,76,.3)">R$1,390</td>
                 </tr>
               </tbody>
             </table>
@@ -391,105 +483,60 @@
       </div>
     </div>
 
-    <!-- ═══ CALENDAR ═══ -->
+    <!-- ══ SCRY (Calendar) ══ -->
     <div class="tab-panel" id="tab-calendar">
-      <div class="section-title">📅 2026 Season Calendar</div>
-      <div class="cal-wrap" id="cal-root"></div>
-      <div class="cal-legend">
-        <span><span class="leg-dot" style="background:rgba(74,140,180,.5)"></span> Guest Booking</span>
-        <span><span class="leg-dot" style="background:rgba(201,168,76,.4)"></span> Owners Block</span>
-        <span><span class="leg-dot" style="background:rgba(91,170,114,.3)"></span> Available</span>
-        <span><span class="leg-dot" style="border:1px solid var(--gold);background:transparent"></span> Today</span>
+      <div class="section-title"><i class="ms ms-u ms-cost"></i> 2026 Season Calendar</div>
+      <div class="mtg-card" style="margin-bottom:1.5rem">
+        <div class="cal-wrap" id="cal-root"></div>
+        <div class="cal-legend">
+          <span><span class="leg-dot" style="background:rgba(74,140,180,.5)"></span>Guest Booking</span>
+          <span><span class="leg-dot" style="background:rgba(201,168,76,.4)"></span>Owners Block</span>
+          <span><span class="leg-dot" style="background:rgba(91,170,114,.3)"></span>Available</span>
+          <span><span class="leg-dot" style="border:1px solid var(--gold);background:transparent"></span>Today</span>
+        </div>
       </div>
-
-      <div class="section-title" style="margin-top:2.5rem">🔒 Block Dates for Owners</div>
-      <div class="card">
-        <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:1rem">Mark dates as owner-reserved. These display on the calendar and can be synced to Airbnb via the iCal link.</p>
-        <div class="block-form">
-          <div>
-            <label>From</label>
-            <input type="date" id="block-from">
-          </div>
-          <div>
-            <label>To</label>
-            <input type="date" id="block-to">
-          </div>
-          <div>
-            <label>Label</label>
-            <input type="text" id="block-label" placeholder="e.g. Owner Vacation" style="padding:.6rem .9rem;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-size:.88rem;outline:none;min-width:180px">
-          </div>
-          <button class="btn-sm btn-gold" onclick="addBlock()">Add Block</button>
+      <div class="section-title"><i class="ms ms-b ms-cost"></i> Block Dates for Owners</div>
+      <div class="mtg-card">
+        <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:1.2rem">Reserve dates for owner use. These appear on the calendar above.</p>
+        <div class="form-row">
+          <div class="form-field"><label>From</label><input type="date" id="block-from"></div>
+          <div class="form-field"><label>To</label><input type="date" id="block-to"></div>
+          <div class="form-field"><label>Label</label><input type="text" id="block-label" placeholder="e.g. Owner Vacation" style="min-width:180px"></div>
+          <button class="btn-sm btn-gold" onclick="addBlock()" style="align-self:flex-end">+ Add Block</button>
         </div>
         <div id="block-list" style="margin-top:1.2rem"></div>
       </div>
     </div>
 
-    <!-- ═══ GUESTS ═══ -->
+    <!-- ══ CREATURES (Guests) ══ -->
     <div class="tab-panel" id="tab-guests">
-      <div class="section-title">👥 2026 Guest Parties</div>
+      <div class="section-title"><i class="ms ms-g ms-cost"></i> 2026 Guest Parties</div>
       <div id="guest-cards" style="display:flex;flex-direction:column;gap:1rem"></div>
     </div>
 
-    <!-- ═══ HOUSEKEEPING ═══ -->
+    <!-- ══ UPKEEP (Housekeeping) ══ -->
     <div class="tab-panel" id="tab-housekeeping">
-      <div class="section-title">🧹 Recurring Services</div>
+      <div class="section-title"><i class="ms ms-r ms-cost"></i> Recurring Services</div>
       <div class="sched-grid" style="margin-bottom:2.5rem">
-        <div class="sched-card">
-          <div class="sched-type">🧹 House Cleaning</div>
-          <div class="sched-name">Dona Maria</div>
-          <div class="sched-detail">📞 +55 48 99802-8728</div>
-          <div class="sched-cost">R$450/visit (with assistant)<br><span style="font-size:.75rem;color:var(--text-mute)">Pix: +55 48 99802 8728</span></div>
-          <div class="sched-next">🗓 Schedule before each check-in</div>
-        </div>
-        <div class="sched-card">
-          <div class="sched-type">🧹 House Cleaning (Alt)</div>
-          <div class="sched-name">Rosana</div>
-          <div class="sched-detail">📞 +55 51 99680-9433</div>
-          <div class="sched-cost">R$700/visit (with assistant)</div>
-          <div class="sched-next">🗓 Backup / heavy-clean option</div>
-        </div>
-        <div class="sched-card">
-          <div class="sched-type">🏊 Pool Maintenance</div>
-          <div class="sched-name">Edison "Édi" Silveira</div>
-          <div class="sched-detail">📞 +55 48 99120-6784</div>
-          <div class="sched-cost">R$700/mês (monthly)</div>
-          <div class="sched-next">🗓 Monthly recurring service</div>
-        </div>
-        <div class="sched-card">
-          <div class="sched-type">🌿 Grass & Garden</div>
-          <div class="sched-name">Du</div>
-          <div class="sched-detail">📞 +55 48 99634-8646</div>
-          <div class="sched-cost">R$350/visit<br><span style="font-size:.75rem;color:var(--text-mute)">Pix: 035.790.929-10</span></div>
-          <div class="sched-next">🗓 As needed — ~every 3–4 weeks</div>
-        </div>
-        <div class="sched-card">
-          <div class="sched-type">🪟 Window Cleaning</div>
-          <div class="sched-name">TBD</div>
-          <div class="sched-detail" style="color:var(--warn)">⚠️ Vendor not yet assigned</div>
-          <div class="sched-cost">—</div>
-          <div class="sched-next">🗓 Schedule before each season</div>
-        </div>
-        <div class="sched-card">
-          <div class="sched-type">🔧 Hydraulic / Plumbing</div>
-          <div class="sched-name">Emerson Alves</div>
-          <div class="sched-detail">📞 +55 48 99655-7266</div>
-          <div class="sched-cost">Rate TBD / call-out basis</div>
-          <div class="sched-next">🗓 On-call as needed</div>
-        </div>
+        <div class="sched-card"><div class="sched-type">🧹 House Cleaning</div><div class="sched-name">Dona Maria</div><div class="sched-detail">📞 +55 48 99802-8728</div><div class="sched-cost">R$450/visit · Pix: +55 48 99802 8728</div><div class="sched-next">🗓 Schedule before each check-in</div></div>
+        <div class="sched-card"><div class="sched-type">🧹 Cleaning (Alt)</div><div class="sched-name">Rosana</div><div class="sched-detail">📞 +55 51 99680-9433</div><div class="sched-cost">R$700/visit (with assistant)</div><div class="sched-next">🗓 Backup / heavy-clean option</div></div>
+        <div class="sched-card"><div class="sched-type">🏊 Pool Maintenance</div><div class="sched-name">Edison "Édi" Silveira</div><div class="sched-detail">📞 +55 48 99120-6784</div><div class="sched-cost">R$700/mês (monthly)</div><div class="sched-next">🗓 Monthly recurring service</div></div>
+        <div class="sched-card"><div class="sched-type">🌿 Grass & Garden</div><div class="sched-name">Du</div><div class="sched-detail">📞 +55 48 99634-8646</div><div class="sched-cost">R$350/visit · Pix: 035.790.929-10</div><div class="sched-next">🗓 Every 3–4 weeks</div></div>
+        <div class="sched-card"><div class="sched-type">🪟 Window Cleaning</div><div class="sched-name">TBD</div><div class="sched-detail" style="color:var(--warn)">⚠️ Vendor not yet assigned</div><div class="sched-next">🗓 Schedule before each season</div></div>
+        <div class="sched-card"><div class="sched-type">🔧 Hydraulic / Plumbing</div><div class="sched-name">Emerson Alves</div><div class="sched-detail">📞 +55 48 99655-7266</div><div class="sched-cost">Rate TBD / call-out</div><div class="sched-next">🗓 On-call as needed</div></div>
       </div>
-
-      <div class="section-title">🏠 Keyless Entry Codes</div>
-      <div class="card">
+      <div class="section-title"><i class="ms ms-r ms-cost"></i> Keyless Entry Codes</div>
+      <div class="mtg-card">
         <table>
           <thead><tr><th>Door / Slot</th><th>Person</th><th>Code</th></tr></thead>
           <tbody>
             <tr><td>🚨 Alarm</td><td style="color:var(--text-dim)">—</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
-            <tr><td>🔑 Master</td><td style="color:var(--text-dim)">All doors</td><td><span style="color:var(--gold)">202543</span></td></tr>
+            <tr><td>🔑 Master</td><td style="color:var(--text-dim)">All doors</td><td><code>202543</code></td></tr>
             <tr><td>🔑 001–003</td><td style="color:var(--text-dim)">TAG access</td><td style="color:var(--text-mute)">NFC Tag</td></tr>
-            <tr><td>🔑 004 Pipo</td><td style="color:var(--text-dim)">Pipo</td><td>270483</td></tr>
-            <tr><td>🔑 005 Fêfo</td><td style="color:var(--text-dim)">Fêfo</td><td>200983</td></tr>
-            <tr><td>🔑 006 Zé</td><td style="color:var(--text-dim)">Zé</td><td>220983</td></tr>
-            <tr><td>🔑 Manutenção</td><td style="color:var(--text-dim)">Ricardo</td><td>88490</td></tr>
+            <tr><td>🔑 004 Pipo</td><td style="color:var(--text-dim)">Pipo</td><td><code>270483</code></td></tr>
+            <tr><td>🔑 005 Fêfo</td><td style="color:var(--text-dim)">Fêfo</td><td><code>200983</code></td></tr>
+            <tr><td>🔑 006 Zé</td><td style="color:var(--text-dim)">Zé</td><td><code>220983</code></td></tr>
+            <tr><td>🔑 Manutenção</td><td style="color:var(--text-dim)">Ricardo</td><td><code>88490</code></td></tr>
             <tr><td>🔑 Manutenção</td><td style="color:var(--text-dim)">Renan</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
             <tr><td>🔑 Cleaner</td><td style="color:var(--text-dim)">D. Maria / Fulana</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
             <tr><td>🔒 Owners Lock</td><td style="color:var(--text-dim)">Owners</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
@@ -498,156 +545,75 @@
       </div>
     </div>
 
-    <!-- ═══ VENDORS ═══ -->
+    <!-- ══ ARTIFACTS (Vendors) ══ -->
     <div class="tab-panel" id="tab-vendors">
-      <div class="section-title">🔧 Vendor Directory</div>
+      <div class="section-title"><i class="ms ms-c ms-cost"></i> Vendor Directory</div>
       <div class="grid-3">
-        <div class="vendor-card">
-          <div class="vendor-role">🏗️ Empreiteiro</div>
-          <div class="vendor-name">Renan Delavald</div>
-          <div class="vendor-phone">📞 +55 48 9169-9799</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🏗️ Engenheiro Chefe</div>
-          <div class="vendor-name">Ricardo</div>
-          <div class="vendor-phone">📞 +55 48 99997-1354</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🏗️ Mestre de Obras</div>
-          <div class="vendor-name">Gegê</div>
-          <div class="vendor-phone">📞 +55 48 XXXX-XXXX</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🏡 Corretora</div>
-          <div class="vendor-name">Adriane Kayser</div>
-          <div class="vendor-phone">📞 +55 48 9136-8010</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🏛️ Arquiteta &amp; Designer</div>
-          <div class="vendor-name">Giovana Munhoz</div>
-          <div class="vendor-phone">📞 +55 51 98118-3928</div>
-          <div class="vendor-cost">@giovanamunhozarquitetura</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🔧 Hidráulico</div>
-          <div class="vendor-name">Emerson Alves</div>
-          <div class="vendor-phone">📞 +55 48 99655-7266</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🏊 Manutenção Piscina</div>
-          <div class="vendor-name">Edison "Édi" Silveira</div>
-          <div class="vendor-phone">📞 +55 48 99120-6784</div>
-          <div class="vendor-cost">R$700/mês</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🪟 Guarda-Corpo</div>
-          <div class="vendor-name">Cléverson</div>
-          <div class="vendor-phone">📞 +55 48 99655-7266</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🧹 Diarista</div>
-          <div class="vendor-name">Dona Maria</div>
-          <div class="vendor-phone">📞 +55 48 99802-8728</div>
-          <div class="vendor-cost">R$450/visita · Pix: +55 48 99802 8728</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🧹 Diarista (Alt)</div>
-          <div class="vendor-name">Rosana</div>
-          <div class="vendor-phone">📞 +55 51 99680-9433</div>
-          <div class="vendor-cost">R$700/visita</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">🌿 Jardinagem &amp; Grama</div>
-          <div class="vendor-name">Du</div>
-          <div class="vendor-phone">📞 +55 48 99634-8646</div>
-          <div class="vendor-cost">R$350/visita · Pix: 035.790.929-10</div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">📞 Property Manager</div>
-          <div class="vendor-name">Anfitriões de Aluguel</div>
-          <div class="vendor-phone"><a href="https://anfitrioesdealuguel.com.br" target="_blank" rel="noopener" style="color:var(--accent)">anfitrioesdealuguel.com.br</a></div>
-        </div>
-        <div class="vendor-card">
-          <div class="vendor-role">📞 Property Manager (Alt)</div>
-          <div class="vendor-name">Seazone</div>
-          <div class="vendor-phone"><a href="https://seazone.com.br" target="_blank" rel="noopener" style="color:var(--accent)">seazone.com.br</a></div>
-        </div>
+        <div class="vendor-card"><div class="vendor-role">🏗️ Empreiteiro</div><div class="vendor-name">Renan Delavald</div><div class="vendor-phone">📞 +55 48 9169-9799</div></div>
+        <div class="vendor-card"><div class="vendor-role">🏗️ Engenheiro Chefe</div><div class="vendor-name">Ricardo</div><div class="vendor-phone">📞 +55 48 99997-1354</div></div>
+        <div class="vendor-card"><div class="vendor-role">🏗️ Mestre de Obras</div><div class="vendor-name">Gegê</div><div class="vendor-phone">📞 +55 48 XXXX-XXXX</div></div>
+        <div class="vendor-card"><div class="vendor-role">🏡 Corretora</div><div class="vendor-name">Adriane Kayser</div><div class="vendor-phone">📞 +55 48 9136-8010</div></div>
+        <div class="vendor-card"><div class="vendor-role">🏛️ Arquiteta &amp; Designer</div><div class="vendor-name">Giovana Munhoz</div><div class="vendor-phone">📞 +55 51 98118-3928</div><div class="vendor-cost">@giovanamunhozarquitetura</div></div>
+        <div class="vendor-card"><div class="vendor-role">🔧 Hidráulico</div><div class="vendor-name">Emerson Alves</div><div class="vendor-phone">📞 +55 48 99655-7266</div></div>
+        <div class="vendor-card"><div class="vendor-role">🏊 Manutenção Piscina</div><div class="vendor-name">Edison "Édi" Silveira</div><div class="vendor-phone">📞 +55 48 99120-6784</div><div class="vendor-cost">R$700/mês</div></div>
+        <div class="vendor-card"><div class="vendor-role">🪟 Guarda-Corpo</div><div class="vendor-name">Cléverson</div><div class="vendor-phone">📞 +55 48 99655-7266</div></div>
+        <div class="vendor-card"><div class="vendor-role">🧹 Diarista</div><div class="vendor-name">Dona Maria</div><div class="vendor-phone">📞 +55 48 99802-8728</div><div class="vendor-cost">R$450/visita · Pix: +55 48 99802 8728</div></div>
+        <div class="vendor-card"><div class="vendor-role">🧹 Diarista (Alt)</div><div class="vendor-name">Rosana</div><div class="vendor-phone">📞 +55 51 99680-9433</div><div class="vendor-cost">R$700/visita</div></div>
+        <div class="vendor-card"><div class="vendor-role">🌿 Jardinagem &amp; Grama</div><div class="vendor-name">Du</div><div class="vendor-phone">📞 +55 48 99634-8646</div><div class="vendor-cost">R$350/visita · Pix: 035.790.929-10</div></div>
+        <div class="vendor-card"><div class="vendor-role">📞 Property Manager</div><div class="vendor-name">Anfitriões de Aluguel</div><div class="vendor-phone"><a href="https://anfitrioesdealuguel.com.br" target="_blank" rel="noopener" style="color:var(--mu)">anfitrioesdealuguel.com.br</a></div></div>
+        <div class="vendor-card"><div class="vendor-role">📞 Property Manager (Alt)</div><div class="vendor-name">Seazone</div><div class="vendor-phone"><a href="https://seazone.com.br" target="_blank" rel="noopener" style="color:var(--mu)">seazone.com.br</a></div></div>
       </div>
     </div>
 
-    <!-- ═══ PROJECTS ═══ -->
+    <!-- ══ SORCERIES (Projects) ══ -->
     <div class="tab-panel" id="tab-projects">
-      <div class="section-title">🏗️ House Projects</div>
-      <div class="card" style="margin-bottom:1.5rem">
-        <div class="project-form">
-          <input type="text" id="proj-title" placeholder="Project description…">
-          <select id="proj-cat">
-            <option value="maintenance">🔧 Maintenance</option>
-            <option value="improvement">✨ Improvement</option>
-            <option value="repair">🩹 Repair</option>
-            <option value="cleaning">🧹 Cleaning</option>
-          </select>
-          <select id="proj-priority">
-            <option value="high">🔴 High</option>
-            <option value="medium">🟡 Medium</option>
-            <option value="low">🟢 Low</option>
-          </select>
-          <button class="btn-sm btn-gold" onclick="addProject()">+ Add Project</button>
+      <div class="section-title"><i class="ms ms-b ms-cost"></i> House Projects</div>
+      <div class="mtg-card" style="margin-bottom:1.5rem">
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:200px">
+            <label style="font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);display:block;margin-bottom:.35rem">Sorcery Description</label>
+            <input type="text" id="proj-title" placeholder="Describe the project…" style="width:100%">
+          </div>
+          <div>
+            <label style="font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);display:block;margin-bottom:.35rem">Category</label>
+            <select id="proj-cat">
+              <option value="maintenance">🔧 Maintenance</option>
+              <option value="improvement">✨ Improvement</option>
+              <option value="repair">🩹 Repair</option>
+              <option value="cleaning">🧹 Cleaning</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);display:block;margin-bottom:.35rem">Priority</label>
+            <select id="proj-priority">
+              <option value="high">🔴 High</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+          <button class="btn-sm btn-gold" onclick="addProject()">+ Cast Sorcery</button>
         </div>
-        <div id="projects-list"></div>
+        <div id="projects-list" style="margin-top:1.2rem"></div>
       </div>
     </div>
 
-    <!-- ═══ QUICK LINKS ═══ -->
+    <!-- ══ PORTALS (Links) ══ -->
     <div class="tab-panel" id="tab-links">
-      <div class="section-title">🔗 Quick Links</div>
+      <div class="section-title"><i class="ms ms-w ms-cost"></i> Quick Links</div>
       <div class="grid-2" style="margin-bottom:2rem">
-        <a class="link-btn" href="https://www.airbnb.com/hosting/listings" target="_blank" rel="noopener">
-          <span class="link-ico">🏡</span>
-          <div><div class="link-title">Airbnb Host Dashboard</div><div class="link-desc">Manage listings, messages, and reservations</div></div>
-        </a>
-        <a class="link-btn" href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener">
-          <span class="link-ico">🔗</span>
-          <div><div class="link-title">Airbnb Listing</div><div class="link-desc">Public listing page — share with guests</div></div>
-        </a>
-        <a class="link-btn" href="https://www.instagram.com/thegatheringsilveira/" target="_blank" rel="noopener">
-          <span class="link-ico">📸</span>
-          <div><div class="link-title">Instagram</div><div class="link-desc">@thegatheringsilveira</div></div>
-        </a>
-        <a class="link-btn" href="https://mysecurity.eufylife.com/#/camera" target="_blank" rel="noopener">
-          <span class="link-ico">📷</span>
-          <div><div class="link-title">Eufy Security Cameras</div><div class="link-desc">Live camera access — mysecurity.eufylife.com</div></div>
-        </a>
-        <a class="link-btn" href="https://drive.google.com/drive/folders/1Q3Wo8OoiDPC_hls-2cgRextAZueU3gIV" target="_blank" rel="noopener">
-          <span class="link-ico">📁</span>
-          <div><div class="link-title">Google Drive</div><div class="link-desc">All house documents, photos, and plans</div></div>
-        </a>
-        <a class="link-btn" href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" target="_blank" rel="noopener">
-          <span class="link-ico">📐</span>
-          <div><div class="link-title">Interior Plans (PDF)</div><div class="link-desc">Architectural layouts — all 5 suites</div></div>
-        </a>
-        <a class="link-btn" href="https://maps.google.com/?q=Rua+Augusto+Germano+Wilke,+Praia+da+Silveira,+Garopaba+SC+88490-000" target="_blank" rel="noopener">
-          <span class="link-ico">📍</span>
-          <div><div class="link-title">Google Maps</div><div class="link-desc">Rua Augusto Germano Wilke — Praia da Silveira</div></div>
-        </a>
-        <a class="link-btn" href="mailto:TheGatheringSilveira@gmail.com">
-          <span class="link-ico">✉️</span>
-          <div><div class="link-title">House Email</div><div class="link-desc">TheGatheringSilveira@gmail.com</div></div>
-        </a>
+        <a class="link-btn" href="https://www.airbnb.com/hosting/listings" target="_blank" rel="noopener"><span class="link-ico">🏡</span><div><div class="link-title">Airbnb Host Dashboard</div><div class="link-desc">Manage listings, messages, and reservations</div></div></a>
+        <a class="link-btn" href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener"><span class="link-ico">🔗</span><div><div class="link-title">Airbnb Listing</div><div class="link-desc">Public listing page — share with guests</div></div></a>
+        <a class="link-btn" href="https://www.instagram.com/thegatheringsilveira/" target="_blank" rel="noopener"><span class="link-ico">📸</span><div><div class="link-title">Instagram</div><div class="link-desc">@thegatheringsilveira</div></div></a>
+        <a class="link-btn" href="https://mysecurity.eufylife.com/#/camera" target="_blank" rel="noopener"><span class="link-ico">📷</span><div><div class="link-title">Eufy Security Cameras</div><div class="link-desc">Live camera access — mysecurity.eufylife.com</div></div></a>
+        <a class="link-btn" href="https://drive.google.com/drive/folders/1Q3Wo8OoiDPC_hls-2cgRextAZueU3gIV" target="_blank" rel="noopener"><span class="link-ico">📁</span><div><div class="link-title">Google Drive</div><div class="link-desc">All house documents, photos, and plans</div></div></a>
+        <a class="link-btn" href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" target="_blank" rel="noopener"><span class="link-ico">📐</span><div><div class="link-title">Interior Plans (PDF)</div><div class="link-desc">Architectural layouts — all 5 suites</div></div></a>
+        <a class="link-btn" href="https://maps.google.com/?q=Rua+Augusto+Germano+Wilke,+Praia+da+Silveira,+Garopaba+SC+88490-000" target="_blank" rel="noopener"><span class="link-ico">📍</span><div><div class="link-title">Google Maps</div><div class="link-desc">Rua Augusto Germano Wilke — Praia da Silveira</div></div></a>
+        <a class="link-btn" href="mailto:TheGatheringSilveira@gmail.com"><span class="link-ico">✉️</span><div><div class="link-title">House Email</div><div class="link-desc">TheGatheringSilveira@gmail.com</div></div></a>
       </div>
-
-      <div class="section-title">🌐 WiFi Credentials</div>
+      <div class="section-title"><i class="ms ms-w ms-cost"></i> WiFi Credentials</div>
       <div class="grid-2">
-        <div class="card">
-          <div style="font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Guest WiFi</div>
-          <div style="font-size:1rem;font-weight:600">The Gathering Silveira</div>
-          <div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code style="background:var(--panel2);padding:.2rem .5rem;border-radius:4px">welcome</code></div>
-        </div>
-        <div class="card">
-          <div style="font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Owner WiFi</div>
-          <div style="font-size:1rem;font-weight:600">TheGathering</div>
-          <div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code style="background:var(--panel2);padding:.2rem .5rem;border-radius:4px">@tgsilveira</code></div>
-        </div>
+        <div class="mtg-card"><div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Guest WiFi</div><div style="font-size:1rem;font-weight:600">The Gathering Silveira</div><div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code>welcome</code></div></div>
+        <div class="mtg-card"><div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Owner WiFi</div><div style="font-size:1rem;font-weight:600">TheGathering</div><div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code>@tgsilveira</code></div></div>
       </div>
     </div>
 
@@ -655,41 +621,32 @@
 </div><!-- /app -->
 
 <script>
-// ── DATA ────────────────────────────────────────────
+// ── DATA ──────────────────────────────────────────────────────
 const BOOKINGS = [
-  { week:'Week 1',  dates:'May 31 – Jun 7',  nights:7, name:'Chris Gerdes',    size:'8 adults',              origin:'Richmond, VA',    pet:true,  ch:'Friends & Family' },
-  { week:'Week 2',  dates:'Jun 7 – Jun 14',  nights:7, name:'Kim Overman',     size:'8 adults',              origin:'Wake Forest, NC', pet:false, ch:'Airbnb' },
-  { week:'Week 3',  dates:'Jun 14 – Jun 21', nights:7, name:'Chris Clasen',    size:'6 adults, 2 kids, 1 inf',origin:'Raleigh, NC',    pet:false, ch:'Airbnb' },
-  { week:'Week 4',  dates:'Jun 21 – Jun 28', nights:7, name:'Art Nasser',      size:'5 guests',              origin:'Raleigh, NC',     pet:false, ch:'Vrbo' },
-  { week:'Week 5',  dates:'Jun 28 – Jul 5',  nights:7, name:null,              size:null,                    origin:null,              pet:null,  ch:null },
-  { week:'Week 6',  dates:'Jul 5 – Jul 12',  nights:7, name:'Owners Beach Week',size:'Owners',               origin:'—',               pet:true,  ch:'Owner Block', owner:true },
-  { week:'Week 7',  dates:'Jul 12 – Jul 19', nights:7, name:'Roger Souther',   size:'8 adults',              origin:'Spartanburg, SC', pet:true,  ch:'Airbnb' },
-  { week:'Week 8',  dates:'Jul 19 – Jul 26', nights:7, name:'M.K. Sanderson',  size:'5 guests, 1 pet',       origin:'Chesterfield, VA',pet:true,  ch:'Airbnb' },
-  { week:'Week 9',  dates:'Jul 26 – Aug 2',  nights:7, name:null,              size:null,                    origin:null,              pet:null,  ch:null },
-  { week:'Week 10', dates:'Aug 2 – Aug 9',   nights:7, name:'Sarah Snipes',    size:'5 adults, 1 pet',       origin:'Hillsborough, NC',pet:true,  ch:'Airbnb' },
-  { week:'Week 11', dates:'Aug 9 – Aug 16',  nights:7, name:'Mike Pfister',    size:'5 guests',              origin:'—',               pet:false, ch:'Direct' },
-  { week:'Wks 12–14',dates:'Aug 16 – Sep 6', nights:21,name:null,             size:null,                    origin:null,              pet:null,  ch:null },
+  { week:'Week 1',    dates:'May 31 – Jun 7',  nights:7,  name:'Chris Gerdes',     size:'8 adults',                origin:'Richmond, VA',    pet:true,  ch:'Friends & Family' },
+  { week:'Week 2',    dates:'Jun 7 – Jun 14',  nights:7,  name:'Kim Overman',      size:'8 adults',                origin:'Wake Forest, NC', pet:false, ch:'Airbnb' },
+  { week:'Week 3',    dates:'Jun 14 – Jun 21', nights:7,  name:'Chris Clasen',     size:'6 adults, 2 kids, 1 inf', origin:'Raleigh, NC',     pet:false, ch:'Airbnb' },
+  { week:'Week 4',    dates:'Jun 21 – Jun 28', nights:7,  name:'Art Nasser',       size:'5 guests',                origin:'Raleigh, NC',     pet:false, ch:'Vrbo' },
+  { week:'Week 5',    dates:'Jun 28 – Jul 5',  nights:7,  name:null, size:null, origin:null, pet:null, ch:null },
+  { week:'Week 6',    dates:'Jul 5 – Jul 12',  nights:7,  name:'Owners Beach Week',size:'Owners',                  origin:'—',               pet:true,  ch:'Owner Block', owner:true },
+  { week:'Week 7',    dates:'Jul 12 – Jul 19', nights:7,  name:'Roger Souther',    size:'8 adults',                origin:'Spartanburg, SC', pet:true,  ch:'Airbnb' },
+  { week:'Week 8',    dates:'Jul 19 – Jul 26', nights:7,  name:'M.K. Sanderson',   size:'5 guests, 1 pet',         origin:'Chesterfield, VA',pet:true,  ch:'Airbnb' },
+  { week:'Week 9',    dates:'Jul 26 – Aug 2',  nights:7,  name:null, size:null, origin:null, pet:null, ch:null },
+  { week:'Week 10',   dates:'Aug 2 – Aug 9',   nights:7,  name:'Sarah Snipes',     size:'5 adults, 1 pet',         origin:'Hillsborough, NC',pet:true,  ch:'Airbnb' },
+  { week:'Week 11',   dates:'Aug 9 – Aug 16',  nights:7,  name:'Mike Pfister',     size:'5 guests',                origin:'—',               pet:false, ch:'Direct' },
+  { week:'Wks 12–14', dates:'Aug 16 – Sep 6',  nights:21, name:null, size:null, origin:null, pet:null, ch:null },
 ];
-
-// date ranges for calendar marking
 const BOOKED_RANGES = [
-  { from:'2026-05-31', to:'2026-06-07', label:'Gerdes' },
-  { from:'2026-06-07', to:'2026-06-14', label:'Overman' },
-  { from:'2026-06-14', to:'2026-06-21', label:'Clasen' },
-  { from:'2026-06-21', to:'2026-06-28', label:'Nasser' },
-  { from:'2026-07-12', to:'2026-07-19', label:'Souther' },
-  { from:'2026-07-19', to:'2026-07-26', label:'Sanderson' },
-  { from:'2026-08-02', to:'2026-08-09', label:'Snipes' },
-  { from:'2026-08-09', to:'2026-08-16', label:'Pfister' },
+  {from:'2026-05-31',to:'2026-06-07',label:'Gerdes'},  {from:'2026-06-07',to:'2026-06-14',label:'Overman'},
+  {from:'2026-06-14',to:'2026-06-21',label:'Clasen'},  {from:'2026-06-21',to:'2026-06-28',label:'Nasser'},
+  {from:'2026-07-12',to:'2026-07-19',label:'Souther'}, {from:'2026-07-19',to:'2026-07-26',label:'Sanderson'},
+  {from:'2026-08-02',to:'2026-08-09',label:'Snipes'},  {from:'2026-08-09',to:'2026-08-16',label:'Pfister'},
 ];
-const OWNER_RANGES = [
-  { from:'2026-07-05', to:'2026-07-12', label:'Owners' },
-];
+const OWNER_RANGES = [{from:'2026-07-05',to:'2026-07-12',label:'Owners'}];
 
-// ── AUTH ─────────────────────────────────────────────
+// ── AUTH ──────────────────────────────────────────────────────
 function tryLogin() {
-  const v = document.getElementById('pwd').value;
-  if(v === '@tgs') {
+  if (document.getElementById('pwd').value === '@tgs') {
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').style.display  = 'block';
     init();
@@ -703,9 +660,9 @@ function logout() {
   document.getElementById('gate').style.display = 'flex';
   document.getElementById('pwd').value = '';
 }
-document.getElementById('pwd').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
 
-// ── TABS ─────────────────────────────────────────────
+// ── TABS ──────────────────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -715,237 +672,167 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// ── INIT ─────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────
 function init() {
   renderBookingTable();
   renderGuestCards();
   renderCalendar();
   renderProjects();
   renderBlocks();
+  createParticles();
 }
 
-// ── BOOKINGS TABLE ────────────────────────────────────
+// ── MANA PARTICLES ────────────────────────────────────────────
+function createParticles() {
+  const c = document.getElementById('particles');
+  if (c.children.length) return;
+  const mana = [
+    ['rgba(232,228,168,',0.4],['rgba(91,170,212,',0.38],
+    ['rgba(120,88,168,',0.35],['rgba(208,88,64,',0.38],
+    ['rgba(74,144,64,',0.35], ['rgba(201,168,76,',0.45],
+  ];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const [base, op] = mana[Math.floor(Math.random() * mana.length)];
+    const sz  = 1.5 + Math.random() * 3;
+    const dur = 12 + Math.random() * 16;
+    const dA  = (Math.random() - .5) * 80;
+    const dB  = (Math.random() - .5) * 120;
+    p.style.cssText = `
+      left:${Math.random()*100}vw; top:${75+Math.random()*25}vh;
+      width:${sz}px; height:${sz}px;
+      background:${base}${op}); box-shadow:0 0 ${sz*3}px ${base}${op});
+      --op:${op}; --dA:${dA}px; --dB:${dB}px;
+      animation-duration:${dur}s; animation-delay:${-Math.random()*dur}s;
+    `;
+    c.appendChild(p);
+  }
+}
+
+// ── BOOKING TABLE ─────────────────────────────────────────────
 function chBadge(ch) {
-  if(!ch) return '';
+  if (!ch) return '';
   const cls = ch==='Airbnb'?'badge-blue':ch==='Vrbo'?'badge-orange':ch==='Direct'?'badge-green':ch==='Owner Block'?'badge-gold':'badge-mute';
   return `<span class="badge ${cls}">${ch}</span>`;
 }
 function renderBookingTable() {
-  const tbody = document.getElementById('booking-table-body');
-  tbody.innerHTML = BOOKINGS.map(b => {
-    if(!b.name) return `<tr class="avail-row"><td>${b.week}</td><td>${b.dates}</td><td colspan="4">— Available —</td></tr>`;
-    const petIcon = b.pet===true ? '🐾' : b.pet===false ? '🚫' : '';
-    const rowStyle = b.owner ? 'style="background:rgba(201,168,76,.04)"' : '';
-    return `<tr ${rowStyle}>
-      <td><span style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--text-dim)">${b.week}</span></td>
-      <td>${b.dates} <span style="font-size:.75rem;color:var(--text-mute)">(${b.nights}n)</span></td>
-      <td><strong>${b.name}</strong><br><span style="font-size:.78rem;color:var(--text-dim)">${b.size}</span></td>
-      <td style="font-size:.85rem;color:var(--text-dim)">${b.origin||'—'}</td>
-      <td>${petIcon}</td>
+  document.getElementById('booking-table-body').innerHTML = BOOKINGS.map(b => {
+    if (!b.name) return `<tr class="avail-row"><td>${b.week}</td><td>${b.dates}</td><td colspan="4">— available —</td></tr>`;
+    return `<tr ${b.owner?'style="background:rgba(201,168,76,.04)"':''}>
+      <td><span style="font-family:'Cinzel',serif;font-size:.73rem;color:var(--text-dim)">${b.week}</span></td>
+      <td>${b.dates} <span style="font-size:.72rem;color:var(--text-mute)">(${b.nights}n)</span></td>
+      <td><strong>${b.name}</strong><br><span style="font-size:.76rem;color:var(--text-dim)">${b.size}</span></td>
+      <td style="font-size:.84rem;color:var(--text-dim)">${b.origin||'—'}</td>
+      <td>${b.pet===true?'🐾':b.pet===false?'🚫':''}</td>
       <td>${chBadge(b.ch)}</td>
     </tr>`;
   }).join('');
 }
 
-// ── GUEST CARDS ───────────────────────────────────────
+// ── GUEST CARDS ───────────────────────────────────────────────
 function renderGuestCards() {
-  const el = document.getElementById('guest-cards');
-  el.innerHTML = BOOKINGS.filter(b => b.name).map(b => {
-    const petStr = b.pet===true ? '🐾 Pet allowed' : b.pet===false ? '🚫 No pets' : '';
-    const isOwner = b.owner;
-    return `<div class="card" style="${isOwner?'border-color:rgba(201,168,76,.4);':''}" >
+  document.getElementById('guest-cards').innerHTML = BOOKINGS.filter(b=>b.name).map(b=>`
+    <div class="mtg-card" ${b.owner?'style="--border:rgba(201,168,76,.45)"':''}>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
         <div>
-          <div style="font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.1em;color:var(--text-dim);margin-bottom:.3rem">${b.week} · ${b.dates}</div>
-          <div style="font-size:1.1rem;font-weight:600;color:${isOwner?'var(--gold)':'var(--text)'}">${b.name}</div>
-          ${b.origin&&!isOwner?`<div style="font-size:.85rem;color:var(--text-dim);margin-top:.2rem">📍 ${b.origin}</div>`:''}
+          <div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;color:var(--text-dim);margin-bottom:.3rem">${b.week} · ${b.dates}</div>
+          <div style="font-size:1.05rem;font-weight:600;color:${b.owner?'var(--gold)':'var(--text)'}">${b.name}</div>
+          ${b.origin&&!b.owner?`<div style="font-size:.84rem;color:var(--text-dim);margin-top:.18rem">📍 ${b.origin}</div>`:''}
         </div>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;gap:.45rem;flex-wrap:wrap;align-items:center">
           ${chBadge(b.ch)}
-          ${petStr?`<span class="badge ${b.pet?'badge-orange':'badge-mute'}">${petStr}</span>`:''}
+          ${b.pet===true?'<span class="badge badge-orange">🐾 Pet allowed</span>':b.pet===false?'<span class="badge badge-mute">🚫 No pets</span>':''}
         </div>
       </div>
-      ${b.size&&!isOwner?`<div style="font-size:.88rem;color:var(--text-dim);margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border)">👥 ${b.size}</div>`:''}
-    </div>`;
-  }).join('');
+      ${b.size&&!b.owner?`<div style="font-size:.86rem;color:var(--text-dim);margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(201,168,76,.12)">👥 ${b.size}</div>`:''}
+    </div>`).join('');
 }
 
-// ── CALENDAR ─────────────────────────────────────────
-function dateInRange(d, from, to) {
-  return d >= from && d < to;
-}
-function getBookingForDate(iso) {
-  for(const r of BOOKED_RANGES) if(dateInRange(iso,r.from,r.to)) return r;
-  return null;
-}
-function getOwnerForDate(iso) {
-  // Check localStorage blocks
-  const saved = getSavedBlocks();
-  for(const b of saved) if(dateInRange(iso,b.from,b.to)) return b;
-  // Built-in owner ranges
-  for(const r of OWNER_RANGES) if(dateInRange(iso,r.from,r.to)) return r;
-  return null;
-}
-function isAvailable(iso) {
-  if(iso < '2026-05-31' || iso > '2026-09-06') return false;
-  const avail = ['2026-06-28','2026-07-26'];
-  // week 5: Jun 28 – Jul 5; week 9: Jul 26 – Aug 2; weeks 12-14: Aug 16 – Sep 6
-  return (dateInRange(iso,'2026-06-28','2026-07-05') ||
-          dateInRange(iso,'2026-07-26','2026-08-02') ||
-          dateInRange(iso,'2026-08-16','2026-09-07'));
-}
-function isoDate(y,m,d) {
-  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-}
+// ── CALENDAR ──────────────────────────────────────────────────
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const todayISO = new Date().toISOString().slice(0,10);
-const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
+function dateInRange(d,f,t){return d>=f&&d<t;}
+function getBookingForDate(iso){for(const r of BOOKED_RANGES)if(dateInRange(iso,r.from,r.to))return r;return null;}
+function getOwnerForDate(iso){for(const b of getSavedBlocks())if(dateInRange(iso,b.from,b.to))return b;for(const r of OWNER_RANGES)if(dateInRange(iso,r.from,r.to))return r;return null;}
+function isAvailable(iso){return dateInRange(iso,'2026-06-28','2026-07-05')||dateInRange(iso,'2026-07-26','2026-08-02')||dateInRange(iso,'2026-08-16','2026-09-07');}
+function isoDate(y,m,d){return`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
 function renderCalendar() {
-  const root = document.getElementById('cal-root');
-  root.innerHTML = '';
-  // Show May–September 2026
-  for(let m = 4; m <= 8; m++) { // 0-indexed
-    const wrap = document.createElement('div');
-    wrap.className = 'cal-month';
-    const title = document.createElement('div');
-    title.className = 'cal-month-title';
-    title.textContent = MONTHS[m] + ' 2026';
-    wrap.appendChild(title);
-
-    const grid = document.createElement('div');
-    grid.className = 'cal-grid';
-
-    DAYS.forEach(d => {
-      const hdr = document.createElement('div');
-      hdr.className = 'cal-day-hdr';
-      hdr.textContent = d;
-      grid.appendChild(hdr);
-    });
-
-    const firstDay = new Date(2026, m, 1).getDay();
-    const daysInMonth = new Date(2026, m+1, 0).getDate();
-
-    for(let i = 0; i < firstDay; i++) {
-      const empty = document.createElement('div');
-      empty.className = 'cal-day empty';
-      grid.appendChild(empty);
-    }
-
-    for(let d = 1; d <= daysInMonth; d++) {
-      const iso = isoDate(2026, m+1, d);
-      const cell = document.createElement('div');
-      cell.className = 'cal-day';
-
-      const bk = getBookingForDate(iso);
-      const ow = getOwnerForDate(iso);
-      const av = isAvailable(iso);
-
-      if(ow) { cell.classList.add('owner-block'); }
-      else if(bk) { cell.classList.add('booked'); }
-      else if(av) { cell.classList.add('available'); }
-
-      if(iso === todayISO) cell.classList.add('today');
-
-      cell.innerHTML = `<div class="dn">${d}</div>`;
-      if(bk && (d===1 || new Date(2026,m,d).getDay()===0 || iso===bk.from)) {
-        const t = document.createElement('div');
-        t.className = 'booking-tag';
-        t.textContent = bk.label;
-        cell.appendChild(t);
-      }
-      if(ow && (d===1 || new Date(2026,m,d).getDay()===0 || iso===ow.from)) {
-        const t = document.createElement('div');
-        t.className = 'owner-tag';
-        t.textContent = ow.label;
-        cell.appendChild(t);
-      }
+  const root = document.getElementById('cal-root'); root.innerHTML='';
+  for (let m=4; m<=8; m++) {
+    const wrap = document.createElement('div'); wrap.className='cal-month';
+    wrap.innerHTML = `<div class="cal-month-title">${MONTHS[m]} 2026</div>`;
+    const grid = document.createElement('div'); grid.className='cal-grid';
+    DAYS.forEach(d=>{const h=document.createElement('div');h.className='cal-day-hdr';h.textContent=d;grid.appendChild(h);});
+    const first=new Date(2026,m,1).getDay(), days=new Date(2026,m+1,0).getDate();
+    for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+    for(let d=1;d<=days;d++){
+      const iso=isoDate(2026,m+1,d), cell=document.createElement('div'); cell.className='cal-day';
+      const bk=getBookingForDate(iso), ow=getOwnerForDate(iso), av=isAvailable(iso);
+      if(ow)cell.classList.add('owner-block'); else if(bk)cell.classList.add('booked'); else if(av)cell.classList.add('available');
+      if(iso===todayISO)cell.classList.add('today');
+      cell.innerHTML=`<div class="dn">${d}</div>`;
+      if(bk&&(d===1||new Date(2026,m,d).getDay()===0||iso===bk.from)){const t=document.createElement('div');t.className='booking-tag';t.textContent=bk.label;cell.appendChild(t);}
+      if(ow&&(d===1||new Date(2026,m,d).getDay()===0||iso===ow.from)){const t=document.createElement('div');t.className='owner-tag';t.textContent=ow.label;cell.appendChild(t);}
       grid.appendChild(cell);
     }
-    wrap.appendChild(grid);
-    root.appendChild(wrap);
+    wrap.appendChild(grid); root.appendChild(wrap);
   }
 }
 
-// ── OWNER BLOCKS ─────────────────────────────────────
-function getSavedBlocks() {
-  return JSON.parse(localStorage.getItem('tg_blocks')||'[]');
+// ── BLOCKS ────────────────────────────────────────────────────
+function getSavedBlocks(){return JSON.parse(localStorage.getItem('tg_blocks')||'[]');}
+function saveBlocks(a){localStorage.setItem('tg_blocks',JSON.stringify(a));}
+function addBlock(){
+  const from=document.getElementById('block-from').value, to=document.getElementById('block-to').value;
+  const label=document.getElementById('block-label').value.trim()||'Owner Block';
+  if(!from||!to||from>=to){alert('Please enter a valid date range.');return;}
+  const b=getSavedBlocks(); b.push({id:Date.now(),from,to,label}); saveBlocks(b);
+  renderBlocks(); renderCalendar();
+  ['block-from','block-to','block-label'].forEach(id=>document.getElementById(id).value='');
 }
-function saveBlocks(arr) {
-  localStorage.setItem('tg_blocks', JSON.stringify(arr));
-}
-function addBlock() {
-  const from  = document.getElementById('block-from').value;
-  const to    = document.getElementById('block-to').value;
-  const label = document.getElementById('block-label').value.trim() || 'Owner Block';
-  if(!from || !to || from >= to) { alert('Please enter a valid date range.'); return; }
-  const blocks = getSavedBlocks();
-  blocks.push({ id: Date.now(), from, to, label });
-  saveBlocks(blocks);
-  renderBlocks();
-  renderCalendar();
-  document.getElementById('block-from').value = '';
-  document.getElementById('block-to').value   = '';
-  document.getElementById('block-label').value = '';
-}
-function removeBlock(id) {
-  saveBlocks(getSavedBlocks().filter(b => b.id !== id));
-  renderBlocks();
-  renderCalendar();
-}
-function renderBlocks() {
-  const blocks = getSavedBlocks();
-  const el = document.getElementById('block-list');
-  if(!blocks.length) { el.innerHTML = '<p style="font-size:.82rem;color:var(--text-mute);font-style:italic">No owner blocks added yet.</p>'; return; }
-  el.innerHTML = blocks.map(b => `
-    <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:var(--panel2);border-radius:8px;margin-bottom:.4rem;border:1px solid rgba(201,168,76,.2)">
+function removeBlock(id){saveBlocks(getSavedBlocks().filter(b=>b.id!==id));renderBlocks();renderCalendar();}
+function renderBlocks(){
+  const blocks=getSavedBlocks(), el=document.getElementById('block-list');
+  if(!blocks.length){el.innerHTML='<p style="font-size:.82rem;color:var(--text-mute);font-style:italic">No owner blocks added yet.</p>';return;}
+  el.innerHTML=blocks.map(b=>`
+    <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:rgba(201,168,76,.06);border-radius:8px;margin-bottom:.4rem;border:1px solid rgba(201,168,76,.22)">
       <span style="font-size:.8rem;color:var(--gold);font-weight:600">🔒 ${b.label}</span>
       <span style="font-size:.8rem;color:var(--text-dim)">${b.from} → ${b.to}</span>
       <button onclick="removeBlock(${b.id})" class="btn-sm btn-danger" style="margin-left:auto">Remove</button>
     </div>`).join('');
 }
 
-// ── PROJECTS ─────────────────────────────────────────
-function getProjects() { return JSON.parse(localStorage.getItem('tg_projects')||'[]'); }
-function saveProjects(p){ localStorage.setItem('tg_projects', JSON.stringify(p)); }
-const PRIO_LABELS = { high:'🔴 High', medium:'🟡 Medium', low:'🟢 Low' };
-const CAT_LABELS  = { maintenance:'🔧 Maintenance', improvement:'✨ Improvement', repair:'🩹 Repair', cleaning:'🧹 Cleaning' };
-function addProject() {
-  const title = document.getElementById('proj-title').value.trim();
-  if(!title) return;
-  const projects = getProjects();
-  projects.unshift({ id:Date.now(), title, cat:document.getElementById('proj-cat').value, priority:document.getElementById('proj-priority').value, done:false });
-  saveProjects(projects);
-  renderProjects();
-  document.getElementById('proj-title').value = '';
+// ── PROJECTS ──────────────────────────────────────────────────
+const CAT  ={maintenance:'🔧 Maintenance',improvement:'✨ Improvement',repair:'🩹 Repair',cleaning:'🧹 Cleaning'};
+const PRIO ={high:'🔴 High',medium:'🟡 Medium',low:'🟢 Low'};
+function getProjects(){return JSON.parse(localStorage.getItem('tg_projects')||'[]');}
+function saveProjects(p){localStorage.setItem('tg_projects',JSON.stringify(p));}
+function addProject(){
+  const t=document.getElementById('proj-title').value.trim(); if(!t)return;
+  const p=getProjects();
+  p.unshift({id:Date.now(),title:t,cat:document.getElementById('proj-cat').value,priority:document.getElementById('proj-priority').value,done:false});
+  saveProjects(p); renderProjects(); document.getElementById('proj-title').value='';
 }
-function toggleProject(id) {
-  const p = getProjects().map(x => x.id===id ? {...x, done:!x.done} : x);
-  saveProjects(p); renderProjects();
-}
-function deleteProject(id) {
-  saveProjects(getProjects().filter(x => x.id!==id)); renderProjects();
-}
-function renderProjects() {
-  const list = document.getElementById('projects-list');
-  const projects = getProjects();
-  if(!projects.length) { list.innerHTML = '<div class="empty-state">No projects yet. Add one above to track house maintenance and improvements.</div>'; return; }
-  list.innerHTML = projects.map(p => `
+function toggleProject(id){saveProjects(getProjects().map(x=>x.id===id?{...x,done:!x.done}:x));renderProjects();}
+function deleteProject(id){saveProjects(getProjects().filter(x=>x.id!==id));renderProjects();}
+function renderProjects(){
+  const list=document.getElementById('projects-list'), projects=getProjects();
+  if(!projects.length){list.innerHTML='<div class="empty-state">No active sorceries. Cast one above to start tracking.</div>';return;}
+  list.innerHTML=projects.map(p=>`
     <div class="project-item">
-      <input type="checkbox" ${p.done?'checked':''} onchange="toggleProject(${p.id})" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer">
+      <input type="checkbox" ${p.done?'checked':''} onchange="toggleProject(${p.id})" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;flex-shrink:0">
       <div style="flex:1">
         <div class="pi-title ${p.done?'done':''}">${p.title}</div>
-        <div style="display:flex;gap:.5rem;margin-top:.3rem;flex-wrap:wrap">
-          <span class="badge badge-mute" style="font-size:.65rem">${CAT_LABELS[p.cat]}</span>
-          <span class="badge ${p.priority==='high'?'badge-orange':p.priority==='medium'?'badge-gold':'badge-green'}" style="font-size:.65rem">${PRIO_LABELS[p.priority]}</span>
+        <div style="display:flex;gap:.45rem;margin-top:.25rem;flex-wrap:wrap">
+          <span class="badge badge-mute" style="font-size:.62rem">${CAT[p.cat]}</span>
+          <span class="badge ${p.priority==='high'?'badge-orange':p.priority==='medium'?'badge-gold':'badge-green'}" style="font-size:.62rem">${PRIO[p.priority]}</span>
         </div>
       </div>
       <button onclick="deleteProject(${p.id})" title="Delete">✕</button>
     </div>`).join('');
 }
-
-// ── KEYBOARD ENTER on pwd ─────────────────────────────
-document.getElementById('pwd').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
 </script>
 </body>
 </html>
