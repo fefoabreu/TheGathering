@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Gathering Silveira — Praia da Silveira, Garopaba SC</title>
+  <meta name="description" content="A premium hillside retreat where the Atlantic Forest meets the surf at Praia da Silveira, Garopaba SC — 5 suites, private pool, panoramic ocean views.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── TOKENS ─────────────────────────────────────── */
+    :root {
+      --ocean-deep:    #0D2137;
+      --ocean-mid:     #163A5F;
+      --ocean-light:   #2A6494;
+      --sky:           #7BAFC8;
+      --sunset:        #E07840;
+      --gold:          #D4A340;
+      --dusk-pink:     #C45070;
+      --sand:          #F5E6C8;
+      --sand-light:    #FDF8F0;
+      --foam:          #EAF4F8;
+      --forest:        #2D5A27;
+      --text-dark:     #1A1A2E;
+      --text-mid:      #4A5568;
+      --text-light:    #F9F4EC;
+      --white:         #FFFFFF;
+      --r:             12px;
+      --sh-sm:         0 2px 8px  rgba(13,33,55,.12);
+      --sh-md:         0 8px 24px rgba(13,33,55,.18);
+      --sh-lg:         0 20px 60px rgba(13,33,55,.25);
+      --ease:          all .4s cubic-bezier(.23,1,.32,1);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',sans-serif; color:var(--text-dark); background:var(--sand-light); overflow-x:hidden; }
+
+    /* ── FIXED NAV ───────────────────────────────────── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:200;
+      padding:1.2rem 2.5rem;
+      display:flex; justify-content:space-between; align-items:center;
+      transition:var(--ease);
+    }
+    nav.scrolled {
+      background:rgba(13,33,55,.95);
+      backdrop-filter:blur(14px);
+      padding:.8rem 2.5rem;
+      box-shadow:var(--sh-md);
+    }
+    .nav-logo { width:48px; height:48px; object-fit:contain; transition:var(--ease); }
+    nav.scrolled .nav-logo { width:38px; height:38px; }
+    .nav-links { display:flex; gap:2rem; align-items:center; }
+    .nav-links a {
+      color:rgba(249,244,236,.82); text-decoration:none;
+      font-size:.87rem; letter-spacing:.06em; transition:color .3s;
+    }
+    .nav-links a:hover { color:var(--gold); }
+    .nav-links .cta-nav {
+      color:var(--sunset)!important; font-weight:600;
+      border:1.5px solid rgba(224,120,64,.5); border-radius:30px;
+      padding:.4rem 1.1rem; transition:var(--ease)!important;
+    }
+    .nav-links .cta-nav:hover { background:var(--sunset); color:#fff!important; border-color:var(--sunset); }
+    @media(max-width:650px){ .nav-links { display:none; } }
+
+    /* ── HERO ────────────────────────────────────────── */
+    .hero {
+      min-height:100vh;
+      background:
+        radial-gradient(ellipse at 28% 72%, rgba(224,120,64,.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 72% 20%, rgba(42,100,148,.28) 0%, transparent 50%),
+        linear-gradient(158deg, var(--ocean-deep) 0%, var(--ocean-mid) 38%, #2A5580 58%, #C87040 82%, var(--gold) 100%);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center; padding:2rem;
+      position:relative; overflow:hidden;
+    }
+    .hero::after {
+      content:'';
+      position:absolute; bottom:-1px; left:0; right:0; height:90px;
+      background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 90'%3E%3Cpath fill='%23FDF8F0' d='M0,45 C360,90 720,0 1080,45 C1260,68 1380,20 1440,45 L1440,90 L0,90 Z'/%3E%3C/svg%3E") no-repeat bottom center/cover;
+    }
+    .hero-logo {
+      width:200px; height:auto;
+      filter:drop-shadow(0 6px 24px rgba(0,0,0,.45));
+      margin-bottom:1.8rem; position:relative; z-index:1;
+    }
+    .hero-title {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(2.8rem,8vw,6rem); font-weight:700;
+      color:var(--text-light); letter-spacing:.07em; line-height:1.03;
+      text-shadow:0 2px 24px rgba(0,0,0,.32);
+      position:relative; z-index:1;
+    }
+    .hero-title .sub {
+      display:block;
+      font-family:'Cormorant Garamond',serif; font-style:italic;
+      font-size:clamp(.95rem,2.2vw,1.45rem); font-weight:300;
+      letter-spacing:.18em; color:var(--gold); margin-top:.3rem;
+    }
+    .hero-location {
+      font-size:.82rem; letter-spacing:.28em; text-transform:uppercase;
+      color:rgba(249,244,236,.62); margin-top:.5rem;
+      position:relative; z-index:1;
+    }
+    .hero-tagline {
+      font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300;
+      font-size:clamp(1rem,2.4vw,1.55rem);
+      color:rgba(249,244,236,.82); margin-top:1.4rem; max-width:480px;
+      position:relative; z-index:1;
+    }
+    .hero-cta { display:flex; gap:1rem; margin-top:2.5rem; position:relative; z-index:1; flex-wrap:wrap; justify-content:center; }
+    .btn { display:inline-block; text-decoration:none; border-radius:50px; font-weight:600; font-size:.95rem; letter-spacing:.04em; transition:var(--ease); cursor:pointer; border:none; }
+    .btn-primary { background:var(--sunset); color:#fff; padding:.9rem 2.2rem; box-shadow:0 4px 22px rgba(224,120,64,.4); }
+    .btn-primary:hover { background:#c86a34; transform:translateY(-2px); box-shadow:0 8px 32px rgba(224,120,64,.5); }
+    .btn-outline-light { background:transparent; color:var(--text-light); padding:.9rem 2.2rem; border:1.5px solid rgba(249,244,236,.45); }
+    .btn-outline-light:hover { border-color:var(--text-light); background:rgba(249,244,236,.1); transform:translateY(-2px); }
+
+    .scroll-line {
+      position:absolute; bottom:110px; left:50%; transform:translateX(-50%);
+      z-index:1; display:flex; flex-direction:column; align-items:center; gap:.5rem;
+      color:rgba(249,244,236,.45); font-size:.72rem; letter-spacing:.18em; text-transform:uppercase;
+    }
+    .scroll-line::after {
+      content:''; width:1px; height:44px;
+      background:rgba(249,244,236,.28);
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:.3;transform:scaleY(1)} 50%{opacity:.9;transform:scaleY(1.15)} }
+
+    /* ── LAYOUT HELPERS ──────────────────────────────── */
+    .wrap   { max-width:1200px; margin:0 auto; padding:6rem 2rem; }
+    .wrap-sm{ max-width:900px;  margin:0 auto; padding:5rem 2rem; }
+    .sh { text-align:center; margin-bottom:3.5rem; }
+    .sh .eyebrow { font-size:.78rem; letter-spacing:.32em; text-transform:uppercase; font-weight:600; color:var(--sunset); margin-bottom:.65rem; }
+    .sh .eyebrow.gold { color:var(--gold); }
+    .sh h2 { font-family:'Playfair Display',serif; font-size:clamp(1.9rem,4vw,3.1rem); font-weight:600; color:var(--ocean-deep); line-height:1.14; }
+    .sh h2 em { font-style:italic; color:var(--ocean-light); }
+    .sh h2.light { color:var(--text-light); }
+    .sh h2 em.gold { color:var(--gold); }
+    .sh p { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.2rem; color:var(--text-mid); margin-top:.9rem; max-width:580px; margin-left:auto; margin-right:auto; line-height:1.6; }
+    .sh p.light { color:rgba(249,244,236,.72); }
+
+    /* ── EXPERIENCES ─────────────────────────────────── */
+    .exp-bg { background:var(--ocean-deep); }
+    .tile-grid {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:1.4rem; margin-top:2.8rem;
+    }
+    @media(max-width:880px){ .tile-grid { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:540px){ .tile-grid { grid-template-columns:1fr; } }
+
+    .tile-wrap { perspective:1200px; height:310px; cursor:pointer; }
+    .tile {
+      width:100%; height:100%; position:relative;
+      transform-style:preserve-3d;
+      transition:transform .72s cubic-bezier(.23,1,.32,1);
+      border-radius:var(--r);
+    }
+    .tile-wrap:hover .tile,
+    .tile-wrap.flipped .tile { transform:rotateY(180deg); }
+
+    .tile-face {
+      position:absolute; inset:0; border-radius:var(--r);
+      backface-visibility:hidden; overflow:hidden;
+    }
+    .tile-front {
+      background-size:cover; background-position:center;
+      display:flex; flex-direction:column; justify-content:flex-end;
+    }
+    .tile-front::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(to bottom, transparent 30%, rgba(13,33,55,.88) 100%);
+    }
+    .tile-front .fc { position:relative; z-index:1; padding:1.4rem 1.5rem; }
+    .tile-front .fc .ico { font-size:1.7rem; display:block; margin-bottom:.35rem; }
+    .tile-front .fc .name { font-family:'Playfair Display',serif; font-size:1.25rem; font-weight:600; color:#fff; line-height:1.18; }
+    .tile-front .fc .hint { font-size:.72rem; letter-spacing:.1em; color:rgba(255,255,255,.52); margin-top:.3rem; }
+
+    .tile-back {
+      background:linear-gradient(138deg, #163A5F 0%, #1E5080 100%);
+      transform:rotateY(180deg);
+      display:flex; flex-direction:column; justify-content:center;
+      padding:1.8rem; border:1px solid rgba(255,255,255,.1);
+    }
+    .tile-back .b-ico { font-size:2.2rem; margin-bottom:.85rem; }
+    .tile-back .b-title { font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:600; color:var(--gold); margin-bottom:.6rem; }
+    .tile-back .b-desc { font-size:.88rem; line-height:1.68; color:rgba(249,244,236,.87); }
+    .tile-back .b-tag {
+      display:block; margin-top:1.1rem;
+      font-size:.7rem; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--sunset); font-weight:600;
+      border-top:1px solid rgba(224,120,64,.3); padding-top:.72rem;
+    }
+
+    /* ── SUITES ──────────────────────────────────────── */
+    .suites-bg { background:var(--sand-light); }
+    .suite-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1.5rem; margin-top:3rem; }
+    .suite-card {
+      background:var(--white); border-radius:var(--r);
+      overflow:hidden; box-shadow:var(--sh-sm);
+      transition:var(--ease); position:relative;
+    }
+    .suite-card:hover { transform:translateY(-7px); box-shadow:var(--sh-lg); }
+    .suite-bar { height:7px; }
+    .suite-body { padding:1.75rem; }
+    .suite-mana { font-size:1.3rem; margin-bottom:.5rem; }
+    .suite-pt { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:600; color:var(--ocean-deep); }
+    .suite-en { font-size:.77rem; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); margin-top:.22rem; font-weight:500; }
+    .suite-hr { height:1px; background:var(--sand); margin:1rem 0; }
+    .suite-desc { font-size:.88rem; line-height:1.68; color:var(--text-mid); }
+    .suite-meta { display:flex; gap:.9rem; margin-top:1.1rem; flex-wrap:wrap; }
+    .suite-meta span { display:flex; align-items:center; gap:.3rem; font-size:.8rem; color:var(--text-mid); }
+    .suite-link {
+      display:block; margin-top:1.4rem; text-align:center;
+      padding:.55rem .9rem; border-radius:8px;
+      background:var(--sand); color:var(--ocean-mid);
+      text-decoration:none; font-size:.8rem; font-weight:600; letter-spacing:.05em;
+      transition:var(--ease);
+    }
+    .suite-link:hover { background:var(--ocean-mid); color:#fff; }
+
+    /* mana header bars */
+    .mw { background:linear-gradient(90deg,#F5F2D0,#DED88A); }
+    .mu { background:linear-gradient(90deg,#8FCCE8,#4490BE); }
+    .mr { background:linear-gradient(90deg,#E06050,#B02A1A); }
+    .mg { background:linear-gradient(90deg,#68B058,#2A7030); }
+    .mb { background:linear-gradient(90deg,#7868A0,#3A2848); }
+
+    /* ── AMENITIES ───────────────────────────────────── */
+    .amen-bg { background:var(--foam); }
+    .amen-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:1rem; margin-top:2.5rem; }
+    .chip {
+      display:flex; align-items:center; gap:.6rem;
+      padding:.8rem 1.1rem; background:var(--white); border-radius:10px;
+      font-size:.88rem; color:var(--text-dark); font-weight:500;
+      box-shadow:var(--sh-sm);
+      transition:var(--ease);
+    }
+    .chip:hover { transform:translateY(-2px); box-shadow:var(--sh-md); }
+    .chip .ci { font-size:1.15rem; }
+
+    /* ── LOCATION ────────────────────────────────────── */
+    .loc-bg { background:linear-gradient(180deg, var(--ocean-deep) 0%, var(--ocean-mid) 100%); }
+    .loc-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:3rem; }
+    @media(max-width:680px){ .loc-grid { grid-template-columns:1fr; } }
+    .loc-card {
+      background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--r); padding:2.4rem; backdrop-filter:blur(10px);
+    }
+    .loc-card .badge {
+      display:inline-block; background:rgba(224,120,64,.18); border:1px solid rgba(224,120,64,.38);
+      color:var(--sunset); padding:.24rem .75rem; border-radius:20px;
+      font-size:.76rem; letter-spacing:.1em; text-transform:uppercase; font-weight:600;
+    }
+    .loc-card h3 { font-family:'Playfair Display',serif; font-size:1.45rem; color:var(--gold); margin-top:.7rem; }
+    .loc-card p { font-size:.92rem; line-height:1.72; color:rgba(249,244,236,.76); margin-top:.9rem; }
+    .loc-list { margin-top:1.2rem; display:flex; flex-direction:column; gap:.55rem; }
+    .loc-list li { list-style:none; display:flex; gap:.7rem; font-size:.88rem; color:rgba(249,244,236,.78); }
+    .loc-list li::before { content:'—'; color:var(--sunset); flex-shrink:0; }
+
+    /* ── CTA BAND ────────────────────────────────────── */
+    .cta-band {
+      background:linear-gradient(135deg, var(--sunset) 0%, var(--gold) 100%);
+      text-align:center; padding:5.5rem 2rem;
+    }
+    .cta-band h2 { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,3rem); color:#fff; font-weight:700; margin-bottom:.7rem; }
+    .cta-band p { color:rgba(255,255,255,.85); font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.3rem; margin-bottom:2rem; }
+    .btn-white { background:#fff; color:var(--sunset); padding:1rem 2.6rem; box-shadow:0 4px 22px rgba(0,0,0,.15); }
+    .btn-white:hover { transform:translateY(-3px); box-shadow:0 10px 38px rgba(0,0,0,.22); }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    footer { background:var(--ocean-deep); color:rgba(249,244,236,.55); text-align:center; padding:3.5rem 2rem; }
+    .foot-logo { width:72px; margin:0 auto 1.4rem; opacity:.6; display:block; filter:brightness(0) invert(1); }
+    .foot-links { display:flex; justify-content:center; gap:2rem; margin-bottom:1.8rem; flex-wrap:wrap; }
+    .foot-links a { color:rgba(249,244,236,.58); text-decoration:none; font-size:.84rem; letter-spacing:.07em; transition:color .3s; }
+    .foot-links a:hover { color:var(--gold); }
+    footer p { font-size:.78rem; }
+    .owner-link { margin-top:2rem; }
+    .owner-link a { font-size:.7rem; color:rgba(249,244,236,.2); text-decoration:none; letter-spacing:.1em; transition:color .3s; }
+    .owner-link a:hover { color:rgba(249,244,236,.45); }
+
+    /* ── ANIMATIONS ──────────────────────────────────── */
+    .fu { opacity:0; transform:translateY(28px); transition:opacity .65s ease, transform .65s ease; }
+    .fu.on { opacity:1; transform:translateY(0); }
+    .fu.d1 { transition-delay:.1s; }
+    .fu.d2 { transition-delay:.2s; }
+    .fu.d3 { transition-delay:.3s; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <img src="assets/logo.png" alt="The Gathering Silveira" class="nav-logo">
+  <div class="nav-links">
+    <a href="#experiences">Experiences</a>
+    <a href="#suites">Suites</a>
+    <a href="#location">Location</a>
+    <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="cta-nav">Book Now</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <img src="assets/logo.png" alt="The Gathering Silveira" class="hero-logo">
+  <h1 class="hero-title">
+    THE GATHERING
+    <span class="sub">Silveira</span>
+  </h1>
+  <p class="hero-location">Praia da Silveira &nbsp;·&nbsp; Garopaba, SC &nbsp;·&nbsp; Brasil</p>
+  <p class="hero-tagline">"Where the mountain meets the sea"</p>
+  <div class="hero-cta">
+    <a href="https://www.airbnb.com/rooms/1608023407293236428" class="btn btn-primary" target="_blank" rel="noopener">Book Your Stay</a>
+    <a href="#experiences" class="btn btn-outline-light">Explore the House</a>
+  </div>
+  <div class="scroll-line">Discover</div>
+</section>
+
+<!-- EXPERIENCES -->
+<div class="exp-bg" id="experiences">
+  <div class="wrap">
+    <div class="sh">
+      <p class="eyebrow gold">The Gathering Awaits</p>
+      <h2 class="light">Nine Ways to <em class="gold">Live Here</em></h2>
+      <p class="light">Hover or tap each tile to reveal the experience that awaits you.</p>
+    </div>
+    <div class="tile-grid">
+
+      <!-- 1 Pool Day -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Pool Day">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1WxC3crdHDMGhQzzCBlFdYntTS-LZbYh-&sz=w800')">
+            <div class="fc"><span class="ico">🏊</span><div class="name">Pool Day</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🏊</div>
+            <div class="b-title">Pool Day</div>
+            <p class="b-desc">Lounge by our private hillside pool overlooking the valley and distant ocean. Sip something cold, let the Brazilian sun do the rest. Pure restoration.</p>
+            <span class="b-tag">Private Pool · Hillside Views · Summer Bliss</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 Surfland Day -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Surfland Day">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1MvBNMqLaoc4w44S4veuE8KDyFlLKqgGc&sz=w800')">
+            <div class="fc"><span class="ico">🏄</span><div class="name">Surfland Day</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🌊</div>
+            <div class="b-title">Surfland Day</div>
+            <p class="b-desc">Praia da Silveira is one of SC's premier surf breaks. Rent a board, take a lesson, or watch masters read the swells below our perch. Surf is life here.</p>
+            <span class="b-tag">World-Class Surf · Lessons Nearby · Right at Your Door</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Craft Cocktails -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Craft Cocktails">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=13fa-_mqOCS05fa6IVMcAb6K8ljhVRTWR&sz=w800')">
+            <div class="fc"><span class="ico">🍹</span><div class="name">Craft Cocktails</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🍹</div>
+            <div class="b-title">Craft Cocktails</div>
+            <p class="b-desc">Our fully stocked bar and chef's kitchen are your playground. Mix craft cocktails as the hills glow amber — or let someone else shake while you take in the view.</p>
+            <span class="b-tag">Fully Equipped Bar · Sunset Views · Social Ritual</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Happy Hour -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Happy Hour">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1jns1SUK3uh5hzitqfXs61F8Ue7Em7H5H&sz=w800')">
+            <div class="fc"><span class="ico">🥂</span><div class="name">Happy Hour</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🥂</div>
+            <div class="b-title">Happy Hour</div>
+            <p class="b-desc">Nothing beats golden hour at The Gathering. Gather the crew on the deck, pour a round, and toast as the sun paints Morro Silveira in shades of fire.</p>
+            <span class="b-tag">Outdoor Decks · Panoramic Sunsets · Group Ritual</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 Book Hub -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Book Hub">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1o-v6aljuQZuURfaNxYjolBWCWs-R1KKB&sz=w800')">
+            <div class="fc"><span class="ico">📚</span><div class="name">Book Hub</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">📚</div>
+            <div class="b-title">Book Hub</div>
+            <p class="b-desc">Curl up in our curated reading corner stocked with books, board games, and quiet energy. The perfect escape from digital noise — and a full afternoon can disappear here.</p>
+            <span class="b-tag">Reading Nook · Board Games · Analog Bliss</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6 Movie Night -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Movie Night">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background:radial-gradient(ellipse at 40% 35%, #1a1a4e 0%, #06060f 100%)">
+            <div class="fc"><span class="ico">🎬</span><div class="name">Movie Night</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back" style="background:linear-gradient(138deg,#06060f,#1a1a4e)">
+            <div class="b-ico">🎬</div>
+            <div class="b-title">Movie Night</div>
+            <p class="b-desc">Fire up the 75″ Samsung Frame TV with Sonos surround. Movie nights in the mountains hit different — dim the lights, grab a blanket, and disappear into another world.</p>
+            <span class="b-tag">75″ Frame TV · Sonos Surround · Cinematic Feel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 Sandboarding -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Sandboarding">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1tmTAf0jz1e_CIk2_xqGccxJ134Z2kpf3&sz=w800')">
+            <div class="fc"><span class="ico">🏔️</span><div class="name">Sandboarding</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🏔️</div>
+            <div class="b-title">Sandboarding</div>
+            <p class="b-desc">The giant dunes of Garopaba are practically at your door. Rent a board and carve down some of Brazil's most thrilling sand mountains. Pure adrenaline for all ages.</p>
+            <span class="b-tag">Giant Dunes · Rentals Nearby · All Levels Welcome</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8 Whale Watching -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Whale Watching">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1hZEzNwLFOZJy_7dDOqvGhTuHfjurD8Oo&sz=w800')">
+            <div class="fc"><span class="ico">🐋</span><div class="name">Whale Watching</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🐋</div>
+            <div class="b-title">Whale Watching</div>
+            <p class="b-desc">June through November, humpback whales migrate through Garopaba. Watch from our elevated vantage point — or take a boat tour for a front-row seat to nature's greatest show.</p>
+            <span class="b-tag">Jun–Nov Season · Hillside Views · Boat Tours Available</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9 Réveillon Party -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Réveillon Party">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=17J4QG9D9yduLyTDQnT9u_3arflg3acHr&sz=w800')">
+            <div class="fc"><span class="ico">🎆</span><div class="name">Réveillon Party</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🎆</div>
+            <div class="b-title">Réveillon Party Watch</div>
+            <p class="b-desc">Ring in the New Year from the best seat in the house. Watch Garopaba's fireworks explode across the ocean horizon — from our dramatic hillside perch. Unforgettable every time.</p>
+            <span class="b-tag">New Year's Eve · Firework Views · A Night to Remember</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SUITES -->
+<div class="suites-bg" id="suites">
+  <div class="wrap">
+    <div class="sh fu">
+      <p class="eyebrow">The Five Suites</p>
+      <h2>Five Elements. <em>Five Sanctuaries.</em></h2>
+      <p>Each suite is named after a land in the realm of Magic — the elemental forces that shape Praia da Silveira. Earth, water, fire, forest, and the wild dark of the southern cove.</p>
+    </div>
+    <div class="suite-grid">
+
+      <!-- Plains / White -->
+      <div class="suite-card fu d1">
+        <div class="suite-bar mw"></div>
+        <div class="suite-body">
+          <div class="suite-mana">⬜</div>
+          <div class="suite-pt">Planície</div>
+          <div class="suite-en">Plains · Premium Mezzanine Suite 1</div>
+          <div class="suite-hr"></div>
+          <p class="suite-desc">The grandest suite in the house. Inspired by the open sands of Praia da Silveira — light, expansive, airy. Features a King bed in the largest private space at nearly 20 m².</p>
+          <div class="suite-meta">
+            <span>🛏️ King Bed</span>
+            <span>📐 19.9 m²</span>
+            <span>🪟 Mezzanine Level</span>
+          </div>
+          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+        </div>
+      </div>
+
+      <!-- Island / Blue -->
+      <div class="suite-card fu d2">
+        <div class="suite-bar mu"></div>
+        <div class="suite-body">
+          <div class="suite-mana">🔵</div>
+          <div class="suite-pt">Ilha</div>
+          <div class="suite-en">Island · Mezzanine Suite 2</div>
+          <div class="suite-hr"></div>
+          <p class="suite-desc">Named for the deep blues of Mar Silveira. Serene and refined, this mezzanine suite captures the spirit of the ocean — flowing, boundless, utterly at peace.</p>
+          <div class="suite-meta">
+            <span>🛏️ King Bed</span>
+            <span>📐 13.5 m²</span>
+            <span>🌊 Ocean Mood</span>
+          </div>
+          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+        </div>
+      </div>
+
+      <!-- Mountain / Red -->
+      <div class="suite-card fu d3">
+        <div class="suite-bar mr"></div>
+        <div class="suite-body">
+          <div class="suite-mana">🔴</div>
+          <div class="suite-pt">Montanha</div>
+          <div class="suite-en">Mountain · Flex Suite 3</div>
+          <div class="suite-hr"></div>
+          <p class="suite-desc">Bold and energetic like the Morro Silveira. Inspired by the red-earth hillside that defines this place — flexible configuration, full of warmth and raw character.</p>
+          <div class="suite-meta">
+            <span>🛏️ Flex Config</span>
+            <span>📐 13.5 m²</span>
+            <span>🏔️ Hillside Energy</span>
+          </div>
+          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+        </div>
+      </div>
+
+      <!-- Forest / Green -->
+      <div class="suite-card fu d1">
+        <div class="suite-bar mg"></div>
+        <div class="suite-body">
+          <div class="suite-mana">🟢</div>
+          <div class="suite-pt">Floresta</div>
+          <div class="suite-en">Forest · Flex Suite 4</div>
+          <div class="suite-hr"></div>
+          <p class="suite-desc">Lush and grounding, like the dense Atlantic Forest carpeting the hillside. Earthy tones, natural textures, and a deep connection to the wild just outside the window.</p>
+          <div class="suite-meta">
+            <span>🛏️ Flex Config</span>
+            <span>📐 13.6 m²</span>
+            <span>🌿 Forest Mood</span>
+          </div>
+          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+        </div>
+      </div>
+
+      <!-- Swamp / Black -->
+      <div class="suite-card fu d2">
+        <div class="suite-bar mb"></div>
+        <div class="suite-body">
+          <div class="suite-mana">🖤</div>
+          <div class="suite-pt">Pântano</div>
+          <div class="suite-en">Swamp · Container Office</div>
+          <div class="suite-hr"></div>
+          <p class="suite-desc">A one-of-a-kind space inspired by the dark stones of the southern cove. Housed in the converted container — intimate, mysterious, and unlike anything else in the house.</p>
+          <div class="suite-meta">
+            <span>🏗️ Container Design</span>
+            <span>🌑 Unique Space</span>
+            <span>🔒 Private Entry</span>
+          </div>
+          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- AMENITIES -->
+<div class="amen-bg">
+  <div class="wrap">
+    <div class="sh fu">
+      <p class="eyebrow">The House</p>
+      <h2>Every Detail, <em>Considered.</em></h2>
+    </div>
+    <div class="amen-grid fu">
+      <div class="chip"><span class="ci">🏊</span> Private Pool</div>
+      <div class="chip"><span class="ci">📡</span> Starlink WiFi</div>
+      <div class="chip"><span class="ci">🔊</span> Sonos System</div>
+      <div class="chip"><span class="ci">📺</span> Samsung Frame TVs</div>
+      <div class="chip"><span class="ci">❄️</span> Full A/C · 7 Units</div>
+      <div class="chip"><span class="ci">🍳</span> Gourmet Kitchen</div>
+      <div class="chip"><span class="ci">🍺</span> Beer Center &amp; Wine Cellar</div>
+      <div class="chip"><span class="ci">🔒</span> Smart Keyless Entry</div>
+      <div class="chip"><span class="ci">📷</span> Security Cameras</div>
+      <div class="chip"><span class="ci">🅿️</span> Private Parking</div>
+      <div class="chip"><span class="ci">🌿</span> Landscaped Gardens</div>
+      <div class="chip"><span class="ci">🪟</span> Glass Balustrades</div>
+      <div class="chip"><span class="ci">🛁</span> En-Suite Bathrooms</div>
+      <div class="chip"><span class="ci">🏗️</span> Outdoor Decks &amp; Pergolas</div>
+      <div class="chip"><span class="ci">♨️</span> Hot Water Heating</div>
+      <div class="chip"><span class="ci">👁️</span> Eufy Security System</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOCATION -->
+<div class="loc-bg" id="location">
+  <div class="wrap">
+    <div class="sh fu">
+      <p class="eyebrow gold">Where We Are</p>
+      <h2 class="light">Garopaba &amp; <em class="gold">Praia da Silveira</em></h2>
+      <p class="light">A corner of Brazil that surfers, nature lovers, and explorers have kept to themselves — until now.</p>
+    </div>
+    <div class="loc-grid fu">
+      <div class="loc-card">
+        <span class="badge">🌊 Garopaba, SC</span>
+        <h3>The Surf Capital</h3>
+        <p>A small, authentic coastal town in Santa Catarina where world-class waves meet lush Atlantic Forest hillsides. Famed for humpback whale migrations, vibrant beach culture, and some of the freshest seafood in South Brazil.</p>
+        <ul class="loc-list">
+          <li>World-class surf breaks for all levels</li>
+          <li>Humpback whale migration corridor — June to November</li>
+          <li>Giant sand dunes — sandboarding paradise</li>
+          <li>Authentic local seafood restaurants &amp; markets</li>
+          <li>2 hours from Florianópolis International Airport</li>
+        </ul>
+      </div>
+      <div class="loc-card">
+        <span class="badge">🏔️ Praia da Silveira</span>
+        <h3>The Hidden Gem</h3>
+        <p>Praia da Silveira sits atop a dramatic hill — one of the most sought-after surf beaches in Garopaba, known for consistent swells and raw natural beauty. The Gathering sits at the very top of the Morro, with ocean views in every direction.</p>
+        <ul class="loc-list">
+          <li>Premium surf beach — consistent year-round swells</li>
+          <li>Hilltop vantage with 360° ocean panoramas</li>
+          <li>Dense Atlantic Forest as your backdrop</li>
+          <li>Quiet, small community — peaceful &amp; authentic</li>
+          <li>Less than 10 min from Garopaba town center</li>
+        </ul>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.8rem" class="fu">
+      <a href="https://maps.google.com/?q=Rua+Augusto+Germano+Wilke,+Praia+da+Silveira,+Garopaba+SC+88490-000" class="btn btn-primary" target="_blank" rel="noopener">📍 Open in Google Maps</a>
+    </div>
+  </div>
+</div>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <h2>Ready to Gather?</h2>
+  <p>"Weeks here leave footprints that don't wash away."</p>
+  <a href="https://www.airbnb.com/rooms/1608023407293236428" class="btn btn-white" target="_blank" rel="noopener">Book on Airbnb</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <img src="assets/logo.png" alt="The Gathering" class="foot-logo">
+  <div class="foot-links">
+    <a href="https://www.instagram.com/thegatheringsilveira/" target="_blank" rel="noopener">📸 Instagram</a>
+    <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener">🏡 Airbnb</a>
+    <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" target="_blank" rel="noopener">📐 Interior Plans</a>
+    <a href="mailto:TheGatheringSilveira@gmail.com">✉️ Contact</a>
+  </div>
+  <p>Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000</p>
+  <p style="margin-top:.4rem">© 2025 The Gathering Silveira · All rights reserved</p>
+  <div class="owner-link"><a href="owner.html">owner access</a></div>
+</footer>
+
+<script>
+  // Sticky nav
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 60));
+
+  // Scroll-reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fu').forEach(el => obs.observe(el));
+
+  // Tile keyboard support
+  document.querySelectorAll('.tile-wrap').forEach(t => {
+    t.addEventListener('keydown', e => {
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t.classList.toggle('flipped'); }
+    });
+  });
+</script>
+</body>
+</html>

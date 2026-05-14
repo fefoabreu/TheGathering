@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Gathering — Owner Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── TOKENS ─────────────────────────────────────── */
+    :root {
+      --bg:        #0E1420;
+      --panel:     #161E2E;
+      --panel2:    #1C2638;
+      --border:    rgba(201,168,76,.22);
+      --gold:      #C9A84C;
+      --gold-dim:  rgba(201,168,76,.55);
+      --text:      #E8DCC8;
+      --text-dim:  rgba(232,220,200,.55);
+      --text-mute: rgba(232,220,200,.32);
+      --accent:    #4A8CB4;
+      --success:   #5BAA72;
+      --warn:      #E07840;
+      --danger:    #C45050;
+      --r:         10px;
+      --ease:      all .3s cubic-bezier(.23,1,.32,1);
+      /* mana */
+      --mw: #E8E4A8; --mu: #6BBEDD; --mr: #D05840;
+      --mg: #4A9040; --mb: #6858A0;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* ── LOGIN GATE ──────────────────────────────────── */
+    #gate {
+      position:fixed; inset:0; z-index:1000;
+      background:radial-gradient(ellipse at 50% 40%, #1a2540 0%, var(--bg) 70%);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:2rem;
+    }
+    #gate img { width:110px; margin-bottom:1.8rem; filter:brightness(0) invert(1); opacity:.7; }
+    #gate h1 {
+      font-family:'Cinzel Decorative',serif; font-size:1.5rem; font-weight:400;
+      color:var(--gold); letter-spacing:.12em; margin-bottom:.4rem;
+      text-align:center;
+    }
+    #gate p { color:var(--text-dim); font-size:.85rem; letter-spacing:.1em; margin-bottom:2.5rem; text-align:center; }
+    .gate-card {
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:var(--r); padding:2.5rem; width:100%; max-width:360px;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+    }
+    .gate-card label { display:block; font-size:.78rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-dim); margin-bottom:.6rem; }
+    .gate-card input {
+      width:100%; padding:.85rem 1rem; border-radius:8px;
+      background:var(--panel2); border:1px solid var(--border);
+      color:var(--text); font-size:1rem; outline:none;
+      transition:border-color .3s;
+    }
+    .gate-card input:focus { border-color:var(--gold); }
+    .gate-card button {
+      width:100%; margin-top:1.2rem; padding:.9rem;
+      background:var(--gold); color:var(--bg); border:none; border-radius:8px;
+      font-family:'Cinzel',serif; font-size:.95rem; font-weight:600; letter-spacing:.08em;
+      cursor:pointer; transition:var(--ease);
+    }
+    .gate-card button:hover { background:#e0b858; transform:translateY(-1px); }
+    #gate-err { color:var(--danger); font-size:.82rem; margin-top:.8rem; text-align:center; display:none; }
+    .gate-rule { border:none; border-top:1px solid var(--border); margin:1.8rem 0; }
+    .gate-quote { font-style:italic; font-size:.82rem; color:var(--text-mute); text-align:center; line-height:1.6; }
+
+    /* ── APP SHELL ───────────────────────────────────── */
+    #app { display:none; min-height:100vh; }
+
+    /* TOP BAR */
+    .topbar {
+      background:var(--panel); border-bottom:1px solid var(--border);
+      padding:.85rem 1.8rem;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:100;
+    }
+    .topbar-brand { display:flex; align-items:center; gap:.85rem; }
+    .topbar-brand img { width:34px; filter:brightness(0) invert(1); opacity:.65; }
+    .topbar-brand span { font-family:'Cinzel',serif; font-size:.95rem; color:var(--gold); letter-spacing:.1em; }
+    .topbar-right { display:flex; align-items:center; gap:1.2rem; }
+    .topbar-season { font-size:.78rem; color:var(--text-dim); letter-spacing:.1em; }
+    .logout-btn {
+      font-size:.78rem; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--text-mute); cursor:pointer; transition:color .3s; background:none; border:none;
+    }
+    .logout-btn:hover { color:var(--text); }
+
+    /* TABS NAV */
+    .tabs-nav {
+      background:var(--panel2); border-bottom:1px solid var(--border);
+      display:flex; overflow-x:auto; gap:0;
+      scrollbar-width:none;
+    }
+    .tabs-nav::-webkit-scrollbar { display:none; }
+    .tab-btn {
+      flex-shrink:0; padding:.9rem 1.5rem;
+      font-size:.82rem; letter-spacing:.09em; text-transform:uppercase;
+      color:var(--text-dim); cursor:pointer; background:none; border:none;
+      border-bottom:2px solid transparent; transition:var(--ease);
+      white-space:nowrap;
+    }
+    .tab-btn:hover { color:var(--text); }
+    .tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+
+    /* CONTENT AREA */
+    .content { max-width:1100px; margin:0 auto; padding:2rem 1.5rem; }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* ── SHARED COMPONENTS ───────────────────────────── */
+    .section-title {
+      font-family:'Cinzel',serif; font-size:1.1rem; color:var(--gold);
+      letter-spacing:.12em; margin-bottom:1.5rem; display:flex; align-items:center; gap:.7rem;
+    }
+    .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    .card {
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:var(--r); padding:1.5rem;
+      transition:border-color .3s;
+    }
+    .card:hover { border-color:var(--gold-dim); }
+
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
+    @media(max-width:800px){ .grid-2,.grid-3 { grid-template-columns:1fr; } }
+    @media(max-width:1000px){ .grid-3 { grid-template-columns:1fr 1fr; } }
+
+    /* stat cards */
+    .stat { text-align:center; padding:1.8rem 1rem; }
+    .stat .val { font-family:'Cinzel',serif; font-size:2.2rem; color:var(--gold); line-height:1; }
+    .stat .lbl { font-size:.76rem; letter-spacing:.15em; text-transform:uppercase; color:var(--text-dim); margin-top:.5rem; }
+
+    /* badge */
+    .badge {
+      display:inline-block; padding:.22rem .65rem; border-radius:20px;
+      font-size:.72rem; font-weight:600; letter-spacing:.06em;
+    }
+    .badge-green  { background:rgba(91,170,114,.18); color:#7DD49A; border:1px solid rgba(91,170,114,.3); }
+    .badge-blue   { background:rgba(74,140,180,.18); color:#7BBCD4; border:1px solid rgba(74,140,180,.3); }
+    .badge-orange { background:rgba(224,120,64,.18); color:#F09A6A; border:1px solid rgba(224,120,64,.3); }
+    .badge-gold   { background:rgba(201,168,76,.18); color:var(--gold); border:1px solid rgba(201,168,76,.3); }
+    .badge-mute   { background:rgba(232,220,200,.08); color:var(--text-dim); border:1px solid rgba(232,220,200,.12); }
+
+    /* table */
+    table { width:100%; border-collapse:collapse; font-size:.88rem; }
+    th { text-align:left; font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); padding:.7rem 1rem; border-bottom:1px solid var(--border); }
+    td { padding:.85rem 1rem; border-bottom:1px solid rgba(232,220,200,.06); color:var(--text); vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(255,255,255,.02); }
+    .avail-row td { color:var(--text-mute); font-style:italic; }
+
+    /* mana dots */
+    .mana { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:.35rem; vertical-align:middle; }
+    .mw-dot { background:var(--mw); }
+    .mu-dot { background:var(--mu); }
+    .mr-dot { background:var(--mr); }
+    .mg-dot { background:var(--mg); }
+    .mb-dot { background:var(--mb); }
+
+    /* link button */
+    .link-btn {
+      display:flex; align-items:center; gap:.9rem;
+      padding:1.1rem 1.3rem; background:var(--panel); border:1px solid var(--border);
+      border-radius:var(--r); text-decoration:none; color:var(--text);
+      transition:var(--ease);
+    }
+    .link-btn:hover { border-color:var(--gold); background:var(--panel2); transform:translateY(-2px); }
+    .link-btn .link-ico { font-size:1.4rem; flex-shrink:0; }
+    .link-btn .link-title { font-weight:600; font-size:.9rem; }
+    .link-btn .link-desc { font-size:.78rem; color:var(--text-dim); margin-top:.15rem; }
+
+    /* vendor card */
+    .vendor-card {
+      background:var(--panel); border:1px solid var(--border); border-radius:var(--r);
+      padding:1.3rem; transition:var(--ease);
+    }
+    .vendor-card:hover { border-color:var(--gold-dim); }
+    .vendor-role { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:.3rem; }
+    .vendor-name { font-size:1rem; font-weight:600; color:var(--text); }
+    .vendor-phone { font-size:.85rem; color:var(--text-dim); margin-top:.4rem; }
+    .vendor-cost  { font-size:.78rem; color:var(--success); margin-top:.25rem; }
+
+    /* calendar */
+    .cal-wrap { overflow-x:auto; }
+    .cal-month { margin-bottom:2.5rem; }
+    .cal-month-title { font-family:'Cinzel',serif; font-size:.95rem; color:var(--gold); letter-spacing:.1em; margin-bottom:1rem; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+    .cal-day-hdr { text-align:center; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mute); padding:.4rem 0; }
+    .cal-day {
+      min-height:62px; padding:.4rem .5rem; border-radius:6px;
+      background:var(--panel2); font-size:.8rem; color:var(--text-dim);
+      border:1px solid transparent; transition:background .2s; position:relative;
+    }
+    .cal-day .dn { font-size:.75rem; font-weight:600; color:var(--text-mute); }
+    .cal-day.booked { background:rgba(74,140,180,.15); border-color:rgba(74,140,180,.3); }
+    .cal-day.booked .dn { color:var(--accent); }
+    .cal-day.owner-block { background:rgba(201,168,76,.12); border-color:rgba(201,168,76,.3); }
+    .cal-day.owner-block .dn { color:var(--gold); }
+    .cal-day.available { background:rgba(91,170,114,.08); border-color:rgba(91,170,114,.18); }
+    .cal-day.today { border-color:var(--gold) !important; }
+    .cal-day.empty { background:transparent; border:none; }
+    .cal-day .booking-tag { font-size:.62rem; line-height:1.3; margin-top:.25rem; color:rgba(125,180,212,.85); }
+    .cal-day .owner-tag  { font-size:.62rem; line-height:1.3; margin-top:.25rem; color:var(--gold); }
+    .cal-legend { display:flex; gap:1.5rem; flex-wrap:wrap; margin-top:1.2rem; }
+    .cal-legend span { display:flex; align-items:center; gap:.5rem; font-size:.78rem; color:var(--text-dim); }
+    .leg-dot { width:10px; height:10px; border-radius:3px; }
+
+    /* block dates form */
+    .block-form { display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end; margin-top:1.2rem; }
+    .block-form input[type=date] {
+      padding:.6rem .9rem; border-radius:8px;
+      background:var(--panel2); border:1px solid var(--border);
+      color:var(--text); font-size:.88rem; outline:none;
+      color-scheme:dark;
+    }
+    .block-form input[type=date]:focus { border-color:var(--gold); }
+    .block-form label { font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); display:block; margin-bottom:.35rem; }
+    .btn-sm {
+      padding:.6rem 1.2rem; border-radius:8px; border:none; cursor:pointer;
+      font-size:.82rem; font-weight:600; letter-spacing:.06em; transition:var(--ease);
+    }
+    .btn-gold { background:var(--gold); color:var(--bg); }
+    .btn-gold:hover { background:#e0b858; }
+    .btn-danger { background:rgba(196,80,80,.2); color:#E08080; border:1px solid rgba(196,80,80,.3); }
+    .btn-danger:hover { background:rgba(196,80,80,.35); }
+
+    /* house projects */
+    .project-form { display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end; margin-bottom:1.5rem; }
+    .project-form input[type=text], .project-form select {
+      padding:.65rem .9rem; border-radius:8px;
+      background:var(--panel2); border:1px solid var(--border);
+      color:var(--text); font-size:.88rem; outline:none; transition:border-color .3s;
+    }
+    .project-form input[type=text] { flex:1; min-width:200px; }
+    .project-form select option { background:var(--panel2); }
+    .project-form input:focus, .project-form select:focus { border-color:var(--gold); }
+    .project-item {
+      display:flex; align-items:center; gap:.8rem;
+      padding:.85rem 1rem; background:var(--panel2); border-radius:8px;
+      border:1px solid var(--border); margin-bottom:.5rem;
+      transition:var(--ease);
+    }
+    .project-item:hover { border-color:var(--gold-dim); }
+    .project-item .pi-title { flex:1; font-size:.9rem; }
+    .project-item .pi-title.done { text-decoration:line-through; color:var(--text-mute); }
+    .project-item button { background:none; border:none; cursor:pointer; font-size:.85rem; color:var(--text-mute); padding:.2rem .4rem; border-radius:4px; transition:var(--ease); }
+    .project-item button:hover { color:var(--danger); background:rgba(196,80,80,.12); }
+    .empty-state { text-align:center; padding:3rem 1rem; color:var(--text-mute); font-size:.9rem; font-style:italic; }
+
+    /* schedule */
+    .sched-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1.2rem; }
+    .sched-card {
+      background:var(--panel); border:1px solid var(--border); border-radius:var(--r);
+      padding:1.4rem; transition:var(--ease);
+    }
+    .sched-card:hover { border-color:var(--gold-dim); }
+    .sched-type { font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); font-weight:600; margin-bottom:.35rem; }
+    .sched-name { font-size:.95rem; font-weight:600; }
+    .sched-detail { font-size:.82rem; color:var(--text-dim); margin-top:.3rem; }
+    .sched-cost { font-size:.8rem; color:var(--success); margin-top:.3rem; }
+    .sched-next { font-size:.78rem; color:var(--text-mute); margin-top:.6rem; padding-top:.6rem; border-top:1px solid var(--border); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:rgba(201,168,76,.25); border-radius:3px; }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN GATE ── -->
+<div id="gate">
+  <img src="assets/logo.png" alt="The Gathering">
+  <h1>Owner Portal</h1>
+  <p>The Gathering Silveira &nbsp;·&nbsp; Private Access</p>
+  <div class="gate-card">
+    <label>Access Code</label>
+    <input type="password" id="pwd" placeholder="Enter password" autocomplete="current-password">
+    <button onclick="tryLogin()">Enter the Gathering</button>
+    <div id="gate-err">Incorrect password. Please try again.</div>
+    <hr class="gate-rule">
+    <p class="gate-quote">"One will corrupt, two will divide.<br>With three there is balance."<br><small style="opacity:.6">— J.R.R. Tolkien</small></p>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img src="assets/logo.png" alt="">
+      <span>The Gathering Silveira</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-season">🌊 2026 Season</span>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+    <button class="tab-btn" data-tab="calendar">📅 Calendar</button>
+    <button class="tab-btn" data-tab="guests">👥 Guests</button>
+    <button class="tab-btn" data-tab="housekeeping">🧹 Housekeeping</button>
+    <button class="tab-btn" data-tab="vendors">🔧 Vendors</button>
+    <button class="tab-btn" data-tab="projects">🏗️ Projects</button>
+    <button class="tab-btn" data-tab="links">🔗 Quick Links</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ OVERVIEW ═══ -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="grid-3" style="margin-bottom:1.5rem">
+        <div class="card stat">
+          <div class="val" id="stat-booked">9</div>
+          <div class="lbl">Weeks Booked</div>
+        </div>
+        <div class="card stat">
+          <div class="val" id="stat-avail">3</div>
+          <div class="lbl">Weeks Available</div>
+        </div>
+        <div class="card stat">
+          <div class="val" id="stat-next">Jun 7</div>
+          <div class="lbl">Next Arrival</div>
+        </div>
+      </div>
+
+      <div class="section-title">⚔️ Active Season — 2026</div>
+      <div class="card" style="margin-bottom:1.5rem">
+        <table>
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Dates</th>
+              <th>Guests</th>
+              <th>Origin</th>
+              <th>Pets</th>
+              <th>Channel</th>
+            </tr>
+          </thead>
+          <tbody id="booking-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="section-title">🌐 Airbnb Sync</div>
+          <div class="card">
+            <p style="font-size:.88rem;color:var(--text-dim);margin-bottom:1rem">Sync The Gathering calendar with external platforms using the iCal link below.</p>
+            <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;font-size:.78rem;color:var(--gold);word-break:break-all;font-family:monospace;margin-bottom:1rem">
+              https://www.airbnb.com/calendar/ical/1608023407293236428.ics?t=6d82fb3056d34c7dbf06fb04bf33fce9
+            </div>
+            <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+              <a href="https://www.airbnb.com/hosting/listings" class="btn-sm btn-gold" target="_blank" rel="noopener" style="text-decoration:none">Open Airbnb Host</a>
+              <button class="btn-sm" style="background:var(--panel2);border:1px solid var(--border);color:var(--text)"
+                onclick="navigator.clipboard.writeText('https://www.airbnb.com/calendar/ical/1608023407293236428.ics?t=6d82fb3056d34c7dbf06fb04bf33fce9');this.textContent='Copied ✓'">
+                Copy iCal Link
+              </button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title">💰 Monthly Costs</div>
+          <div class="card">
+            <table>
+              <thead><tr><th>Service</th><th>Provider</th><th style="text-align:right">R$/mo</th></tr></thead>
+              <tbody>
+                <tr><td>🌐 Internet (Starlink)</td><td style="color:var(--text-dim)">Starlink</td><td style="text-align:right;color:var(--success)">R$190</td></tr>
+                <tr><td>⚡ Electricity</td><td style="color:var(--text-dim)">CELESC</td><td style="text-align:right;color:var(--success)">R$450</td></tr>
+                <tr><td>💧 Water</td><td style="color:var(--text-dim)">CASAN</td><td style="text-align:right;color:var(--success)">R$250</td></tr>
+                <tr><td>🏊 Pool Maintenance</td><td style="color:var(--text-dim)">Emerson Alves</td><td style="text-align:right;color:var(--success)">R$500</td></tr>
+                <tr style="border-top:1px solid var(--border)">
+                  <td colspan="2" style="font-weight:600;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.08em">TOTAL MONTHLY</td>
+                  <td style="text-align:right;font-weight:700;color:var(--gold)">R$1,390</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CALENDAR ═══ -->
+    <div class="tab-panel" id="tab-calendar">
+      <div class="section-title">📅 2026 Season Calendar</div>
+      <div class="cal-wrap" id="cal-root"></div>
+      <div class="cal-legend">
+        <span><span class="leg-dot" style="background:rgba(74,140,180,.5)"></span> Guest Booking</span>
+        <span><span class="leg-dot" style="background:rgba(201,168,76,.4)"></span> Owners Block</span>
+        <span><span class="leg-dot" style="background:rgba(91,170,114,.3)"></span> Available</span>
+        <span><span class="leg-dot" style="border:1px solid var(--gold);background:transparent"></span> Today</span>
+      </div>
+
+      <div class="section-title" style="margin-top:2.5rem">🔒 Block Dates for Owners</div>
+      <div class="card">
+        <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:1rem">Mark dates as owner-reserved. These display on the calendar and can be synced to Airbnb via the iCal link.</p>
+        <div class="block-form">
+          <div>
+            <label>From</label>
+            <input type="date" id="block-from">
+          </div>
+          <div>
+            <label>To</label>
+            <input type="date" id="block-to">
+          </div>
+          <div>
+            <label>Label</label>
+            <input type="text" id="block-label" placeholder="e.g. Owner Vacation" style="padding:.6rem .9rem;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);font-size:.88rem;outline:none;min-width:180px">
+          </div>
+          <button class="btn-sm btn-gold" onclick="addBlock()">Add Block</button>
+        </div>
+        <div id="block-list" style="margin-top:1.2rem"></div>
+      </div>
+    </div>
+
+    <!-- ═══ GUESTS ═══ -->
+    <div class="tab-panel" id="tab-guests">
+      <div class="section-title">👥 2026 Guest Parties</div>
+      <div id="guest-cards" style="display:flex;flex-direction:column;gap:1rem"></div>
+    </div>
+
+    <!-- ═══ HOUSEKEEPING ═══ -->
+    <div class="tab-panel" id="tab-housekeeping">
+      <div class="section-title">🧹 Recurring Services</div>
+      <div class="sched-grid" style="margin-bottom:2.5rem">
+        <div class="sched-card">
+          <div class="sched-type">🧹 House Cleaning</div>
+          <div class="sched-name">Dona Maria</div>
+          <div class="sched-detail">📞 +55 48 99802-8728</div>
+          <div class="sched-cost">R$450/visit (with assistant)<br><span style="font-size:.75rem;color:var(--text-mute)">Pix: +55 48 99802 8728</span></div>
+          <div class="sched-next">🗓 Schedule before each check-in</div>
+        </div>
+        <div class="sched-card">
+          <div class="sched-type">🧹 House Cleaning (Alt)</div>
+          <div class="sched-name">Rosana</div>
+          <div class="sched-detail">📞 +55 51 99680-9433</div>
+          <div class="sched-cost">R$700/visit (with assistant)</div>
+          <div class="sched-next">🗓 Backup / heavy-clean option</div>
+        </div>
+        <div class="sched-card">
+          <div class="sched-type">🏊 Pool Maintenance</div>
+          <div class="sched-name">Edison "Édi" Silveira</div>
+          <div class="sched-detail">📞 +55 48 99120-6784</div>
+          <div class="sched-cost">R$700/mês (monthly)</div>
+          <div class="sched-next">🗓 Monthly recurring service</div>
+        </div>
+        <div class="sched-card">
+          <div class="sched-type">🌿 Grass & Garden</div>
+          <div class="sched-name">Du</div>
+          <div class="sched-detail">📞 +55 48 99634-8646</div>
+          <div class="sched-cost">R$350/visit<br><span style="font-size:.75rem;color:var(--text-mute)">Pix: 035.790.929-10</span></div>
+          <div class="sched-next">🗓 As needed — ~every 3–4 weeks</div>
+        </div>
+        <div class="sched-card">
+          <div class="sched-type">🪟 Window Cleaning</div>
+          <div class="sched-name">TBD</div>
+          <div class="sched-detail" style="color:var(--warn)">⚠️ Vendor not yet assigned</div>
+          <div class="sched-cost">—</div>
+          <div class="sched-next">🗓 Schedule before each season</div>
+        </div>
+        <div class="sched-card">
+          <div class="sched-type">🔧 Hydraulic / Plumbing</div>
+          <div class="sched-name">Emerson Alves</div>
+          <div class="sched-detail">📞 +55 48 99655-7266</div>
+          <div class="sched-cost">Rate TBD / call-out basis</div>
+          <div class="sched-next">🗓 On-call as needed</div>
+        </div>
+      </div>
+
+      <div class="section-title">🏠 Keyless Entry Codes</div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Door / Slot</th><th>Person</th><th>Code</th></tr></thead>
+          <tbody>
+            <tr><td>🚨 Alarm</td><td style="color:var(--text-dim)">—</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
+            <tr><td>🔑 Master</td><td style="color:var(--text-dim)">All doors</td><td><span style="color:var(--gold)">202543</span></td></tr>
+            <tr><td>🔑 001–003</td><td style="color:var(--text-dim)">TAG access</td><td style="color:var(--text-mute)">NFC Tag</td></tr>
+            <tr><td>🔑 004 Pipo</td><td style="color:var(--text-dim)">Pipo</td><td>270483</td></tr>
+            <tr><td>🔑 005 Fêfo</td><td style="color:var(--text-dim)">Fêfo</td><td>200983</td></tr>
+            <tr><td>🔑 006 Zé</td><td style="color:var(--text-dim)">Zé</td><td>220983</td></tr>
+            <tr><td>🔑 Manutenção</td><td style="color:var(--text-dim)">Ricardo</td><td>88490</td></tr>
+            <tr><td>🔑 Manutenção</td><td style="color:var(--text-dim)">Renan</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
+            <tr><td>🔑 Cleaner</td><td style="color:var(--text-dim)">D. Maria / Fulana</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
+            <tr><td>🔒 Owners Lock</td><td style="color:var(--text-dim)">Owners</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ VENDORS ═══ -->
+    <div class="tab-panel" id="tab-vendors">
+      <div class="section-title">🔧 Vendor Directory</div>
+      <div class="grid-3">
+        <div class="vendor-card">
+          <div class="vendor-role">🏗️ Empreiteiro</div>
+          <div class="vendor-name">Renan Delavald</div>
+          <div class="vendor-phone">📞 +55 48 9169-9799</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🏗️ Engenheiro Chefe</div>
+          <div class="vendor-name">Ricardo</div>
+          <div class="vendor-phone">📞 +55 48 99997-1354</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🏗️ Mestre de Obras</div>
+          <div class="vendor-name">Gegê</div>
+          <div class="vendor-phone">📞 +55 48 XXXX-XXXX</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🏡 Corretora</div>
+          <div class="vendor-name">Adriane Kayser</div>
+          <div class="vendor-phone">📞 +55 48 9136-8010</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🏛️ Arquiteta &amp; Designer</div>
+          <div class="vendor-name">Giovana Munhoz</div>
+          <div class="vendor-phone">📞 +55 51 98118-3928</div>
+          <div class="vendor-cost">@giovanamunhozarquitetura</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🔧 Hidráulico</div>
+          <div class="vendor-name">Emerson Alves</div>
+          <div class="vendor-phone">📞 +55 48 99655-7266</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🏊 Manutenção Piscina</div>
+          <div class="vendor-name">Edison "Édi" Silveira</div>
+          <div class="vendor-phone">📞 +55 48 99120-6784</div>
+          <div class="vendor-cost">R$700/mês</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🪟 Guarda-Corpo</div>
+          <div class="vendor-name">Cléverson</div>
+          <div class="vendor-phone">📞 +55 48 99655-7266</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🧹 Diarista</div>
+          <div class="vendor-name">Dona Maria</div>
+          <div class="vendor-phone">📞 +55 48 99802-8728</div>
+          <div class="vendor-cost">R$450/visita · Pix: +55 48 99802 8728</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🧹 Diarista (Alt)</div>
+          <div class="vendor-name">Rosana</div>
+          <div class="vendor-phone">📞 +55 51 99680-9433</div>
+          <div class="vendor-cost">R$700/visita</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">🌿 Jardinagem &amp; Grama</div>
+          <div class="vendor-name">Du</div>
+          <div class="vendor-phone">📞 +55 48 99634-8646</div>
+          <div class="vendor-cost">R$350/visita · Pix: 035.790.929-10</div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">📞 Property Manager</div>
+          <div class="vendor-name">Anfitriões de Aluguel</div>
+          <div class="vendor-phone"><a href="https://anfitrioesdealuguel.com.br" target="_blank" rel="noopener" style="color:var(--accent)">anfitrioesdealuguel.com.br</a></div>
+        </div>
+        <div class="vendor-card">
+          <div class="vendor-role">📞 Property Manager (Alt)</div>
+          <div class="vendor-name">Seazone</div>
+          <div class="vendor-phone"><a href="https://seazone.com.br" target="_blank" rel="noopener" style="color:var(--accent)">seazone.com.br</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PROJECTS ═══ -->
+    <div class="tab-panel" id="tab-projects">
+      <div class="section-title">🏗️ House Projects</div>
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="project-form">
+          <input type="text" id="proj-title" placeholder="Project description…">
+          <select id="proj-cat">
+            <option value="maintenance">🔧 Maintenance</option>
+            <option value="improvement">✨ Improvement</option>
+            <option value="repair">🩹 Repair</option>
+            <option value="cleaning">🧹 Cleaning</option>
+          </select>
+          <select id="proj-priority">
+            <option value="high">🔴 High</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+          <button class="btn-sm btn-gold" onclick="addProject()">+ Add Project</button>
+        </div>
+        <div id="projects-list"></div>
+      </div>
+    </div>
+
+    <!-- ═══ QUICK LINKS ═══ -->
+    <div class="tab-panel" id="tab-links">
+      <div class="section-title">🔗 Quick Links</div>
+      <div class="grid-2" style="margin-bottom:2rem">
+        <a class="link-btn" href="https://www.airbnb.com/hosting/listings" target="_blank" rel="noopener">
+          <span class="link-ico">🏡</span>
+          <div><div class="link-title">Airbnb Host Dashboard</div><div class="link-desc">Manage listings, messages, and reservations</div></div>
+        </a>
+        <a class="link-btn" href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener">
+          <span class="link-ico">🔗</span>
+          <div><div class="link-title">Airbnb Listing</div><div class="link-desc">Public listing page — share with guests</div></div>
+        </a>
+        <a class="link-btn" href="https://www.instagram.com/thegatheringsilveira/" target="_blank" rel="noopener">
+          <span class="link-ico">📸</span>
+          <div><div class="link-title">Instagram</div><div class="link-desc">@thegatheringsilveira</div></div>
+        </a>
+        <a class="link-btn" href="https://mysecurity.eufylife.com/#/camera" target="_blank" rel="noopener">
+          <span class="link-ico">📷</span>
+          <div><div class="link-title">Eufy Security Cameras</div><div class="link-desc">Live camera access — mysecurity.eufylife.com</div></div>
+        </a>
+        <a class="link-btn" href="https://drive.google.com/drive/folders/1Q3Wo8OoiDPC_hls-2cgRextAZueU3gIV" target="_blank" rel="noopener">
+          <span class="link-ico">📁</span>
+          <div><div class="link-title">Google Drive</div><div class="link-desc">All house documents, photos, and plans</div></div>
+        </a>
+        <a class="link-btn" href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" target="_blank" rel="noopener">
+          <span class="link-ico">📐</span>
+          <div><div class="link-title">Interior Plans (PDF)</div><div class="link-desc">Architectural layouts — all 5 suites</div></div>
+        </a>
+        <a class="link-btn" href="https://maps.google.com/?q=Rua+Augusto+Germano+Wilke,+Praia+da+Silveira,+Garopaba+SC+88490-000" target="_blank" rel="noopener">
+          <span class="link-ico">📍</span>
+          <div><div class="link-title">Google Maps</div><div class="link-desc">Rua Augusto Germano Wilke — Praia da Silveira</div></div>
+        </a>
+        <a class="link-btn" href="mailto:TheGatheringSilveira@gmail.com">
+          <span class="link-ico">✉️</span>
+          <div><div class="link-title">House Email</div><div class="link-desc">TheGatheringSilveira@gmail.com</div></div>
+        </a>
+      </div>
+
+      <div class="section-title">🌐 WiFi Credentials</div>
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Guest WiFi</div>
+          <div style="font-size:1rem;font-weight:600">The Gathering Silveira</div>
+          <div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code style="background:var(--panel2);padding:.2rem .5rem;border-radius:4px">welcome</code></div>
+        </div>
+        <div class="card">
+          <div style="font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Owner WiFi</div>
+          <div style="font-size:1rem;font-weight:600">TheGathering</div>
+          <div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code style="background:var(--panel2);padding:.2rem .5rem;border-radius:4px">@tgsilveira</code></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<script>
+// ── DATA ────────────────────────────────────────────
+const BOOKINGS = [
+  { week:'Week 1',  dates:'May 31 – Jun 7',  nights:7, name:'Chris Gerdes',    size:'8 adults',              origin:'Richmond, VA',    pet:true,  ch:'Friends & Family' },
+  { week:'Week 2',  dates:'Jun 7 – Jun 14',  nights:7, name:'Kim Overman',     size:'8 adults',              origin:'Wake Forest, NC', pet:false, ch:'Airbnb' },
+  { week:'Week 3',  dates:'Jun 14 – Jun 21', nights:7, name:'Chris Clasen',    size:'6 adults, 2 kids, 1 inf',origin:'Raleigh, NC',    pet:false, ch:'Airbnb' },
+  { week:'Week 4',  dates:'Jun 21 – Jun 28', nights:7, name:'Art Nasser',      size:'5 guests',              origin:'Raleigh, NC',     pet:false, ch:'Vrbo' },
+  { week:'Week 5',  dates:'Jun 28 – Jul 5',  nights:7, name:null,              size:null,                    origin:null,              pet:null,  ch:null },
+  { week:'Week 6',  dates:'Jul 5 – Jul 12',  nights:7, name:'Owners Beach Week',size:'Owners',               origin:'—',               pet:true,  ch:'Owner Block', owner:true },
+  { week:'Week 7',  dates:'Jul 12 – Jul 19', nights:7, name:'Roger Souther',   size:'8 adults',              origin:'Spartanburg, SC', pet:true,  ch:'Airbnb' },
+  { week:'Week 8',  dates:'Jul 19 – Jul 26', nights:7, name:'M.K. Sanderson',  size:'5 guests, 1 pet',       origin:'Chesterfield, VA',pet:true,  ch:'Airbnb' },
+  { week:'Week 9',  dates:'Jul 26 – Aug 2',  nights:7, name:null,              size:null,                    origin:null,              pet:null,  ch:null },
+  { week:'Week 10', dates:'Aug 2 – Aug 9',   nights:7, name:'Sarah Snipes',    size:'5 adults, 1 pet',       origin:'Hillsborough, NC',pet:true,  ch:'Airbnb' },
+  { week:'Week 11', dates:'Aug 9 – Aug 16',  nights:7, name:'Mike Pfister',    size:'5 guests',              origin:'—',               pet:false, ch:'Direct' },
+  { week:'Wks 12–14',dates:'Aug 16 – Sep 6', nights:21,name:null,             size:null,                    origin:null,              pet:null,  ch:null },
+];
+
+// date ranges for calendar marking
+const BOOKED_RANGES = [
+  { from:'2026-05-31', to:'2026-06-07', label:'Gerdes' },
+  { from:'2026-06-07', to:'2026-06-14', label:'Overman' },
+  { from:'2026-06-14', to:'2026-06-21', label:'Clasen' },
+  { from:'2026-06-21', to:'2026-06-28', label:'Nasser' },
+  { from:'2026-07-12', to:'2026-07-19', label:'Souther' },
+  { from:'2026-07-19', to:'2026-07-26', label:'Sanderson' },
+  { from:'2026-08-02', to:'2026-08-09', label:'Snipes' },
+  { from:'2026-08-09', to:'2026-08-16', label:'Pfister' },
+];
+const OWNER_RANGES = [
+  { from:'2026-07-05', to:'2026-07-12', label:'Owners' },
+];
+
+// ── AUTH ─────────────────────────────────────────────
+function tryLogin() {
+  const v = document.getElementById('pwd').value;
+  if(v === '@tgs') {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display  = 'block';
+    init();
+  } else {
+    document.getElementById('gate-err').style.display = 'block';
+    document.getElementById('pwd').value = '';
+  }
+}
+function logout() {
+  document.getElementById('app').style.display  = 'none';
+  document.getElementById('gate').style.display = 'flex';
+  document.getElementById('pwd').value = '';
+}
+document.getElementById('pwd').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+
+// ── TABS ─────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── INIT ─────────────────────────────────────────────
+function init() {
+  renderBookingTable();
+  renderGuestCards();
+  renderCalendar();
+  renderProjects();
+  renderBlocks();
+}
+
+// ── BOOKINGS TABLE ────────────────────────────────────
+function chBadge(ch) {
+  if(!ch) return '';
+  const cls = ch==='Airbnb'?'badge-blue':ch==='Vrbo'?'badge-orange':ch==='Direct'?'badge-green':ch==='Owner Block'?'badge-gold':'badge-mute';
+  return `<span class="badge ${cls}">${ch}</span>`;
+}
+function renderBookingTable() {
+  const tbody = document.getElementById('booking-table-body');
+  tbody.innerHTML = BOOKINGS.map(b => {
+    if(!b.name) return `<tr class="avail-row"><td>${b.week}</td><td>${b.dates}</td><td colspan="4">— Available —</td></tr>`;
+    const petIcon = b.pet===true ? '🐾' : b.pet===false ? '🚫' : '';
+    const rowStyle = b.owner ? 'style="background:rgba(201,168,76,.04)"' : '';
+    return `<tr ${rowStyle}>
+      <td><span style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--text-dim)">${b.week}</span></td>
+      <td>${b.dates} <span style="font-size:.75rem;color:var(--text-mute)">(${b.nights}n)</span></td>
+      <td><strong>${b.name}</strong><br><span style="font-size:.78rem;color:var(--text-dim)">${b.size}</span></td>
+      <td style="font-size:.85rem;color:var(--text-dim)">${b.origin||'—'}</td>
+      <td>${petIcon}</td>
+      <td>${chBadge(b.ch)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── GUEST CARDS ───────────────────────────────────────
+function renderGuestCards() {
+  const el = document.getElementById('guest-cards');
+  el.innerHTML = BOOKINGS.filter(b => b.name).map(b => {
+    const petStr = b.pet===true ? '🐾 Pet allowed' : b.pet===false ? '🚫 No pets' : '';
+    const isOwner = b.owner;
+    return `<div class="card" style="${isOwner?'border-color:rgba(201,168,76,.4);':''}" >
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.1em;color:var(--text-dim);margin-bottom:.3rem">${b.week} · ${b.dates}</div>
+          <div style="font-size:1.1rem;font-weight:600;color:${isOwner?'var(--gold)':'var(--text)'}">${b.name}</div>
+          ${b.origin&&!isOwner?`<div style="font-size:.85rem;color:var(--text-dim);margin-top:.2rem">📍 ${b.origin}</div>`:''}
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          ${chBadge(b.ch)}
+          ${petStr?`<span class="badge ${b.pet?'badge-orange':'badge-mute'}">${petStr}</span>`:''}
+        </div>
+      </div>
+      ${b.size&&!isOwner?`<div style="font-size:.88rem;color:var(--text-dim);margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border)">👥 ${b.size}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── CALENDAR ─────────────────────────────────────────
+function dateInRange(d, from, to) {
+  return d >= from && d < to;
+}
+function getBookingForDate(iso) {
+  for(const r of BOOKED_RANGES) if(dateInRange(iso,r.from,r.to)) return r;
+  return null;
+}
+function getOwnerForDate(iso) {
+  // Check localStorage blocks
+  const saved = getSavedBlocks();
+  for(const b of saved) if(dateInRange(iso,b.from,b.to)) return b;
+  // Built-in owner ranges
+  for(const r of OWNER_RANGES) if(dateInRange(iso,r.from,r.to)) return r;
+  return null;
+}
+function isAvailable(iso) {
+  if(iso < '2026-05-31' || iso > '2026-09-06') return false;
+  const avail = ['2026-06-28','2026-07-26'];
+  // week 5: Jun 28 – Jul 5; week 9: Jul 26 – Aug 2; weeks 12-14: Aug 16 – Sep 6
+  return (dateInRange(iso,'2026-06-28','2026-07-05') ||
+          dateInRange(iso,'2026-07-26','2026-08-02') ||
+          dateInRange(iso,'2026-08-16','2026-09-07'));
+}
+function isoDate(y,m,d) {
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+const todayISO = new Date().toISOString().slice(0,10);
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function renderCalendar() {
+  const root = document.getElementById('cal-root');
+  root.innerHTML = '';
+  // Show May–September 2026
+  for(let m = 4; m <= 8; m++) { // 0-indexed
+    const wrap = document.createElement('div');
+    wrap.className = 'cal-month';
+    const title = document.createElement('div');
+    title.className = 'cal-month-title';
+    title.textContent = MONTHS[m] + ' 2026';
+    wrap.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 'cal-grid';
+
+    DAYS.forEach(d => {
+      const hdr = document.createElement('div');
+      hdr.className = 'cal-day-hdr';
+      hdr.textContent = d;
+      grid.appendChild(hdr);
+    });
+
+    const firstDay = new Date(2026, m, 1).getDay();
+    const daysInMonth = new Date(2026, m+1, 0).getDate();
+
+    for(let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'cal-day empty';
+      grid.appendChild(empty);
+    }
+
+    for(let d = 1; d <= daysInMonth; d++) {
+      const iso = isoDate(2026, m+1, d);
+      const cell = document.createElement('div');
+      cell.className = 'cal-day';
+
+      const bk = getBookingForDate(iso);
+      const ow = getOwnerForDate(iso);
+      const av = isAvailable(iso);
+
+      if(ow) { cell.classList.add('owner-block'); }
+      else if(bk) { cell.classList.add('booked'); }
+      else if(av) { cell.classList.add('available'); }
+
+      if(iso === todayISO) cell.classList.add('today');
+
+      cell.innerHTML = `<div class="dn">${d}</div>`;
+      if(bk && (d===1 || new Date(2026,m,d).getDay()===0 || iso===bk.from)) {
+        const t = document.createElement('div');
+        t.className = 'booking-tag';
+        t.textContent = bk.label;
+        cell.appendChild(t);
+      }
+      if(ow && (d===1 || new Date(2026,m,d).getDay()===0 || iso===ow.from)) {
+        const t = document.createElement('div');
+        t.className = 'owner-tag';
+        t.textContent = ow.label;
+        cell.appendChild(t);
+      }
+      grid.appendChild(cell);
+    }
+    wrap.appendChild(grid);
+    root.appendChild(wrap);
+  }
+}
+
+// ── OWNER BLOCKS ─────────────────────────────────────
+function getSavedBlocks() {
+  return JSON.parse(localStorage.getItem('tg_blocks')||'[]');
+}
+function saveBlocks(arr) {
+  localStorage.setItem('tg_blocks', JSON.stringify(arr));
+}
+function addBlock() {
+  const from  = document.getElementById('block-from').value;
+  const to    = document.getElementById('block-to').value;
+  const label = document.getElementById('block-label').value.trim() || 'Owner Block';
+  if(!from || !to || from >= to) { alert('Please enter a valid date range.'); return; }
+  const blocks = getSavedBlocks();
+  blocks.push({ id: Date.now(), from, to, label });
+  saveBlocks(blocks);
+  renderBlocks();
+  renderCalendar();
+  document.getElementById('block-from').value = '';
+  document.getElementById('block-to').value   = '';
+  document.getElementById('block-label').value = '';
+}
+function removeBlock(id) {
+  saveBlocks(getSavedBlocks().filter(b => b.id !== id));
+  renderBlocks();
+  renderCalendar();
+}
+function renderBlocks() {
+  const blocks = getSavedBlocks();
+  const el = document.getElementById('block-list');
+  if(!blocks.length) { el.innerHTML = '<p style="font-size:.82rem;color:var(--text-mute);font-style:italic">No owner blocks added yet.</p>'; return; }
+  el.innerHTML = blocks.map(b => `
+    <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:var(--panel2);border-radius:8px;margin-bottom:.4rem;border:1px solid rgba(201,168,76,.2)">
+      <span style="font-size:.8rem;color:var(--gold);font-weight:600">🔒 ${b.label}</span>
+      <span style="font-size:.8rem;color:var(--text-dim)">${b.from} → ${b.to}</span>
+      <button onclick="removeBlock(${b.id})" class="btn-sm btn-danger" style="margin-left:auto">Remove</button>
+    </div>`).join('');
+}
+
+// ── PROJECTS ─────────────────────────────────────────
+function getProjects() { return JSON.parse(localStorage.getItem('tg_projects')||'[]'); }
+function saveProjects(p){ localStorage.setItem('tg_projects', JSON.stringify(p)); }
+const PRIO_LABELS = { high:'🔴 High', medium:'🟡 Medium', low:'🟢 Low' };
+const CAT_LABELS  = { maintenance:'🔧 Maintenance', improvement:'✨ Improvement', repair:'🩹 Repair', cleaning:'🧹 Cleaning' };
+function addProject() {
+  const title = document.getElementById('proj-title').value.trim();
+  if(!title) return;
+  const projects = getProjects();
+  projects.unshift({ id:Date.now(), title, cat:document.getElementById('proj-cat').value, priority:document.getElementById('proj-priority').value, done:false });
+  saveProjects(projects);
+  renderProjects();
+  document.getElementById('proj-title').value = '';
+}
+function toggleProject(id) {
+  const p = getProjects().map(x => x.id===id ? {...x, done:!x.done} : x);
+  saveProjects(p); renderProjects();
+}
+function deleteProject(id) {
+  saveProjects(getProjects().filter(x => x.id!==id)); renderProjects();
+}
+function renderProjects() {
+  const list = document.getElementById('projects-list');
+  const projects = getProjects();
+  if(!projects.length) { list.innerHTML = '<div class="empty-state">No projects yet. Add one above to track house maintenance and improvements.</div>'; return; }
+  list.innerHTML = projects.map(p => `
+    <div class="project-item">
+      <input type="checkbox" ${p.done?'checked':''} onchange="toggleProject(${p.id})" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer">
+      <div style="flex:1">
+        <div class="pi-title ${p.done?'done':''}">${p.title}</div>
+        <div style="display:flex;gap:.5rem;margin-top:.3rem;flex-wrap:wrap">
+          <span class="badge badge-mute" style="font-size:.65rem">${CAT_LABELS[p.cat]}</span>
+          <span class="badge ${p.priority==='high'?'badge-orange':p.priority==='medium'?'badge-gold':'badge-green'}" style="font-size:.65rem">${PRIO_LABELS[p.priority]}</span>
+        </div>
+      </div>
+      <button onclick="deleteProject(${p.id})" title="Delete">✕</button>
+    </div>`).join('');
+}
+
+// ── KEYBOARD ENTER on pwd ─────────────────────────────
+document.getElementById('pwd').addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+</script>
+</body>
+</html>
