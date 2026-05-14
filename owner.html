@@ -360,48 +360,115 @@
     .battlefield-landing {
       min-height:calc(100vh - 108px);
       display:flex; flex-direction:column;
-      align-items:center; justify-content:flex-start;
-      padding:3rem 1rem 6rem; position:relative; overflow:hidden;
+      align-items:center; justify-content:center;
+      padding:1.8rem 1.5rem 2rem;
+      position:relative; overflow:hidden;
+      /* MTG Arena battlefield — sky fading to enchanted ground */
+      background:
+        radial-gradient(ellipse 1100px 280px at 50% 14%, rgba(201,168,76,.065) 0%, transparent 62%),
+        radial-gradient(ellipse 500px 180px at  8% 26%, rgba(232,228,168,.04)  0%, transparent 52%),
+        radial-gradient(ellipse 500px 180px at 92% 26%, rgba(91,170,212,.04)   0%, transparent 52%),
+        radial-gradient(ellipse 420px 160px at 28% 24%, rgba(74,144,64,.032)   0%, transparent 50%),
+        radial-gradient(ellipse 420px 160px at 72% 24%, rgba(208,88,64,.032)   0%, transparent 50%),
+        radial-gradient(ellipse 380px 160px at 50% 22%, rgba(120,88,168,.025)  0%, transparent 50%),
+        linear-gradient(180deg,
+          #030407 0%, #04060A 10%, #060809 22%,
+          #07090B 34%, #080B0A 46%,
+          #0A1208 56%, #0C1408 65%,
+          #0A1108 75%, #060C06 88%, #040807 100%
+        );
     }
-    /* ground plane */
+    /* Horizon shimmer — where sky meets battlefield */
     .battlefield-landing::before {
-      content:''; position:absolute; bottom:0; left:0; right:0; height:38%;
-      background:linear-gradient(to top, rgba(4,10,6,.98) 0%, rgba(6,14,8,.5) 50%, transparent 100%);
-      pointer-events:none; z-index:0;
-    }
-    /* mana horizon shimmer */
-    .battlefield-landing::after {
-      content:''; position:absolute; top:46%; left:8%; right:8%; height:1px;
+      content:''; position:absolute; z-index:1;
+      top:38%; left:4%; right:4%; height:1px;
       background:linear-gradient(90deg,
-        transparent, rgba(232,228,168,.22), rgba(91,170,212,.18),
-        rgba(201,168,76,.3), rgba(74,144,64,.18), rgba(208,88,64,.18),
-        rgba(120,88,168,.18), transparent);
-      filter:blur(2px); pointer-events:none; z-index:0;
+        transparent 0%, rgba(232,228,168,.16) 15%,
+        rgba(201,168,76,.28) 30%, rgba(74,144,64,.12) 42%,
+        rgba(91,170,212,.12) 50%, rgba(201,168,76,.28) 62%,
+        rgba(232,228,168,.16) 80%, transparent 100%
+      );
+      filter:blur(1px); pointer-events:none;
     }
-    .bf-title { text-align:center; margin-bottom:2.8rem; position:relative; z-index:2; }
-    .bf-title h2 {
-      font-family:'Cinzel Decorative',serif; font-size:1.1rem; font-weight:700;
-      color:var(--gold); letter-spacing:.22em;
+    /* Ground mist at screen bottom */
+    .battlefield-landing::after {
+      content:''; position:absolute; z-index:1;
+      bottom:0; left:0; right:0; height:18%;
+      background:linear-gradient(to top, rgba(3,7,3,.92) 0%, transparent 100%);
+      pointer-events:none;
+    }
+    /* Zone label above the mat */
+    .bf-zone-label { text-align:center; margin-bottom:1.5rem; position:relative; z-index:3; }
+    .bf-zone-text {
+      font-family:'Cinzel Decorative',serif; font-size:1.05rem; font-weight:700;
+      color:var(--gold); letter-spacing:.22em; display:block;
       text-shadow:0 0 22px rgba(201,168,76,.45);
     }
-    .bf-title p {
-      font-family:'Cinzel',serif; font-size:.63rem; letter-spacing:.2em;
-      text-transform:uppercase; color:var(--text-dim); margin-top:.45rem; font-style:italic;
+    .bf-zone-sub {
+      font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.2em;
+      text-transform:uppercase; color:var(--text-dim);
+      margin-top:.4rem; font-style:italic; display:block;
     }
-    .cards-in-play {
-      display:flex; gap:12px; align-items:flex-end;
+    /* ── PLAY MAT ── */
+    .battlefield-mat {
       position:relative; z-index:2;
-      flex-wrap:wrap; justify-content:center;
-      max-width:1080px; width:100%; padding-bottom:48px;
+      width:100%; max-width:1020px;
+      /* Mat surface: subtle stone/grass grid + depth gradient */
+      background:
+        repeating-linear-gradient(  0deg, rgba(201,168,76,.015) 0, transparent 1px, transparent 54px),
+        repeating-linear-gradient( 90deg, rgba(201,168,76,.015) 0, transparent 1px, transparent 54px),
+        radial-gradient(ellipse 80% 60% at 50% 50%, rgba(24,40,18,.92) 0%, rgba(10,18,8,.97) 100%);
+      border:1.5px solid rgba(201,168,76,.24);
+      border-radius:18px;
+      padding:1.8rem 2.2rem 2.2rem;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.88),
+        0 -8px 60px rgba(0,0,0,.65),
+        0 24px 80px rgba(0,0,0,.5),
+        inset 0 0 120px rgba(0,0,0,.42),
+        inset 0 1px 0 rgba(201,168,76,.14),
+        0 0 55px rgba(201,168,76,.06);
     }
-    /* natural stagger so cards look cast at different moments */
-    .battle-card:nth-child(1) { margin-bottom:22px; }
-    .battle-card:nth-child(2) { margin-bottom:6px; }
-    .battle-card:nth-child(3) { margin-bottom:30px; }
-    .battle-card:nth-child(4) { margin-bottom:0; }
-    .battle-card:nth-child(5) { margin-bottom:16px; }
-    .battle-card:nth-child(6) { margin-bottom:8px; }
-    .battle-card:nth-child(7) { margin-bottom:24px; }
+    /* Corner rune ornaments */
+    .mat-corner {
+      position:absolute; font-size:.72rem;
+      color:rgba(201,168,76,.42); pointer-events:none; line-height:1;
+    }
+    .mat-tl { top:8px;    left:12px; }
+    .mat-tr { top:8px;    right:12px; }
+    .mat-bl { bottom:8px; left:12px; }
+    .mat-br { bottom:8px; right:12px; }
+    /* Row divider between back and front rows */
+    .mat-divider {
+      height:1px; margin:1.3rem 0;
+      background:linear-gradient(90deg,
+        transparent, rgba(201,168,76,.14), rgba(201,168,76,.32),
+        rgba(201,168,76,.14), transparent
+      );
+      position:relative;
+    }
+    .mat-divider::before {
+      content:'⚔'; position:absolute;
+      left:50%; top:50%; transform:translate(-50%,-50%);
+      color:rgba(201,168,76,.42); font-size:.62rem;
+      background:rgba(10,18,8,.97); padding:0 8px;
+    }
+    /* Card row containers */
+    .cards-row {
+      display:flex; gap:10px;
+      justify-content:center; align-items:flex-end;
+    }
+    /* Back row — slightly smaller and dimmer to suggest depth */
+    .cards-back-row .battle-card { filter:brightness(.82); }
+    .cards-back-row .battle-card:hover {
+      transform:rotate(17deg) scale(1.13) translateY(-16px);
+      filter:brightness(1) drop-shadow(0 22px 40px rgba(0,0,0,.78))
+             drop-shadow(0 0 18px var(--cg,rgba(201,168,76,.5)));
+      z-index:50;
+    }
+    /* Back row card width slightly smaller for perspective */
+    .cards-back-row .battle-card { width:132px; }
+    .cards-back-row .bc-art { height:78px; }
 
     /* ── BATTLE CARD ── */
     .battle-card {
@@ -544,157 +611,175 @@
     <!-- ══ BATTLEFIELD LANDING ══ -->
     <div class="tab-panel active" id="tab-battlefield">
       <div class="battlefield-landing">
-        <div class="bf-title">
-          <h2>THE BATTLEFIELD</h2>
-          <p>Choose your spell, Commander — tap a card to enter its realm</p>
+
+        <div class="bf-zone-label">
+          <span class="bf-zone-text">COMMANDER'S BATTLEFIELD</span>
+          <span class="bf-zone-sub">Tap a card to enter its realm</span>
         </div>
-        <div class="cards-in-play">
 
-          <!-- COMMAND (Gold/Artifact) -->
-          <div class="battle-card" onclick="enterSection('overview')"
-               style="--cb:#C9A84C;--cg:rgba(201,168,76,.55)">
-            <div class="bc-frame" style="border-color:#C9A84C;background:linear-gradient(180deg,#1A1408,#2A1E0A)">
-              <div class="bc-title" style="background:rgba(201,168,76,.88)">
-                <span>The Gathering Command</span>
-                <span class="bc-mana"><i class="ms ms-tap" style="color:#180E02"></i></span>
+        <!-- Play mat -->
+        <div class="battlefield-mat">
+          <span class="mat-corner mat-tl">✦</span>
+          <span class="mat-corner mat-tr">✦</span>
+          <span class="mat-corner mat-bl">✦</span>
+          <span class="mat-corner mat-br">✦</span>
+
+          <!-- ── BACK ROW (3 cards — strategic spells) ── -->
+          <div class="cards-row cards-back-row">
+
+            <!-- COMMAND (Gold/Artifact) -->
+            <div class="battle-card" onclick="enterSection('overview')"
+                 style="--cb:#C9A84C;--cg:rgba(201,168,76,.55)">
+              <div class="bc-frame" style="border-color:#C9A84C;background:linear-gradient(180deg,#1A1408,#2A1E0A)">
+                <div class="bc-title" style="background:rgba(201,168,76,.88)">
+                  <span>The Gathering Command</span>
+                  <span class="bc-mana"><i class="ms ms-tap" style="color:#180E02"></i></span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_living.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(201,168,76,.78)">Legendary Artifact — Battlefield</div>
+                <div class="bc-text" style="background:rgba(248,235,195,.96)">
+                  <p class="bc-rules">Tap: Reveal active bookings, monthly costs, and Airbnb sync status.</p>
+                  <p class="bc-flavor">"Fêfo, Pipo e Zé — three owners, one gathering."</p>
+                  <div class="bc-pt">∞</div>
+                </div>
               </div>
-              <div class="bc-art" style="background-image:url('assets/rooms/room_living.jpg')"></div>
-              <div class="bc-typeline" style="background:rgba(201,168,76,.78)">Legendary Artifact — Battlefield</div>
-              <div class="bc-text" style="background:rgba(248,235,195,.96)">
-                <p class="bc-rules">Tap: Reveal active bookings, monthly costs, and Airbnb sync status for all properties.</p>
-                <p class="bc-flavor">"Fêfo, Pipo e Zé — three owners, one gathering."</p>
-                <div class="bc-pt">∞</div>
-              </div>
+              <div class="bc-enter-hint">tap · Command</div>
             </div>
-            <div class="bc-enter-hint">tap · Command</div>
-          </div>
 
-          <!-- SCRY (Blue/Island) -->
-          <div class="battle-card" onclick="enterSection('calendar')"
-               style="--cb:#5BAAD4;--cg:rgba(91,170,212,.55)">
-            <div class="bc-frame" style="border-color:#5BAAD4;background:linear-gradient(180deg,#06101E,#0A1830)">
-              <div class="bc-title" style="background:rgba(91,170,212,.88)">
-                <span>Scry the Calendar</span>
-                <span class="bc-mana">
-                  <i class="ms ms-2 ms-cost" style="font-size:.6rem"></i>
-                  <i class="ms ms-u ms-cost"></i>
-                </span>
+            <!-- SCRY (Blue/Island) -->
+            <div class="battle-card" onclick="enterSection('calendar')"
+                 style="--cb:#5BAAD4;--cg:rgba(91,170,212,.55)">
+              <div class="bc-frame" style="border-color:#5BAAD4;background:linear-gradient(180deg,#06101E,#0A1830)">
+                <div class="bc-title" style="background:rgba(91,170,212,.88)">
+                  <span>Scry the Calendar</span>
+                  <span class="bc-mana">
+                    <i class="ms ms-2 ms-cost" style="font-size:.6rem"></i>
+                    <i class="ms ms-u ms-cost"></i>
+                  </span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_deck.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(91,170,212,.78)">Instant — Calendar Oracle</div>
+                <div class="bc-text" style="background:rgba(200,225,242,.96)">
+                  <p class="bc-rules">Scry 7. View upcoming arrivals, block owner dates, and sync the Airbnb iCal.</p>
+                  <p class="bc-flavor">"In the tides of Silveira, the horizon reveals all."</p>
+                  <div class="bc-pt">7</div>
+                </div>
               </div>
-              <div class="bc-art" style="background-image:url('assets/rooms/room_deck.jpg')"></div>
-              <div class="bc-typeline" style="background:rgba(91,170,212,.78)">Instant — Calendar Oracle</div>
-              <div class="bc-text" style="background:rgba(200,225,242,.96)">
-                <p class="bc-rules">Scry 7. View upcoming arrivals, block owner dates, and sync the Airbnb iCal feed.</p>
-                <p class="bc-flavor">"In the tides of Silveira, the horizon reveals all."</p>
-                <div class="bc-pt">7</div>
-              </div>
+              <div class="bc-enter-hint">tap · Scry</div>
             </div>
-            <div class="bc-enter-hint">tap · Scry</div>
-          </div>
 
-          <!-- CREATURES (Green/Forest) -->
-          <div class="battle-card" onclick="enterSection('guests')"
-               style="--cb:#4A9040;--cg:rgba(74,144,64,.55)">
-            <div class="bc-frame" style="border-color:#4A9040;background:linear-gradient(180deg,#081408,#0C1C0A)">
-              <div class="bc-title" style="background:rgba(74,144,64,.88)">
-                <span>Summoned Creatures</span>
-                <span class="bc-mana"><i class="ms ms-g ms-cost"></i></span>
+            <!-- PORTALS (White/Plains) -->
+            <div class="battle-card" onclick="enterSection('links')"
+                 style="--cb:#D4CC88;--cg:rgba(212,204,136,.5)">
+              <div class="bc-frame" style="border-color:#D4CC88;background:linear-gradient(180deg,#1E1C10,#2E2A14)">
+                <div class="bc-title" style="background:rgba(232,228,168,.88)">
+                  <span>Open Portals</span>
+                  <span class="bc-mana">
+                    <i class="ms ms-w ms-cost"></i>
+                    <i class="ms ms-w ms-cost"></i>
+                  </span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_lavabo.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(232,228,168,.78)">Enchantment — Quick Links</div>
+                <div class="bc-text" style="background:rgba(252,248,228,.96)">
+                  <p class="bc-rules">Tap: Connect to Airbnb, Instagram, Eufy cameras, or any portal in the network.</p>
+                  <p class="bc-flavor">"Connect to anywhere from atop the hill."</p>
+                  <div class="bc-pt">7</div>
+                </div>
               </div>
-              <div class="bc-art" style="background-image:url('assets/rooms/room_suite1.jpg')"></div>
-              <div class="bc-typeline" style="background:rgba(74,144,64,.78)">Creature — Guest Party ★/★</div>
-              <div class="bc-text" style="background:rgba(200,238,200,.96)">
-                <p class="bc-rules">When this enters, reveal all 2026 guest parties, origins, and travel details.</p>
-                <p class="bc-flavor">"Each week, new faces fill the hill."</p>
-                <div class="bc-pt">8/8</div>
-              </div>
+              <div class="bc-enter-hint">tap · Portals</div>
             </div>
-            <div class="bc-enter-hint">tap · Creatures</div>
-          </div>
 
-          <!-- UPKEEP (Red/Mountain) -->
-          <div class="battle-card" onclick="enterSection('housekeeping')"
-               style="--cb:#D05840;--cg:rgba(208,88,64,.55)">
-            <div class="bc-frame" style="border-color:#D05840;background:linear-gradient(180deg,#200806,#300C08)">
-              <div class="bc-title" style="background:rgba(208,88,64,.88)">
-                <span>Upkeep Phase</span>
-                <span class="bc-mana"><i class="ms ms-r ms-cost"></i></span>
+          </div><!-- /back row -->
+
+          <!-- Row divider -->
+          <div class="mat-divider"></div>
+
+          <!-- ── FRONT ROW (4 cards — active permanents) ── -->
+          <div class="cards-row cards-front-row">
+
+            <!-- CREATURES (Green/Forest) -->
+            <div class="battle-card" onclick="enterSection('guests')"
+                 style="--cb:#4A9040;--cg:rgba(74,144,64,.55)">
+              <div class="bc-frame" style="border-color:#4A9040;background:linear-gradient(180deg,#081408,#0C1C0A)">
+                <div class="bc-title" style="background:rgba(74,144,64,.88)">
+                  <span>Summoned Creatures</span>
+                  <span class="bc-mana"><i class="ms ms-g ms-cost"></i></span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_suite1.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(74,144,64,.78)">Creature — Guest Party ★/★</div>
+                <div class="bc-text" style="background:rgba(200,238,200,.96)">
+                  <p class="bc-rules">When this enters, reveal all 2026 guest parties, origins, and travel details.</p>
+                  <p class="bc-flavor">"Each week, new faces fill the hill."</p>
+                  <div class="bc-pt">8/8</div>
+                </div>
               </div>
-              <div class="bc-art" style="background-image:url('assets/rooms/room_laundry.jpg')"></div>
-              <div class="bc-typeline" style="background:rgba(208,88,64,.78)">Triggered — Recurring Services</div>
-              <div class="bc-text" style="background:rgba(242,218,210,.96)">
-                <p class="bc-rules">At the beginning of upkeep, manage cleaning, pool service, grass cutting, and key codes.</p>
-                <p class="bc-flavor">"The Morro asks for care; the house gives back."</p>
-                <div class="bc-pt">—</div>
-              </div>
+              <div class="bc-enter-hint">tap · Creatures</div>
             </div>
-            <div class="bc-enter-hint">tap · Upkeep</div>
-          </div>
 
-          <!-- ARTIFACTS (Colorless/Silver) -->
-          <div class="battle-card" onclick="enterSection('vendors')"
-               style="--cb:#C0B8B0;--cg:rgba(192,184,176,.4)">
-            <div class="bc-frame" style="border-color:#C0B8B0;background:linear-gradient(180deg,#181820,#222230)">
-              <div class="bc-title" style="background:rgba(192,184,176,.88)">
-                <span>Vendor Apparatus</span>
-                <span class="bc-mana">
-                  <i class="ms ms-3 ms-cost" style="font-size:.6rem"></i>
-                </span>
+            <!-- UPKEEP (Red/Mountain) -->
+            <div class="battle-card" onclick="enterSection('housekeeping')"
+                 style="--cb:#D05840;--cg:rgba(208,88,64,.55)">
+              <div class="bc-frame" style="border-color:#D05840;background:linear-gradient(180deg,#200806,#300C08)">
+                <div class="bc-title" style="background:rgba(208,88,64,.88)">
+                  <span>Upkeep Phase</span>
+                  <span class="bc-mana"><i class="ms ms-r ms-cost"></i></span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_laundry.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(208,88,64,.78)">Triggered — Recurring Services</div>
+                <div class="bc-text" style="background:rgba(242,218,210,.96)">
+                  <p class="bc-rules">At the beginning of upkeep, manage cleaning, pool service, and key codes.</p>
+                  <p class="bc-flavor">"The Morro asks for care; the house gives back."</p>
+                  <div class="bc-pt">—</div>
+                </div>
               </div>
-              <div class="bc-art" style="background-image:url('assets/rooms/room_kitchen.jpg')"></div>
-              <div class="bc-typeline" style="background:rgba(192,184,176,.78)">Artifact — Utility Array</div>
-              <div class="bc-text" style="background:rgba(228,228,232,.96)">
-                <p class="bc-rules">Tap: Access all vendor contacts, contractor numbers, and recurring service costs.</p>
-                <p class="bc-flavor">"Every tool in its place, every hand on speed dial."</p>
-                <div class="bc-pt">3</div>
-              </div>
+              <div class="bc-enter-hint">tap · Upkeep</div>
             </div>
-            <div class="bc-enter-hint">tap · Artifacts</div>
-          </div>
 
-          <!-- SORCERIES (Black/Swamp) -->
-          <div class="battle-card" onclick="enterSection('projects')"
-               style="--cb:#7858A8;--cg:rgba(120,88,168,.55)">
-            <div class="bc-frame" style="border-color:#7858A8;background:linear-gradient(180deg,#0C0818,#141028)">
-              <div class="bc-title" style="background:rgba(120,88,168,.88)">
-                <span>Cast Sorcery</span>
-                <span class="bc-mana">
-                  <i class="ms ms-b ms-cost"></i>
-                  <i class="ms ms-b ms-cost"></i>
-                </span>
+            <!-- ARTIFACTS (Colorless/Silver) -->
+            <div class="battle-card" onclick="enterSection('vendors')"
+                 style="--cb:#C0B8B0;--cg:rgba(192,184,176,.4)">
+              <div class="bc-frame" style="border-color:#C0B8B0;background:linear-gradient(180deg,#181820,#222230)">
+                <div class="bc-title" style="background:rgba(192,184,176,.88)">
+                  <span>Vendor Apparatus</span>
+                  <span class="bc-mana"><i class="ms ms-3 ms-cost" style="font-size:.6rem"></i></span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_kitchen.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(192,184,176,.78)">Artifact — Utility Array</div>
+                <div class="bc-text" style="background:rgba(228,228,232,.96)">
+                  <p class="bc-rules">Tap: Access all vendor contacts, contractor numbers, and service costs.</p>
+                  <p class="bc-flavor">"Every tool in its place, every hand on speed dial."</p>
+                  <div class="bc-pt">3</div>
+                </div>
               </div>
-              <div class="bc-art" style="background-image:url('assets/rooms/room_suite2.jpg')"></div>
-              <div class="bc-typeline" style="background:rgba(120,88,168,.78)">Sorcery — Project Tracker</div>
-              <div class="bc-text" style="background:rgba(215,205,228,.96)">
-                <p class="bc-rules">Create a Project token with chosen priority. Track outstanding maintenance sorceries.</p>
-                <p class="bc-flavor">"The house that is always becoming."</p>
-                <div class="bc-pt">—</div>
-              </div>
+              <div class="bc-enter-hint">tap · Artifacts</div>
             </div>
-            <div class="bc-enter-hint">tap · Sorceries</div>
-          </div>
 
-          <!-- PORTALS (White/Plains) -->
-          <div class="battle-card" onclick="enterSection('links')"
-               style="--cb:#D4CC88;--cg:rgba(212,204,136,.5)">
-            <div class="bc-frame" style="border-color:#D4CC88;background:linear-gradient(180deg,#1E1C10,#2E2A14)">
-              <div class="bc-title" style="background:rgba(232,228,168,.88)">
-                <span>Open Portals</span>
-                <span class="bc-mana">
-                  <i class="ms ms-w ms-cost"></i>
-                  <i class="ms ms-w ms-cost"></i>
-                </span>
+            <!-- SORCERIES (Black/Swamp) -->
+            <div class="battle-card" onclick="enterSection('projects')"
+                 style="--cb:#7858A8;--cg:rgba(120,88,168,.55)">
+              <div class="bc-frame" style="border-color:#7858A8;background:linear-gradient(180deg,#0C0818,#141028)">
+                <div class="bc-title" style="background:rgba(120,88,168,.88)">
+                  <span>Cast Sorcery</span>
+                  <span class="bc-mana">
+                    <i class="ms ms-b ms-cost"></i>
+                    <i class="ms ms-b ms-cost"></i>
+                  </span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_suite2.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(120,88,168,.78)">Sorcery — Project Tracker</div>
+                <div class="bc-text" style="background:rgba(215,205,228,.96)">
+                  <p class="bc-rules">Create a Project token with chosen priority. Track outstanding maintenance sorceries.</p>
+                  <p class="bc-flavor">"The house that is always becoming."</p>
+                  <div class="bc-pt">—</div>
+                </div>
               </div>
-              <div class="bc-art" style="background-image:url('assets/rooms/room_lavabo.jpg')"></div>
-              <div class="bc-typeline" style="background:rgba(232,228,168,.78)">Enchantment — Quick Links</div>
-              <div class="bc-text" style="background:rgba(252,248,228,.96)">
-                <p class="bc-rules">Tap: Connect to Airbnb, Instagram, Eufy cameras, or any linked portal in the network.</p>
-                <p class="bc-flavor">"Connect to anywhere from atop the hill."</p>
-                <div class="bc-pt">7</div>
-              </div>
+              <div class="bc-enter-hint">tap · Sorceries</div>
             </div>
-            <div class="bc-enter-hint">tap · Portals</div>
-          </div>
 
-        </div><!-- /cards-in-play -->
+          </div><!-- /front row -->
+
+        </div><!-- /battlefield-mat -->
       </div><!-- /battlefield-landing -->
     </div>
 
