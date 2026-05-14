@@ -356,6 +356,115 @@
 
     code { background:rgba(201,168,76,.1); padding:.2rem .5rem; border-radius:4px; font-size:.85em; color:var(--gold); border:1px solid rgba(201,168,76,.2); }
 
+    /* ══ BATTLEFIELD LANDING ══════════════════════════════════════ */
+    .battlefield-landing {
+      min-height:calc(100vh - 108px);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:flex-start;
+      padding:3rem 1rem 6rem; position:relative; overflow:hidden;
+    }
+    /* ground plane */
+    .battlefield-landing::before {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:38%;
+      background:linear-gradient(to top, rgba(4,10,6,.98) 0%, rgba(6,14,8,.5) 50%, transparent 100%);
+      pointer-events:none; z-index:0;
+    }
+    /* mana horizon shimmer */
+    .battlefield-landing::after {
+      content:''; position:absolute; top:46%; left:8%; right:8%; height:1px;
+      background:linear-gradient(90deg,
+        transparent, rgba(232,228,168,.22), rgba(91,170,212,.18),
+        rgba(201,168,76,.3), rgba(74,144,64,.18), rgba(208,88,64,.18),
+        rgba(120,88,168,.18), transparent);
+      filter:blur(2px); pointer-events:none; z-index:0;
+    }
+    .bf-title { text-align:center; margin-bottom:2.8rem; position:relative; z-index:2; }
+    .bf-title h2 {
+      font-family:'Cinzel Decorative',serif; font-size:1.1rem; font-weight:700;
+      color:var(--gold); letter-spacing:.22em;
+      text-shadow:0 0 22px rgba(201,168,76,.45);
+    }
+    .bf-title p {
+      font-family:'Cinzel',serif; font-size:.63rem; letter-spacing:.2em;
+      text-transform:uppercase; color:var(--text-dim); margin-top:.45rem; font-style:italic;
+    }
+    .cards-in-play {
+      display:flex; gap:12px; align-items:flex-end;
+      position:relative; z-index:2;
+      flex-wrap:wrap; justify-content:center;
+      max-width:1080px; width:100%; padding-bottom:48px;
+    }
+    /* natural stagger so cards look cast at different moments */
+    .battle-card:nth-child(1) { margin-bottom:22px; }
+    .battle-card:nth-child(2) { margin-bottom:6px; }
+    .battle-card:nth-child(3) { margin-bottom:30px; }
+    .battle-card:nth-child(4) { margin-bottom:0; }
+    .battle-card:nth-child(5) { margin-bottom:16px; }
+    .battle-card:nth-child(6) { margin-bottom:8px; }
+    .battle-card:nth-child(7) { margin-bottom:24px; }
+
+    /* ── BATTLE CARD ── */
+    .battle-card {
+      width:140px; position:relative; cursor:pointer;
+      transform-origin:50% 96%;
+      transition:transform .48s cubic-bezier(.34,1.56,.64,1), filter .48s ease;
+      z-index:1;
+    }
+    .battle-card:hover {
+      transform:rotate(17deg) scale(1.13) translateY(-16px);
+      filter:drop-shadow(0 22px 40px rgba(0,0,0,.75))
+             drop-shadow(0 0 18px var(--cg,rgba(201,168,76,.5)));
+      z-index:50;
+    }
+    /* MTG card frame */
+    .bc-frame {
+      border-radius:9px; overflow:hidden; border-width:3px; border-style:solid;
+      box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.6);
+    }
+    .bc-title {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:4px 6px 3px; font-family:'Cinzel',serif;
+      font-size:.56rem; font-weight:700; color:#180E02; letter-spacing:.02em;
+    }
+    .bc-art {
+      width:100%; height:86px;
+      background-size:cover; background-position:center;
+      border-top:1.5px solid rgba(0,0,0,.35);
+      border-bottom:1.5px solid rgba(0,0,0,.35);
+    }
+    .bc-typeline {
+      font-family:'Cinzel',serif; font-size:.46rem; font-weight:600;
+      color:#180E02; padding:3px 6px; letter-spacing:.02em;
+    }
+    .bc-text {
+      padding:5px 6px 18px; min-height:66px; position:relative;
+    }
+    .bc-rules {
+      font-family:'Inter',sans-serif; font-size:.5rem; line-height:1.45; color:#1A100A;
+    }
+    .bc-flavor {
+      font-family:'Inter',sans-serif; font-size:.45rem; line-height:1.3;
+      color:#3A2818; font-style:italic;
+      border-top:1px solid rgba(0,0,0,.12); padding-top:3px; margin-top:4px;
+    }
+    .bc-pt {
+      position:absolute; bottom:3px; right:5px;
+      font-family:'Cinzel',serif; font-size:.52rem; font-weight:700; color:#180E02;
+      background:rgba(255,255,255,.55); border:1px solid rgba(0,0,0,.22);
+      border-radius:3px; padding:1px 4px;
+    }
+    .bc-mana { display:flex; gap:2px; align-items:center; flex-shrink:0; }
+    .bc-mana .ms { font-size:.68rem; }
+    /* "tap to enter" hint that appears on hover */
+    .bc-enter-hint {
+      position:absolute; bottom:-28px; left:50%; transform:translateX(-50%);
+      font-family:'Cinzel',serif; font-size:.54rem; letter-spacing:.1em;
+      color:var(--cb, var(--gold)); white-space:nowrap;
+      opacity:0; transition:opacity .3s;
+      text-shadow:0 0 8px var(--cg,rgba(201,168,76,.5));
+    }
+    .battle-card:hover .bc-enter-hint { opacity:1; }
+
     /* ══ SCROLLBAR ════════════════════════════════════════════════ */
     ::-webkit-scrollbar { width:5px; height:5px; }
     ::-webkit-scrollbar-track { background:rgba(4,6,8,.8); }
@@ -399,11 +508,11 @@
 
   <!-- Top Bar -->
   <div class="topbar">
-    <div class="topbar-brand">
-      <img src="assets/logo.png" alt="">
+    <div class="topbar-brand" onclick="showBattlefield()" title="Return to Battlefield" style="cursor:pointer;user-select:none">
+      <img src="assets/logo-circle.png" alt="">
       <div>
-        <div class="brand-name">The Gathering Silveira</div>
-        <div class="brand-sub">Owner Command</div>
+        <div class="brand-name">TheGathering Silveira</div>
+        <div class="brand-sub">Commander Deck: Battlefield</div>
       </div>
     </div>
     <div class="topbar-right">
@@ -432,8 +541,165 @@
 
   <div class="content">
 
+    <!-- ══ BATTLEFIELD LANDING ══ -->
+    <div class="tab-panel active" id="tab-battlefield">
+      <div class="battlefield-landing">
+        <div class="bf-title">
+          <h2>THE BATTLEFIELD</h2>
+          <p>Choose your spell, Commander — tap a card to enter its realm</p>
+        </div>
+        <div class="cards-in-play">
+
+          <!-- COMMAND (Gold/Artifact) -->
+          <div class="battle-card" onclick="enterSection('overview')"
+               style="--cb:#C9A84C;--cg:rgba(201,168,76,.55)">
+            <div class="bc-frame" style="border-color:#C9A84C;background:linear-gradient(180deg,#1A1408,#2A1E0A)">
+              <div class="bc-title" style="background:rgba(201,168,76,.88)">
+                <span>The Gathering Command</span>
+                <span class="bc-mana"><i class="ms ms-tap" style="color:#180E02"></i></span>
+              </div>
+              <div class="bc-art" style="background-image:url('assets/rooms/room_living.jpg')"></div>
+              <div class="bc-typeline" style="background:rgba(201,168,76,.78)">Legendary Artifact — Battlefield</div>
+              <div class="bc-text" style="background:rgba(248,235,195,.96)">
+                <p class="bc-rules">Tap: Reveal active bookings, monthly costs, and Airbnb sync status for all properties.</p>
+                <p class="bc-flavor">"Fêfo, Pipo e Zé — three owners, one gathering."</p>
+                <div class="bc-pt">∞</div>
+              </div>
+            </div>
+            <div class="bc-enter-hint">tap · Command</div>
+          </div>
+
+          <!-- SCRY (Blue/Island) -->
+          <div class="battle-card" onclick="enterSection('calendar')"
+               style="--cb:#5BAAD4;--cg:rgba(91,170,212,.55)">
+            <div class="bc-frame" style="border-color:#5BAAD4;background:linear-gradient(180deg,#06101E,#0A1830)">
+              <div class="bc-title" style="background:rgba(91,170,212,.88)">
+                <span>Scry the Calendar</span>
+                <span class="bc-mana">
+                  <i class="ms ms-2 ms-cost" style="font-size:.6rem"></i>
+                  <i class="ms ms-u ms-cost"></i>
+                </span>
+              </div>
+              <div class="bc-art" style="background-image:url('assets/rooms/room_deck.jpg')"></div>
+              <div class="bc-typeline" style="background:rgba(91,170,212,.78)">Instant — Calendar Oracle</div>
+              <div class="bc-text" style="background:rgba(200,225,242,.96)">
+                <p class="bc-rules">Scry 7. View upcoming arrivals, block owner dates, and sync the Airbnb iCal feed.</p>
+                <p class="bc-flavor">"In the tides of Silveira, the horizon reveals all."</p>
+                <div class="bc-pt">7</div>
+              </div>
+            </div>
+            <div class="bc-enter-hint">tap · Scry</div>
+          </div>
+
+          <!-- CREATURES (Green/Forest) -->
+          <div class="battle-card" onclick="enterSection('guests')"
+               style="--cb:#4A9040;--cg:rgba(74,144,64,.55)">
+            <div class="bc-frame" style="border-color:#4A9040;background:linear-gradient(180deg,#081408,#0C1C0A)">
+              <div class="bc-title" style="background:rgba(74,144,64,.88)">
+                <span>Summoned Creatures</span>
+                <span class="bc-mana"><i class="ms ms-g ms-cost"></i></span>
+              </div>
+              <div class="bc-art" style="background-image:url('assets/rooms/room_suite1.jpg')"></div>
+              <div class="bc-typeline" style="background:rgba(74,144,64,.78)">Creature — Guest Party ★/★</div>
+              <div class="bc-text" style="background:rgba(200,238,200,.96)">
+                <p class="bc-rules">When this enters, reveal all 2026 guest parties, origins, and travel details.</p>
+                <p class="bc-flavor">"Each week, new faces fill the hill."</p>
+                <div class="bc-pt">8/8</div>
+              </div>
+            </div>
+            <div class="bc-enter-hint">tap · Creatures</div>
+          </div>
+
+          <!-- UPKEEP (Red/Mountain) -->
+          <div class="battle-card" onclick="enterSection('housekeeping')"
+               style="--cb:#D05840;--cg:rgba(208,88,64,.55)">
+            <div class="bc-frame" style="border-color:#D05840;background:linear-gradient(180deg,#200806,#300C08)">
+              <div class="bc-title" style="background:rgba(208,88,64,.88)">
+                <span>Upkeep Phase</span>
+                <span class="bc-mana"><i class="ms ms-r ms-cost"></i></span>
+              </div>
+              <div class="bc-art" style="background-image:url('assets/rooms/room_laundry.jpg')"></div>
+              <div class="bc-typeline" style="background:rgba(208,88,64,.78)">Triggered — Recurring Services</div>
+              <div class="bc-text" style="background:rgba(242,218,210,.96)">
+                <p class="bc-rules">At the beginning of upkeep, manage cleaning, pool service, grass cutting, and key codes.</p>
+                <p class="bc-flavor">"The Morro asks for care; the house gives back."</p>
+                <div class="bc-pt">—</div>
+              </div>
+            </div>
+            <div class="bc-enter-hint">tap · Upkeep</div>
+          </div>
+
+          <!-- ARTIFACTS (Colorless/Silver) -->
+          <div class="battle-card" onclick="enterSection('vendors')"
+               style="--cb:#C0B8B0;--cg:rgba(192,184,176,.4)">
+            <div class="bc-frame" style="border-color:#C0B8B0;background:linear-gradient(180deg,#181820,#222230)">
+              <div class="bc-title" style="background:rgba(192,184,176,.88)">
+                <span>Vendor Apparatus</span>
+                <span class="bc-mana">
+                  <i class="ms ms-3 ms-cost" style="font-size:.6rem"></i>
+                </span>
+              </div>
+              <div class="bc-art" style="background-image:url('assets/rooms/room_kitchen.jpg')"></div>
+              <div class="bc-typeline" style="background:rgba(192,184,176,.78)">Artifact — Utility Array</div>
+              <div class="bc-text" style="background:rgba(228,228,232,.96)">
+                <p class="bc-rules">Tap: Access all vendor contacts, contractor numbers, and recurring service costs.</p>
+                <p class="bc-flavor">"Every tool in its place, every hand on speed dial."</p>
+                <div class="bc-pt">3</div>
+              </div>
+            </div>
+            <div class="bc-enter-hint">tap · Artifacts</div>
+          </div>
+
+          <!-- SORCERIES (Black/Swamp) -->
+          <div class="battle-card" onclick="enterSection('projects')"
+               style="--cb:#7858A8;--cg:rgba(120,88,168,.55)">
+            <div class="bc-frame" style="border-color:#7858A8;background:linear-gradient(180deg,#0C0818,#141028)">
+              <div class="bc-title" style="background:rgba(120,88,168,.88)">
+                <span>Cast Sorcery</span>
+                <span class="bc-mana">
+                  <i class="ms ms-b ms-cost"></i>
+                  <i class="ms ms-b ms-cost"></i>
+                </span>
+              </div>
+              <div class="bc-art" style="background-image:url('assets/rooms/room_suite2.jpg')"></div>
+              <div class="bc-typeline" style="background:rgba(120,88,168,.78)">Sorcery — Project Tracker</div>
+              <div class="bc-text" style="background:rgba(215,205,228,.96)">
+                <p class="bc-rules">Create a Project token with chosen priority. Track outstanding maintenance sorceries.</p>
+                <p class="bc-flavor">"The house that is always becoming."</p>
+                <div class="bc-pt">—</div>
+              </div>
+            </div>
+            <div class="bc-enter-hint">tap · Sorceries</div>
+          </div>
+
+          <!-- PORTALS (White/Plains) -->
+          <div class="battle-card" onclick="enterSection('links')"
+               style="--cb:#D4CC88;--cg:rgba(212,204,136,.5)">
+            <div class="bc-frame" style="border-color:#D4CC88;background:linear-gradient(180deg,#1E1C10,#2E2A14)">
+              <div class="bc-title" style="background:rgba(232,228,168,.88)">
+                <span>Open Portals</span>
+                <span class="bc-mana">
+                  <i class="ms ms-w ms-cost"></i>
+                  <i class="ms ms-w ms-cost"></i>
+                </span>
+              </div>
+              <div class="bc-art" style="background-image:url('assets/rooms/room_lavabo.jpg')"></div>
+              <div class="bc-typeline" style="background:rgba(232,228,168,.78)">Enchantment — Quick Links</div>
+              <div class="bc-text" style="background:rgba(252,248,228,.96)">
+                <p class="bc-rules">Tap: Connect to Airbnb, Instagram, Eufy cameras, or any linked portal in the network.</p>
+                <p class="bc-flavor">"Connect to anywhere from atop the hill."</p>
+                <div class="bc-pt">7</div>
+              </div>
+            </div>
+            <div class="bc-enter-hint">tap · Portals</div>
+          </div>
+
+        </div><!-- /cards-in-play -->
+      </div><!-- /battlefield-landing -->
+    </div>
+
     <!-- ══ COMMAND (Overview) ══ -->
-    <div class="tab-panel active" id="tab-overview">
+    <div class="tab-panel" id="tab-overview">
       <div class="grid-3" style="margin-bottom:1.5rem">
         <div class="mtg-card stat"><div class="val">9</div><div class="lbl">Weeks Booked</div></div>
         <div class="mtg-card stat"><div class="val">3</div><div class="lbl">Weeks Available</div></div>
@@ -662,13 +928,25 @@ function logout() {
 }
 document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
 
+// ── BATTLEFIELD NAVIGATION ────────────────────────────────────
+function showBattlefield() {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-battlefield').classList.add('active');
+}
+
+function enterSection(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+  if (btn) btn.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
 // ── TABS ──────────────────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    enterSection(btn.dataset.tab);
   });
 });
 
@@ -680,6 +958,7 @@ function init() {
   renderProjects();
   renderBlocks();
   createParticles();
+  showBattlefield();
 }
 
 // ── MANA PARTICLES ────────────────────────────────────────────
