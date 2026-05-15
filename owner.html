@@ -374,43 +374,74 @@
       background:#0a0806;
     }
 
-    /* Photo backdrop — living room + kitchen composited */
+    /* ── SILVEIRA BACKDROP ──────────────────────────────────────── */
     .bf-photo-wrap { position:absolute; inset:0; z-index:0; overflow:hidden; }
 
-    /* Kitchen — upper/background zone (the room "behind" as seen from above) */
-    .bf-photo-kitchen {
+    /* Silveira sign photo — perspective-tilted so the scene reads as overhead */
+    .bf-photo-silveira {
       position:absolute;
-      top:-18%; left:-8%; right:-8%; height:76%;
-      background:url('assets/rooms/all_12.jpg') center 44% / cover no-repeat;
-      transform:perspective(1300px) rotateX(22deg) scaleY(.82);
-      transform-origin:50% 88%;
-      filter:brightness(.42) saturate(.75);
-      -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 45%,rgba(0,0,0,0) 100%);
-      mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 45%,rgba(0,0,0,0) 100%);
-    }
-
-    /* Living room — main floor area (center/foreground, where cards live) */
-    .bf-photo-living {
-      position:absolute;
-      inset:-22% -10% -8%;
-      background:url('assets/rooms/room_living.jpg') center 42% / cover no-repeat;
-      transform:perspective(1000px) rotateX(28deg) scale(1.08);
+      inset:-20% -8%;
+      background:url('assets/silveira_backdrop.jpg') center 58% / cover no-repeat;
+      transform:perspective(880px) rotateX(26deg) scale(1.09);
       transform-origin:50% 54%;
-      filter:brightness(.55) saturate(.85);
+      filter:brightness(.48) saturate(1.18) contrast(1.08);
     }
 
-    /* Dark atmospheric overlay — vignette + depth */
+    /* Atmospheric overlay — edge vignette, top/bottom gradient like the Battlefield sample */
     .bf-photo-overlay {
       position:absolute; inset:0; z-index:1; pointer-events:none;
       background:
-        radial-gradient(ellipse 72% 58% at 50% 55%, transparent 0%, rgba(0,0,0,.52) 100%),
+        /* Deep edge vignette (mimics the dark room corners in the sample) */
+        radial-gradient(ellipse 68% 56% at 50% 52%, transparent 0%, rgba(0,0,0,.60) 100%),
         linear-gradient(to bottom,
-          rgba(0,0,0,.62) 0%, rgba(0,0,0,.12) 20%,
-          rgba(0,0,0,.08) 60%, rgba(0,0,0,.72) 100%
+          rgba(0,0,0,.78) 0%, rgba(0,0,0,.10) 22%,
+          rgba(0,0,0,.06) 62%, rgba(0,0,0,.80) 100%
         ),
         linear-gradient(to right,
-          rgba(0,0,0,.48) 0%, transparent 18%, transparent 82%, rgba(0,0,0,.48) 100%
+          rgba(0,0,0,.62) 0%, transparent 18%, transparent 82%, rgba(0,0,0,.62) 100%
         );
+    }
+
+    /* MTG-style rectangular rug — the central play zone (from Battlefield sample) */
+    .bf-rug {
+      position:absolute;
+      top:52%; left:50%;
+      transform:translate(-50%,-50%);
+      width:min(88%, 1000px);
+      height:62%;
+      z-index:2; pointer-events:none;
+      /* Dark forest-green rug base with subtle weave texture */
+      background:
+        repeating-linear-gradient(0deg,
+          rgba(255,255,255,.011) 0, rgba(255,255,255,.011) 1px,
+          transparent 1px, transparent 32px),
+        repeating-linear-gradient(90deg,
+          rgba(255,255,255,.011) 0, rgba(255,255,255,.011) 1px,
+          transparent 1px, transparent 32px),
+        radial-gradient(ellipse 80% 70% at 50% 50%,
+          rgba(38,54,24,.84) 0%, rgba(22,36,10,.94) 100%);
+      /* Outer gold border — like the Battlefield sample's tan rug frame */
+      border:2.5px solid rgba(185,158,88,.42);
+      border-radius:4px;
+      box-shadow:
+        inset 0 0 60px rgba(0,0,0,.45),
+        0 0 100px rgba(0,0,0,.72),
+        inset 0 0 0 14px rgba(150,118,48,.07);
+    }
+    /* Inner border line */
+    .bf-rug::before {
+      content:''; position:absolute; inset:14px;
+      border:1px solid rgba(185,158,88,.22);
+      border-radius:3px;
+    }
+    /* Fringe effect at all edges (like the sample's rug border) */
+    .bf-rug::after {
+      content:''; position:absolute; inset:0; border-radius:4px;
+      background:
+        linear-gradient(to bottom, rgba(165,132,58,.10) 0%, transparent 6%),
+        linear-gradient(to top,    rgba(165,132,58,.10) 0%, transparent 6%),
+        linear-gradient(to right,  rgba(165,132,58,.08) 0%, transparent 5%),
+        linear-gradient(to left,   rgba(165,132,58,.08) 0%, transparent 5%);
     }
 
     /* Zone label — centered near the top */
@@ -454,13 +485,13 @@
 
     /* Card row containers */
     .cards-row {
-      display:flex; gap:24px;
+      display:flex; gap:52px;
       justify-content:center; align-items:flex-end;
     }
     /* Back row — slightly smaller and dimmer to suggest depth */
     .cards-back-row .battle-card { filter:brightness(.82); }
     .cards-back-row .battle-card:hover {
-      transform:rotate(17deg) scale(1.14) translateY(-18px);
+      transform:rotate(6deg) scale(1.14) translateY(-18px);
       filter:brightness(1) drop-shadow(0 26px 44px rgba(0,0,0,.82))
              drop-shadow(0 0 22px var(--cg,rgba(201,168,76,.55)));
       z-index:50;
@@ -477,7 +508,7 @@
       z-index:1;
     }
     .battle-card:hover {
-      transform:rotate(17deg) scale(1.14) translateY(-18px);
+      transform:rotate(6deg) scale(1.14) translateY(-18px);
       filter:drop-shadow(0 26px 44px rgba(0,0,0,.82))
              drop-shadow(0 0 22px var(--cg,rgba(201,168,76,.55)));
       z-index:50;
@@ -610,11 +641,11 @@
     <div class="tab-panel active" id="tab-battlefield">
       <div class="battlefield-landing">
 
-        <!-- Photo backdrop: living room + kitchen looking from above -->
+        <!-- Silveira backdrop + MTG rug overlay -->
         <div class="bf-photo-wrap">
-          <div class="bf-photo-kitchen"></div>
-          <div class="bf-photo-living"></div>
+          <div class="bf-photo-silveira"></div>
           <div class="bf-photo-overlay"></div>
+          <div class="bf-rug"></div>
         </div>
 
 
