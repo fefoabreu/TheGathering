@@ -51,8 +51,14 @@
       padding:.8rem 2.5rem;
       box-shadow:var(--sh-md);
     }
-    .nav-logo { width:46px; height:46px; object-fit:cover; object-position:center; border-radius:50%; transition:var(--ease); box-shadow:0 0 0 2px rgba(212,163,64,.5); }
-    nav.scrolled .nav-logo { width:36px; height:36px; }
+    .nav-brand-text {
+      font-family:'Playfair Display',serif; font-weight:700;
+      font-size:1.5rem; letter-spacing:.04em;
+      color:var(--text-light);
+      text-shadow:0 2px 16px rgba(0,0,0,.35);
+      transition:var(--ease); white-space:nowrap;
+    }
+    nav.scrolled .nav-brand-text { font-size:1.25rem; }
     .nav-links { display:flex; gap:2rem; align-items:center; }
     .nav-links a {
       color:rgba(249,244,236,.82); text-decoration:none;
@@ -378,6 +384,24 @@
       color:rgba(255,255,255,.5);
     }
 
+    /* ── PÂNTANO WIP TILE ───────────────────────────── */
+    .pantano-row { display:flex; justify-content:center; margin-top:1.4rem; }
+    .pantano-tile { width:280px; height:340px; opacity:.78; }
+    .pantano-tile .suite-front { position:relative; }
+    .wip-banner {
+      position:absolute; top:0; left:0; right:0; z-index:3;
+      background:repeating-linear-gradient(
+        -45deg,
+        rgba(224,165,0,.18) 0px, rgba(224,165,0,.18) 8px,
+        rgba(20,20,30,.55) 8px, rgba(20,20,30,.55) 16px
+      );
+      border-bottom:1px solid rgba(224,165,0,.35);
+      padding:.32rem .7rem;
+      display:flex; align-items:center; justify-content:center; gap:.45rem;
+      font-size:.6rem; letter-spacing:.14em; text-transform:uppercase;
+      color:rgba(224,165,0,.85); font-weight:600; font-family:'Cinzel',serif;
+    }
+
     /* ── ANIMATIONS ──────────────────────────────────── */
     .fu { opacity:0; transform:translateY(28px); transition:opacity .65s ease, transform .65s ease; }
     .fu.on { opacity:1; transform:translateY(0); }
@@ -390,7 +414,7 @@
 
 <!-- NAV -->
 <nav id="nav">
-  <img src="assets/logo-circle.png" alt="The Gathering Silveira" class="nav-logo">
+  <div class="nav-brand-text">The Gathering</div>
   <div class="nav-links">
     <a href="#experiences">Experiences</a>
     <a href="#suites">Suites</a>
@@ -408,10 +432,6 @@
   </video>
   <button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Toggle ambient sound">🔇</button>
   <img src="assets/logo-circle.png" alt="The Gathering Silveira" class="hero-logo">
-  <h1 class="hero-title">
-    THE GATHERING
-    <span class="sub">Silveira</span>
-  </h1>
   <p class="hero-location">Praia da Silveira &nbsp;·&nbsp; Garopaba, SC &nbsp;·&nbsp; Brasil</p>
   <p class="hero-tagline">"Where the mountain meets the sea"</p>
   <div class="hero-cta">
@@ -476,6 +496,36 @@
         </div>
       </div>
 
+      <!-- Library / Lower Level -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Library">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_library_b.jpg')">
+            <div class="fc"><span class="ico">📚</span><div class="name">The Library</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">📚</div>
+            <div class="b-title">The Library</div>
+            <p class="b-desc">The lower level opens to a light-filled reading nook tucked beneath the floating staircase — surrounded by bookshelves, lush garden views, and deep green cushions. The quietest corner in the house.</p>
+            <span class="b-tag">Built-in Library · Staircase Feature · Garden Views</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Laundry Room -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Laundry Room">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_laundry.jpg')">
+            <div class="fc"><span class="ico">👗</span><div class="name">Laundry Room</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">👗</div>
+            <div class="b-title">Laundry Room</div>
+            <p class="b-desc">A beautifully finished utility space — rich wood cabinetry, washer and dryer, built-in hang rail, and stone countertop. Even the laundry room is worth a look.</p>
+            <span class="b-tag">Washer & Dryer · Wood Cabinetry · Full Utility</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Suite Planície -->
       <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Planície">
         <div class="tile">
@@ -536,36 +586,6 @@
         </div>
       </div>
 
-      <!-- Library / Lower Level -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Library">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_library_b.jpg')">
-            <div class="fc"><span class="ico">📚</span><div class="name">The Library</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">📚</div>
-            <div class="b-title">The Library</div>
-            <p class="b-desc">The lower level opens to a light-filled reading nook tucked beneath the floating staircase — surrounded by bookshelves, lush garden views, and deep green cushions. The quietest corner in the house.</p>
-            <span class="b-tag">Built-in Library · Staircase Feature · Garden Views</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Laundry Room -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Laundry Room">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_laundry.jpg')">
-            <div class="fc"><span class="ico">👗</span><div class="name">Laundry Room</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">👗</div>
-            <div class="b-title">Laundry Room</div>
-            <p class="b-desc">A beautifully finished utility space — rich wood cabinetry, washer and dryer, built-in hang rail, and stone countertop. Even the laundry room is worth a look.</p>
-            <span class="b-tag">Washer & Dryer · Wood Cabinetry · Full Utility</span>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 </div>
@@ -575,8 +595,8 @@
   <div class="wrap">
     <div class="sh">
       <p class="eyebrow gold">The Gathering Awaits</p>
-      <h2 class="light">Nine Ways to <em class="gold">Live Here</em></h2>
-      <p class="light">Hover or tap each tile to reveal the experience that awaits you.</p>
+      <h2 class="light">Experience the best of <em class="gold">Garopaba</em></h2>
+      <p class="light">From the top of Silveira — tap each tile to reveal the experience that awaits.</p>
     </div>
     <div class="tile-grid">
 
@@ -850,6 +870,34 @@
       </div>
 
     </div>
+
+    <!-- Pântano — coming soon, under construction -->
+    <div class="pantano-row fu">
+      <div class="tile-wrap suite-tile pantano-tile" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Pântano">
+        <div class="tile">
+          <div class="tile-face suite-front">
+            <div class="wip-banner">🚧 Coming Soon</div>
+            <div class="suite-bar mb" style="margin-top:28px"></div>
+            <div class="suite-body">
+              <div class="suite-mana">🌑</div>
+              <div class="suite-pt">Pântano</div>
+              <div class="suite-en">Swamp · Home Office Suite 5</div>
+              <div class="suite-hr"></div>
+              <p class="suite-desc">A modern, fully equipped private office suite. Standing desk, dual monitors, fiber connection, and total quiet — the ultimate work-from-paradise setup.</p>
+              <div class="suite-meta"><span>🖥️ Full Office</span><span>⚡ Fiber</span><span>🌿 Garden View</span></div>
+            </div>
+          </div>
+          <div class="tile-face suite-back-mosaic" style="background:linear-gradient(138deg,#0a0814,#141028)">
+            <div class="suite-mosaic-overlay" style="background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 60%);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:1.5rem">
+              <div style="font-size:2.5rem;margin-bottom:1rem">🚧</div>
+              <div class="suite-mosaic-name" style="font-size:.95rem">Suite Pântano</div>
+              <div class="suite-mosaic-hint" style="margin-top:.6rem;line-height:1.6">Home Office Suite · Currently under development<br>The fifth element is coming.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -877,8 +925,8 @@
       <div class="chip"><span class="ci">🏗️</span> Outdoor Decks &amp; Pergolas</div>
       <div class="chip"><span class="ci">♨️</span> Hot Water Heating</div>
       <div class="chip"><span class="ci">👁️</span> Eufy Security System</div>
-      <div class="chip"><span class="ci">🌊</span> Unobstructed Garopaba Bay View</div>
-      <div class="chip"><span class="ci">🎲</span> Board Games · Private Library · Movie Projector — Book Club Friendly</div>
+      <div class="chip"><span class="ci">🌊</span> Garopaba Bay View</div>
+      <div class="chip"><span class="ci">🎲</span> Board Games, Library, Movie Night</div>
     </div>
   </div>
 </div>
