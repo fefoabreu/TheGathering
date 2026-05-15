@@ -356,278 +356,86 @@
 
     code { background:rgba(201,168,76,.1); padding:.2rem .5rem; border-radius:4px; font-size:.85em; color:var(--gold); border:1px solid rgba(201,168,76,.2); }
 
-    /* ══ BATTLEFIELD LANDING ══════════════════════════════════════ */
+    /* ══ BATTLEFIELD LANDING — full-bleed room view ══════════════ */
+
+    /* When battlefield is active, let it break free of .content constraints */
+    body.battlefield-active .content {
+      padding:0; max-width:100%; margin:0;
+    }
+    body.battlefield-active #tab-battlefield.active {
+      overflow:hidden;
+    }
+
     .battlefield-landing {
-      min-height:calc(100vh - 110px);
+      height:calc(100vh - 108px); /* topbar ~60px + tabs ~48px */
       display:flex; flex-direction:column;
-      align-items:center; justify-content:flex-end;
-      padding:0 1.5rem 1.8rem;
+      align-items:center; justify-content:center;
       position:relative; overflow:hidden;
-      /* Sunset beach sky — deep night → violet dusk → burnt-orange horizon → ocean → dark ground */
-      background:linear-gradient(180deg,
-        #060318  0%,  #0A0525  5%,
-        #120838  10%, #1C0A42  15%,
-        #2A0C40  20%, #3C1030  26%,
-        #561618  31%, #7A2208  36%,
-        #9C3A06  40%, #B04C08  43%, /* vivid horizon peak */
-        #8A3C0A  47%, #5A3018  51%,
-        #243830  56%, #122830  62%,
-        #0C1E2A  70%, #081828  80%,
-        #051018  90%, #030C12 100%
-      );
-    }
-    /* Warm golden horizon shimmer line */
-    .battlefield-landing::before {
-      content:''; position:absolute; z-index:4;
-      top:46%; left:0; right:0; height:3px;
-      background:linear-gradient(90deg,
-        transparent 0%, rgba(220,130,30,.0) 6%,
-        rgba(255,190,60,.55) 20%, rgba(255,220,100,.8) 35%,
-        rgba(255,200,70,.65) 50%, rgba(255,220,100,.8) 65%,
-        rgba(255,190,60,.55) 80%, rgba(220,130,30,.0) 94%, transparent 100%
-      );
-      filter:blur(2.5px); pointer-events:none;
-    }
-    /* Bottom ground vignette */
-    .battlefield-landing::after {
-      content:''; position:absolute; z-index:8;
-      bottom:0; left:0; right:0; height:22%;
-      background:linear-gradient(to top, rgba(4,8,12,.92) 0%, transparent 100%);
-      pointer-events:none;
+      background:#0a0806;
     }
 
-    /* ── LOGO WATERMARK BACKDROP ── */
-    .bf-logo-bg {
-      position:absolute; top:50%; left:50%;
-      transform:translate(-50%,-44%);
-      width:clamp(340px,60vw,720px); aspect-ratio:1;
-      pointer-events:none; z-index:1;
-    }
-    .bf-logo-bg img {
-      width:100%; height:100%; object-fit:contain;
-      opacity:.065;
-      filter:brightness(1.7) saturate(.22);
+    /* Living room photo — perspective-tilted to simulate looking down from above */
+    .bf-room-bg {
+      position:absolute; inset:-18% -8%;
+      background:url('assets/rooms/room_living.jpg') center 38% / cover no-repeat;
+      transform:perspective(1100px) rotateX(32deg) scale(1.1);
+      transform-origin:50% 55%;
+      filter:brightness(.52) saturate(.82) contrast(1.05);
+      pointer-events:none; z-index:0;
     }
 
-    /* ── STAR FIELD (top sky) ── */
-    .bf-stars {
+    /* Warm vignette — darkens edges, keeps center luminous like the Battlefield sample */
+    .bf-room-overlay {
       position:absolute; inset:0; z-index:1; pointer-events:none;
-      background-image:
-        radial-gradient(1px 1px at  7%  5%, rgba(255,255,255,.65) 0%,transparent 100%),
-        radial-gradient(1px 1px at 13% 11%, rgba(255,255,240,.50) 0%,transparent 100%),
-        radial-gradient(2px 2px at 20%  3%, rgba(255,255,255,.70) 0%,transparent 100%),
-        radial-gradient(1px 1px at 29%  8%, rgba(255,255,240,.45) 0%,transparent 100%),
-        radial-gradient(1px 1px at 37%  4%, rgba(255,255,255,.55) 0%,transparent 100%),
-        radial-gradient(2px 2px at 45% 12%, rgba(255,255,240,.50) 0%,transparent 100%),
-        radial-gradient(1px 1px at 53%  6%, rgba(255,255,255,.60) 0%,transparent 100%),
-        radial-gradient(1px 1px at 61%  2%, rgba(255,245,200,.50) 0%,transparent 100%),
-        radial-gradient(2px 2px at 68%  9%, rgba(255,255,255,.65) 0%,transparent 100%),
-        radial-gradient(1px 1px at 76%  5%, rgba(255,255,240,.45) 0%,transparent 100%),
-        radial-gradient(1px 1px at 83% 13%, rgba(255,255,255,.55) 0%,transparent 100%),
-        radial-gradient(1px 1px at 90%  7%, rgba(255,245,200,.50) 0%,transparent 100%),
-        radial-gradient(1px 1px at 96%  3%, rgba(255,255,255,.60) 0%,transparent 100%),
-        radial-gradient(1px 1px at  4% 19%, rgba(255,255,240,.35) 0%,transparent 100%),
-        radial-gradient(1px 1px at 16% 22%, rgba(255,255,255,.40) 0%,transparent 100%),
-        radial-gradient(1px 1px at 26% 17%, rgba(255,255,240,.35) 0%,transparent 100%),
-        radial-gradient(2px 2px at 42% 20%, rgba(255,255,255,.45) 0%,transparent 100%),
-        radial-gradient(1px 1px at 57% 18%, rgba(255,255,240,.38) 0%,transparent 100%),
-        radial-gradient(1px 1px at 71% 24%, rgba(255,255,255,.35) 0%,transparent 100%),
-        radial-gradient(1px 1px at 87% 17%, rgba(255,245,200,.40) 0%,transparent 100%);
-      -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,.75) 20%,rgba(0,0,0,0) 44%);
-      mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,.75) 20%,rgba(0,0,0,0) 44%);
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 54%, transparent 0%, rgba(0,0,0,.55) 100%),
+        linear-gradient(to bottom,
+          rgba(0,0,0,.65) 0%, rgba(0,0,0,.15) 18%,
+          rgba(0,0,0,.08) 50%, rgba(0,0,0,.15) 78%,
+          rgba(0,0,0,.72) 100%
+        ),
+        linear-gradient(to right, rgba(0,0,0,.45) 0%, transparent 18%, transparent 82%, rgba(0,0,0,.45) 100%);
     }
 
-    /* ── SUN GLOW at horizon ── */
-    .bf-sun-glow {
-      position:absolute; top:43%; left:50%;
-      transform:translate(-50%,-50%);
-      width:clamp(500px,80vw,1000px); height:260px;
-      background:radial-gradient(ellipse at 50% 72%,
-        rgba(255,200,80,.60) 0%, rgba(255,140,30,.42) 18%,
-        rgba(220,80,10,.22) 40%, rgba(160,40,5,.08) 65%, transparent 82%
-      );
-      pointer-events:none; z-index:2; filter:blur(10px);
-    }
-
-    /* ── FAR MOUNTAIN RANGE (purple-blue silhouettes) ── */
-    .bf-mountains-far {
-      position:absolute; bottom:58%; left:-2%; right:-2%;
-      height:clamp(130px,22vw,240px);
-      background:linear-gradient(180deg,
-        rgba(60,22,80,0) 0%, rgba(50,18,65,.65) 35%,
-        rgba(36,12,52,.92) 68%, rgba(22,8,38,.98) 100%
-      );
-      clip-path:polygon(
-        0% 100%, 0% 62%,
-        2.5% 50%, 5% 61%, 7.5% 44%, 10% 56%, 12.5% 38%,
-        15% 52%, 17.5% 32%, 20% 48%, 22.5% 24%, 25% 42%,
-        27.5% 20%, 30% 38%, 32.5% 16%, 35% 34%, 37.5% 22%,
-        40% 36%, 42.5% 14%, 45% 30%, 47.5% 18%, 50% 12%,
-        52.5% 28%, 55% 16%, 57.5% 32%, 60% 18%, 62.5% 34%,
-        65% 22%, 67.5% 38%, 70% 28%, 72.5% 42%, 75% 30%,
-        77.5% 46%, 80% 36%, 82.5% 50%, 85% 38%, 87.5% 54%,
-        90% 40%, 92.5% 56%, 95% 44%, 97.5% 58%, 100% 48%,
-        100% 100%
-      );
-      pointer-events:none; z-index:2; filter:blur(.6px);
-    }
-
-    /* ── NEAR MOUNTAIN RANGE (dark green hills) ── */
-    .bf-mountains-near {
-      position:absolute; bottom:50%; left:-2%; right:-2%;
-      height:clamp(110px,18vw,200px);
-      background:linear-gradient(180deg,
-        rgba(10,25,10,0) 0%, rgba(8,22,6,.78) 30%,
-        rgba(5,16,4,.96) 65%, rgba(3,12,3,.99) 100%
-      );
-      clip-path:polygon(
-        0% 100%, 0% 72%,
-        3% 60%, 6% 70%, 9% 54%, 12% 65%, 15% 50%, 18% 62%,
-        21% 48%, 24% 60%, 27% 52%, 30% 65%, 33% 54%,
-        36% 68%, 39% 55%, 42% 68%, 45% 56%, 48% 70%,
-        51% 54%, 54% 66%, 57% 50%, 60% 62%, 63% 48%,
-        66% 62%, 69% 50%, 72% 63%, 75% 52%, 78% 66%,
-        81% 54%, 84% 68%, 87% 56%, 90% 70%, 93% 58%,
-        96% 72%, 100% 62%, 100% 100%
-      );
-      pointer-events:none; z-index:3;
-    }
-
-    /* ── OCEAN SURFACE ── */
-    .bf-ocean {
-      position:absolute; top:42%; left:0; right:0;
-      height:22%;
-      background:linear-gradient(180deg,
-        rgba(18,58,80,0) 0%, rgba(14,50,72,.45) 22%,
-        rgba(10,42,62,.72) 58%, rgba(8,34,50,.90) 100%
-      );
-      pointer-events:none; z-index:4;
-    }
-    /* Sunset reflection on the ocean */
-    .bf-ocean-glint {
-      position:absolute; top:42%; left:25%; right:25%;
-      height:14%;
-      background:radial-gradient(ellipse at 50% 0%,
-        rgba(255,190,60,.18) 0%, rgba(255,150,30,.07) 45%, transparent 72%
-      );
-      pointer-events:none; z-index:5;
-    }
-
-    /* ── WAVE SHIMMER LINES ── */
-    .bf-wave { position:absolute; left:0; right:0; height:2px; pointer-events:none; z-index:5; }
-    .bf-wave-1 {
-      top:46%;
-      background:linear-gradient(90deg,
-        transparent 0%, rgba(120,190,220,0) 8%,
-        rgba(175,220,245,.45) 22%, rgba(210,240,255,.62) 38%,
-        rgba(175,220,245,.45) 60%, rgba(120,190,220,0) 78%, transparent 100%
-      );
-      filter:blur(1px); animation:waveShimmer 5s ease-in-out infinite;
-    }
-    .bf-wave-2 {
-      top:50%;
-      background:linear-gradient(90deg,
-        transparent 0%, rgba(120,190,220,0) 14%,
-        rgba(155,205,235,.30) 30%, rgba(195,228,250,.44) 52%,
-        rgba(155,205,235,.30) 70%, rgba(120,190,220,0) 85%, transparent 100%
-      );
-      filter:blur(1.5px); animation:waveShimmer 6.5s ease-in-out infinite; animation-delay:-2.8s;
-    }
-    .bf-wave-3 {
-      top:54%;
-      background:linear-gradient(90deg,
-        transparent 0%, rgba(120,190,220,0) 5%,
-        rgba(135,195,225,.18) 20%, rgba(175,220,248,.30) 44%,
-        rgba(135,195,225,.18) 66%, rgba(120,190,220,0) 86%, transparent 100%
-      );
-      filter:blur(2px); animation:waveShimmer 7.8s ease-in-out infinite; animation-delay:-1.4s;
-    }
-    @keyframes waveShimmer {
-      0%   { opacity:.45; transform:scaleX(.96) translateX(-1%); }
-      40%  { opacity:1;   transform:scaleX(1.03) translateX(1.2%); }
-      70%  { opacity:.7;  transform:scaleX(.98) translateX(.4%); }
-      100% { opacity:.45; transform:scaleX(.96) translateX(-1%); }
-    }
-
-    /* ── BEACH SAND STRIP ── */
-    .bf-beach {
-      position:absolute; bottom:28%; left:0; right:0; height:70px;
-      background:linear-gradient(180deg,
-        transparent 0%, rgba(115,75,28,.10) 45%, rgba(135,88,32,.20) 100%
-      );
-      pointer-events:none; z-index:5;
-    }
-    /* Zone label — pinned to the top of the frame, above the scene */
+    /* Zone label — centered near the top */
     .bf-zone-label {
-      text-align:center; position:absolute; top:2rem; left:0; right:0;
+      text-align:center; position:absolute; top:1.6rem; left:0; right:0;
       z-index:10; pointer-events:none;
     }
     .bf-zone-text {
       font-family:'Cinzel Decorative',serif; font-size:1.05rem; font-weight:700;
       color:var(--gold); letter-spacing:.22em; display:block;
-      text-shadow:0 0 28px rgba(201,168,76,.6), 0 2px 12px rgba(0,0,0,.8);
+      text-shadow:0 0 30px rgba(201,168,76,.65), 0 2px 14px rgba(0,0,0,.9);
     }
     .bf-zone-sub {
       font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.2em;
-      text-transform:uppercase; color:var(--text-dim);
+      text-transform:uppercase; color:rgba(232,220,200,.45);
       margin-top:.4rem; font-style:italic; display:block;
     }
-    /* ── PLAY MAT — glass surface over the sunset scene ── */
-    .battlefield-mat {
+
+    /* Cards wrapper — floats directly on the room, no mat */
+    .cards-rows-wrap {
       position:relative; z-index:9;
-      width:100%; max-width:1020px;
-      /* Semi-transparent glass: lets the scene bleed through */
-      background:
-        repeating-linear-gradient(  0deg, rgba(201,168,76,.018) 0, transparent 1px, transparent 54px),
-        repeating-linear-gradient( 90deg, rgba(201,168,76,.018) 0, transparent 1px, transparent 54px),
-        radial-gradient(ellipse 90% 70% at 50% 50%, rgba(12,24,16,.62) 0%, rgba(6,14,10,.72) 100%);
-      backdrop-filter:blur(18px) saturate(1.4) brightness(1.08);
-      -webkit-backdrop-filter:blur(18px) saturate(1.4) brightness(1.08);
-      border:1.5px solid rgba(201,168,76,.30);
-      border-radius:18px;
-      padding:1.8rem 2.2rem 2.2rem;
-      box-shadow:
-        0 0 0 1px rgba(0,0,0,.75),
-        0 -8px 60px rgba(0,0,0,.55),
-        0 24px 80px rgba(0,0,0,.4),
-        inset 0 0 80px rgba(0,0,0,.28),
-        inset 0 1px 0 rgba(201,168,76,.22),
-        0 0 80px rgba(255,140,30,.08),
-        0 0 55px rgba(201,168,76,.08);
+      width:100%; max-width:1060px;
+      padding:0 1.5rem;
     }
-    /* Sunset bloom on the mat's top edge */
-    .battlefield-mat::before {
-      content:''; position:absolute; top:-50px; left:8%; right:8%;
-      height:50px; pointer-events:none;
-      background:radial-gradient(ellipse at 50% 100%,
-        rgba(255,160,40,.28) 0%, rgba(230,100,20,.12) 50%, transparent 80%
-      );
-      filter:blur(4px);
-    }
-    /* Corner rune ornaments */
-    .mat-corner {
-      position:absolute; font-size:.72rem;
-      color:rgba(201,168,76,.42); pointer-events:none; line-height:1;
-    }
-    .mat-tl { top:8px;    left:12px; }
-    .mat-tr { top:8px;    right:12px; }
-    .mat-bl { bottom:8px; left:12px; }
-    .mat-br { bottom:8px; right:12px; }
-    /* Row divider between back and front rows */
+
+    /* Row divider — subtle golden line between back and front rows */
     .mat-divider {
-      height:1px; margin:1.3rem 0;
+      height:1px; margin:1.6rem 0;
       background:linear-gradient(90deg,
-        transparent, rgba(201,168,76,.14), rgba(201,168,76,.32),
-        rgba(201,168,76,.14), transparent
+        transparent, rgba(201,168,76,.1), rgba(201,168,76,.22),
+        rgba(201,168,76,.1), transparent
       );
       position:relative;
     }
     .mat-divider::before {
       content:'⚔'; position:absolute;
       left:50%; top:50%; transform:translate(-50%,-50%);
-      color:rgba(201,168,76,.42); font-size:.62rem;
-      background:rgba(10,18,8,.97); padding:0 8px;
+      color:rgba(201,168,76,.35); font-size:.58rem;
+      background:rgba(0,0,0,.0); padding:0 8px;
     }
+
     /* Card row containers */
     .cards-row {
       display:flex; gap:10px;
@@ -787,32 +595,19 @@
     <div class="tab-panel active" id="tab-battlefield">
       <div class="battlefield-landing">
 
-        <!-- Scene layers: logo → stars → sun → mountains → ocean → waves → beach -->
-        <div class="bf-logo-bg"><img src="assets/logo-circle.png" alt=""></div>
-        <div class="bf-stars"></div>
-        <div class="bf-sun-glow"></div>
-        <div class="bf-mountains-far"></div>
-        <div class="bf-mountains-near"></div>
-        <div class="bf-ocean"></div>
-        <div class="bf-ocean-glint"></div>
-        <div class="bf-wave bf-wave-1"></div>
-        <div class="bf-wave bf-wave-2"></div>
-        <div class="bf-wave bf-wave-3"></div>
-        <div class="bf-beach"></div>
+        <!-- Room background layers -->
+        <div class="bf-room-bg"></div>
+        <div class="bf-room-overlay"></div>
 
         <div class="bf-zone-label">
           <span class="bf-zone-text">COMMANDER'S BATTLEFIELD</span>
           <span class="bf-zone-sub">Tap a card to enter its realm</span>
         </div>
 
-        <!-- Play mat -->
-        <div class="battlefield-mat">
-          <span class="mat-corner mat-tl">✦</span>
-          <span class="mat-corner mat-tr">✦</span>
-          <span class="mat-corner mat-bl">✦</span>
-          <span class="mat-corner mat-br">✦</span>
+        <!-- Cards float directly on the room — no mat wrapper -->
+        <div class="cards-rows-wrap">
 
-          <!-- ── BACK ROW (3 cards — strategic spells) ── -->
+          <!-- ── BACK ROW (3 cards) ── -->
           <div class="cards-row cards-back-row">
 
             <!-- COMMAND (Gold/Artifact) -->
@@ -883,7 +678,7 @@
           <!-- Row divider -->
           <div class="mat-divider"></div>
 
-          <!-- ── FRONT ROW (4 cards — active permanents) ── -->
+          <!-- ── FRONT ROW (4 cards) ── -->
           <div class="cards-row cards-front-row">
 
             <!-- CREATURES (Green/Forest) -->
@@ -967,7 +762,7 @@
 
           </div><!-- /front row -->
 
-        </div><!-- /battlefield-mat -->
+        </div><!-- /cards-rows-wrap -->
       </div><!-- /battlefield-landing -->
     </div>
 
@@ -1198,6 +993,7 @@ function logout() {
   document.getElementById('app').style.display  = 'none';
   document.getElementById('gate').style.display = 'flex';
   document.getElementById('pwd').value = '';
+  document.body.classList.remove('battlefield-active');
 }
 document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
 
@@ -1206,11 +1002,13 @@ function showBattlefield() {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-battlefield').classList.add('active');
+  document.body.classList.add('battlefield-active');
 }
 
 function enterSection(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.body.classList.remove('battlefield-active');
   const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
   if (btn) btn.classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
