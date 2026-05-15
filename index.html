@@ -7,7 +7,7 @@
   <meta name="description" content="A premium hillside retreat where the Atlantic Forest meets the surf at Praia da Silveira, Garopaba SC — 5 suites, private pool, panoramic ocean views.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
@@ -67,23 +67,11 @@
     .nav-links .cta-nav:hover { background:var(--sunset); color:#fff!important; border-color:var(--sunset); }
     @media(max-width:650px){ .nav-links { display:none; } }
     .owner-nav {
-      font-size:.78rem; letter-spacing:.06em; opacity:.72;
-      transition:opacity .3s !important; text-decoration:none;
-      display:flex; align-items:center; gap:.45rem;
-      color:rgba(249,244,236,.75);
+      font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.12em;
+      opacity:.65; transition:opacity .3s !important; text-decoration:none;
+      color:rgba(249,244,236,.75); text-transform:uppercase;
     }
     .owner-nav:hover { opacity:1; color:var(--gold); }
-    .owner-nav .ms { font-size:.95rem; color:#C9A84C; }
-    .mtg-mini-card {
-      display:inline-block; width:9px; height:13px; border-radius:2px;
-      background:linear-gradient(135deg,#1a3a9a,#0c1e5a);
-      border:1px solid rgba(201,168,76,.65);
-      vertical-align:middle; position:relative; flex-shrink:0;
-    }
-    .mtg-mini-card::before {
-      content:''; position:absolute; inset:2px;
-      border:1px solid rgba(255,255,255,.18); border-radius:1px;
-    }
 
     /* ── HERO ────────────────────────────────────────── */
     .hero {
@@ -133,10 +121,10 @@
       margin-bottom:1.8rem; position:relative; z-index:1;
     }
     .hero-title {
-      font-family:'Playfair Display',serif;
-      font-size:clamp(2.8rem,8vw,6rem); font-weight:700;
-      color:var(--text-light); letter-spacing:.07em; line-height:1.03;
-      text-shadow:0 2px 24px rgba(0,0,0,.32);
+      font-family:'Pacifico',cursive;
+      font-size:clamp(2.4rem,7vw,5.2rem); font-weight:400;
+      color:var(--text-light); letter-spacing:.03em; line-height:1.1;
+      text-shadow:0 2px 28px rgba(0,0,0,.38), 0 0 60px rgba(212,163,64,.2);
       position:relative; z-index:1;
     }
     .hero-title .sub {
@@ -347,14 +335,48 @@
 
     /* ── FOOTER ──────────────────────────────────────── */
     footer { background:var(--ocean-deep); color:rgba(249,244,236,.55); text-align:center; padding:3.5rem 2rem; }
-    .foot-logo { width:72px; margin:0 auto 1.4rem; opacity:.6; display:block; filter:brightness(0) invert(1); }
+    .foot-logo { width:80px; margin:0 auto 1.4rem; opacity:.75; display:block; }
     .foot-links { display:flex; justify-content:center; gap:2rem; margin-bottom:1.8rem; flex-wrap:wrap; }
     .foot-links a { color:rgba(249,244,236,.58); text-decoration:none; font-size:.84rem; letter-spacing:.07em; transition:color .3s; }
     .foot-links a:hover { color:var(--gold); }
     footer p { font-size:.78rem; }
     .owner-link { margin-top:2rem; }
-    .owner-link a { font-size:.7rem; color:rgba(249,244,236,.2); text-decoration:none; letter-spacing:.1em; transition:color .3s; }
+    .owner-link a { font-family:'Cinzel',serif; font-size:.68rem; color:rgba(249,244,236,.2); text-decoration:none; letter-spacing:.14em; text-transform:uppercase; transition:color .3s; }
     .owner-link a:hover { color:rgba(249,244,236,.45); }
+
+    /* ── SUITE FLIP TILES ───────────────────────────── */
+    .suite-tile { height:420px; }
+    .suite-front {
+      background:var(--white);
+      display:flex; flex-direction:column;
+    }
+    .suite-front .suite-bar { flex-shrink:0; }
+    .suite-front .suite-body { flex:1; overflow:hidden; }
+    .suite-front .suite-link { font-size:.75rem; padding:.45rem .8rem; }
+    .suite-back-mosaic {
+      transform:rotateY(180deg);
+      background:#000; padding:0;
+    }
+    .suite-mosaic {
+      position:absolute; inset:0;
+      display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px;
+    }
+    .suite-mosaic-ph {
+      background-size:cover; background-position:center;
+    }
+    .suite-mosaic-overlay {
+      position:absolute; inset:0; z-index:2;
+      background:linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 45%);
+      display:flex; flex-direction:column; justify-content:flex-end; padding:1.2rem;
+    }
+    .suite-mosaic-name {
+      font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:600;
+      color:#fff; margin-bottom:.25rem; line-height:1.2;
+    }
+    .suite-mosaic-hint {
+      font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+      color:rgba(255,255,255,.5);
+    }
 
     /* ── ANIMATIONS ──────────────────────────────────── */
     .fu { opacity:0; transform:translateY(28px); transition:opacity .65s ease, transform .65s ease; }
@@ -374,7 +396,7 @@
     <a href="#suites">Suites</a>
     <a href="#location">Location</a>
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="cta-nav">Book Now</a>
-    <a href="owner.html" class="owner-nav">owner access <span class="mtg-mini-card"></span> 🔐</a>
+    <a href="owner.html" class="owner-nav">Owner Access</a>
   </div>
 </nav>
 
@@ -514,17 +536,17 @@
         </div>
       </div>
 
-      <!-- Powder Room -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Powder Room">
+      <!-- Library / Lower Level -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Library">
         <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_lavabo.jpg');background-position:center top">
-            <div class="fc"><span class="ico">🪞</span><div class="name">Powder Room</div><div class="hint">tap to explore</div></div>
+          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_library_b.jpg')">
+            <div class="fc"><span class="ico">📚</span><div class="name">The Library</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
-            <div class="b-ico">🪞</div>
-            <div class="b-title">Powder Room</div>
-            <p class="b-desc">An organic-shaped mirror over a hand-crafted marble vanity with forest views through the window. Even the powder room is a designed moment here.</p>
-            <span class="b-tag">Marble Vanity · Organic Mirror · Forest View</span>
+            <div class="b-ico">📚</div>
+            <div class="b-title">The Library</div>
+            <p class="b-desc">The lower level opens to a light-filled reading nook tucked beneath the floating staircase — surrounded by bookshelves, lush garden views, and deep green cushions. The quietest corner in the house.</p>
+            <span class="b-tag">Built-in Library · Staircase Feature · Garden Views</span>
           </div>
         </div>
       </div>
@@ -574,17 +596,16 @@
       </div>
 
       <!-- 2 Surfland Day -->
-      <div class="tile-wrap video-tile" tabindex="0" role="button" aria-label="Surfland Day">
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Surfland Day">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1MvBNMqLaoc4w44S4veuE8KDyFlLKqgGc&sz=w800')">
-            <div class="fc"><span class="ico">🏄</span><div class="name">Surfland Day</div><div class="hint">tap to watch clip</div></div>
+            <div class="fc"><span class="ico">🏄</span><div class="name">Surfland Day</div><div class="hint">tap to explore</div></div>
           </div>
-          <div class="tile-face tile-back video-back">
-            <div class="video-tile-header">🌊 Surfland Day</div>
-            <iframe class="video-tile-player"
-              data-src="https://drive.google.com/file/d/1wjuhZNU6dQaWpPqn9ns6FGa59Qlevbmj/preview"
-              allow="autoplay; fullscreen" allowfullscreen></iframe>
-            <div class="video-tile-hint">tap tile to go back</div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🏄</div>
+            <div class="b-title">Surfland Day</div>
+            <p class="b-desc">Praia da Silveira is your front yard. Grab a board, paddle out, and ride the consistent Atlantic swells just steps from the house — world-class waves with a hillside retreat waiting at the top.</p>
+            <span class="b-tag">Surf Lessons Available · All Levels · Gear Rental Nearby</span>
           </div>
         </div>
       </div>
@@ -635,17 +656,16 @@
       </div>
 
       <!-- 6 Movie Night -->
-      <div class="tile-wrap video-tile" tabindex="0" role="button" aria-label="Movie Night">
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Movie Night">
         <div class="tile">
-          <div class="tile-face tile-front" style="background:radial-gradient(ellipse at 40% 35%, #1a1a4e 0%, #06060f 100%)">
-            <div class="fc"><span class="ico">🎬</span><div class="name">Movie Night</div><div class="hint">tap to watch clip</div></div>
+          <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=1ZPtKB7zGlw43OZnRVftjDhYP8sWUAzM3&sz=w800');background-color:#06060f">
+            <div class="fc"><span class="ico">🎬</span><div class="name">Movie Night</div><div class="hint">tap to explore</div></div>
           </div>
-          <div class="tile-face tile-back video-back">
-            <div class="video-tile-header">🎬 Movie Night</div>
-            <iframe class="video-tile-player"
-              data-src="https://drive.google.com/file/d/1ZPtKB7zGlw43OZnRVftjDhYP8sWUAzM3/preview"
-              allow="autoplay; fullscreen" allowfullscreen></iframe>
-            <div class="video-tile-hint">tap tile to go back</div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🎬</div>
+            <div class="b-title">Movie Night</div>
+            <p class="b-desc">The 75″ Frame TV transforms the living room into a private cinema. Pair it with the Sonos surround sound, dim the lights, and lose yourselves in a film while the Atlantic breeze rolls in.</p>
+            <span class="b-tag">75″ Frame TV · Sonos Surround · Library of Films</span>
           </div>
         </div>
       </div>
@@ -681,16 +701,16 @@
       </div>
 
       <!-- 9 Réveillon Party -->
-      <div class="tile-wrap video-tile" tabindex="0" role="button" aria-label="Réveillon Party">
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Réveillon Party">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('https://drive.google.com/thumbnail?id=17J4QG9D9yduLyTDQnT9u_3arflg3acHr&sz=w800')">
-            <div class="fc"><span class="ico">🎆</span><div class="name">Réveillon Party</div><div class="hint">tap to watch clip</div></div>
+            <div class="fc"><span class="ico">🎆</span><div class="name">Réveillon Party</div><div class="hint">tap to explore</div></div>
           </div>
-          <div class="tile-face tile-back video-back">
-            <div class="video-tile-header">🎆 Réveillon Party Watch</div>
-            <video class="video-tile-player" data-src="assets/reveillon.mov"
-              loop playsinline controls></video>
-            <div class="video-tile-hint">tap tile to go back</div>
+          <div class="tile-face tile-back">
+            <div class="b-ico">🎆</div>
+            <div class="b-title">Réveillon Party</div>
+            <p class="b-desc">Ring in the New Year from the best seat in Garopaba. The Gathering's elevated terrace offers a panoramic front-row view of the midnight fireworks over the bay — a breathtaking way to welcome the new year.</p>
+            <span class="b-tag">Midnight Fireworks View · Hilltop Terrace · NYE Magic</span>
           </div>
         </div>
       </div>
@@ -710,77 +730,124 @@
     <div class="suite-grid">
 
       <!-- Plains / White -->
-      <div class="suite-card fu d1">
-        <div class="suite-bar mw"></div>
-        <div class="suite-body">
-          <div class="suite-mana">🔆</div>
-          <div class="suite-pt">Planície</div>
-          <div class="suite-en">Plains · Premium Mezzanine Suite 1</div>
-          <div class="suite-hr"></div>
-          <p class="suite-desc">The grandest suite in the house. Inspired by the open sands of Praia da Silveira — light, expansive, airy. Features a King bed in the largest private space at nearly 20 m².</p>
-          <div class="suite-meta">
-            <span>🛏️ King Bed</span>
-            <span>📐 19.9 m²</span>
-            <span>🪟 Mezzanine Level</span>
+      <div class="tile-wrap suite-tile fu d1" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Planície">
+        <div class="tile">
+          <div class="tile-face suite-front">
+            <div class="suite-bar mw"></div>
+            <div class="suite-body">
+              <div class="suite-mana">🔆</div>
+              <div class="suite-pt">Planície</div>
+              <div class="suite-en">Plains · Premium Mezzanine Suite 1</div>
+              <div class="suite-hr"></div>
+              <p class="suite-desc">The grandest suite in the house. Inspired by the open sands of Praia da Silveira — light, expansive, airy. King bed, nearly 20 m².</p>
+              <div class="suite-meta"><span>🛏️ King Bed</span><span>📐 19.9 m²</span><span>🪟 Mezzanine</span></div>
+              <span class="suite-link" style="display:block;margin-top:1rem;text-align:center;font-size:.75rem;color:var(--text-mid)">tap to see the suite →</span>
+            </div>
           </div>
-          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+          <div class="tile-face suite-back-mosaic">
+            <div class="suite-mosaic">
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/room_suite1.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite1_c.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite1_b.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/preview_25.jpg')"></div>
+            </div>
+            <div class="suite-mosaic-overlay">
+              <div class="suite-mosaic-name">🔆 Suite Planície</div>
+              <div class="suite-mosaic-hint">King Bed · 19.9 m² · tap to go back</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Island / Blue -->
-      <div class="suite-card fu d2">
-        <div class="suite-bar mu"></div>
-        <div class="suite-body">
-          <div class="suite-mana">💧</div>
-          <div class="suite-pt">Ilha</div>
-          <div class="suite-en">Island · Mezzanine Suite 2</div>
-          <div class="suite-hr"></div>
-          <p class="suite-desc">Named for the deep blues of Mar Silveira. Serene and refined, this mezzanine suite captures the spirit of the ocean — flowing, boundless, utterly at peace.</p>
-          <div class="suite-meta">
-            <span>🛏️ King Bed</span>
-            <span>📐 13.5 m²</span>
-            <span>🌊 Ocean Mood</span>
+      <div class="tile-wrap suite-tile fu d2" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Ilha">
+        <div class="tile">
+          <div class="tile-face suite-front">
+            <div class="suite-bar mu"></div>
+            <div class="suite-body">
+              <div class="suite-mana">💧</div>
+              <div class="suite-pt">Ilha</div>
+              <div class="suite-en">Island · Mezzanine Suite 2</div>
+              <div class="suite-hr"></div>
+              <p class="suite-desc">Named for the deep blues of Mar Silveira. Serene and refined — ocean mood, King bed, mezzanine level.</p>
+              <div class="suite-meta"><span>🛏️ King Bed</span><span>📐 13.5 m²</span><span>🌊 Ocean Mood</span></div>
+              <span class="suite-link" style="display:block;margin-top:1rem;text-align:center;font-size:.75rem;color:var(--text-mid)">tap to see the suite →</span>
+            </div>
           </div>
-          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+          <div class="tile-face suite-back-mosaic">
+            <div class="suite-mosaic">
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/room_suite2.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite2_b.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/preview_37.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite2_c.jpg')"></div>
+            </div>
+            <div class="suite-mosaic-overlay">
+              <div class="suite-mosaic-name">💧 Suite Ilha</div>
+              <div class="suite-mosaic-hint">King Bed · 13.5 m² · tap to go back</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Mountain / Red -->
-      <div class="suite-card fu d3">
-        <div class="suite-bar mr"></div>
-        <div class="suite-body">
-          <div class="suite-mana">🌄</div>
-          <div class="suite-pt">Montanha</div>
-          <div class="suite-en">Mountain · Flex Suite 3</div>
-          <div class="suite-hr"></div>
-          <p class="suite-desc">Bold and energetic like the Morro Silveira. Inspired by the red-earth hillside that defines this place — flexible configuration, full of warmth and raw character.</p>
-          <div class="suite-meta">
-            <span>🛏️ Flex Config</span>
-            <span>📐 13.5 m²</span>
-            <span>🏔️ Hillside Energy</span>
+      <div class="tile-wrap suite-tile fu d3" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Montanha">
+        <div class="tile">
+          <div class="tile-face suite-front">
+            <div class="suite-bar mr"></div>
+            <div class="suite-body">
+              <div class="suite-mana">🌄</div>
+              <div class="suite-pt">Montanha</div>
+              <div class="suite-en">Mountain · Flex Suite 3</div>
+              <div class="suite-hr"></div>
+              <p class="suite-desc">Bold and energetic like Morro Silveira — red-earth art, flexible bunk configuration, panoramic balcony.</p>
+              <div class="suite-meta"><span>🛏️ Flex Bunks</span><span>📐 13.5 m²</span><span>🏔️ Hilltop View</span></div>
+              <span class="suite-link" style="display:block;margin-top:1rem;text-align:center;font-size:.75rem;color:var(--text-mid)">tap to see the suite →</span>
+            </div>
           </div>
-          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+          <div class="tile-face suite-back-mosaic">
+            <div class="suite-mosaic">
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/room_suite3.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite3_b.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite3_c.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/preview_49.jpg')"></div>
+            </div>
+            <div class="suite-mosaic-overlay">
+              <div class="suite-mosaic-name">🌄 Suite Montanha</div>
+              <div class="suite-mosaic-hint">Flex Bunks · 13.5 m² · tap to go back</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Forest / Green -->
-      <div class="suite-card fu d1">
-        <div class="suite-bar mg"></div>
-        <div class="suite-body">
-          <div class="suite-mana">🌴</div>
-          <div class="suite-pt">Floresta</div>
-          <div class="suite-en">Forest · Flex Suite 4</div>
-          <div class="suite-hr"></div>
-          <p class="suite-desc">Lush and grounding, like the dense Atlantic Forest carpeting the hillside. Earthy tones, natural textures, and a deep connection to the wild just outside the window.</p>
-          <div class="suite-meta">
-            <span>🛏️ Flex Config</span>
-            <span>📐 13.6 m²</span>
-            <span>🌿 Forest Mood</span>
+      <div class="tile-wrap suite-tile fu d1" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Floresta">
+        <div class="tile">
+          <div class="tile-face suite-front">
+            <div class="suite-bar mg"></div>
+            <div class="suite-body">
+              <div class="suite-mana">🌴</div>
+              <div class="suite-pt">Floresta</div>
+              <div class="suite-en">Forest · Flex Suite 4</div>
+              <div class="suite-hr"></div>
+              <p class="suite-desc">Lush forest-green tones, flex bunk beds, Atlantic Forest views through the glass door. Grounding, natural, calm.</p>
+              <div class="suite-meta"><span>🛏️ Flex Bunks</span><span>📐 13.6 m²</span><span>🌿 Forest View</span></div>
+              <span class="suite-link" style="display:block;margin-top:1rem;text-align:center;font-size:.75rem;color:var(--text-mid)">tap to see the suite →</span>
+            </div>
           </div>
-          <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" class="suite-link" target="_blank" rel="noopener">View Interior Plans →</a>
+          <div class="tile-face suite-back-mosaic">
+            <div class="suite-mosaic">
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/room_suite4.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite4_b.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite4_c.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/preview_58.jpg')"></div>
+            </div>
+            <div class="suite-mosaic-overlay">
+              <div class="suite-mosaic-name">🌴 Suite Floresta</div>
+              <div class="suite-mosaic-hint">Flex Bunks · 13.6 m² · tap to go back</div>
+            </div>
+          </div>
         </div>
       </div>
-
 
     </div>
   </div>
@@ -810,6 +877,8 @@
       <div class="chip"><span class="ci">🏗️</span> Outdoor Decks &amp; Pergolas</div>
       <div class="chip"><span class="ci">♨️</span> Hot Water Heating</div>
       <div class="chip"><span class="ci">👁️</span> Eufy Security System</div>
+      <div class="chip"><span class="ci">🌊</span> Unobstructed Garopaba Bay View</div>
+      <div class="chip"><span class="ci">🎲</span> Board Games · Private Library · Movie Projector — Book Club Friendly</div>
     </div>
   </div>
 </div>
@@ -893,23 +962,11 @@
     });
   });
 
-  // Video tile flip — lazy-load player on flip, unload on flip-back
-  document.querySelectorAll('.video-tile').forEach(tile => {
-    const flip = () => {
-      const wasFlipped = tile.classList.contains('flipped');
-      tile.classList.toggle('flipped');
-      const iframe = tile.querySelector('iframe.video-tile-player');
-      const video  = tile.querySelector('video.video-tile-player');
-      if (!wasFlipped) {
-        if (iframe) iframe.src = iframe.dataset.src;
-        if (video)  { video.src = video.dataset.src; video.play().catch(()=>{}); }
-      } else {
-        if (iframe) iframe.src = 'about:blank';
-        if (video)  { video.pause(); video.removeAttribute('src'); video.load(); }
-      }
-    };
-    tile.addEventListener('click', flip);
-    tile.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); flip(); } });
+  // Keyboard support for suite flip tiles
+  document.querySelectorAll('.suite-tile').forEach(t => {
+    t.addEventListener('keydown', e => {
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t.classList.toggle('flipped'); }
+    });
   });
 
   // Hero background video sound toggle
