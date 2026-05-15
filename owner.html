@@ -374,27 +374,11 @@
       background:#0a0806;
     }
 
-    /* Living room photo — perspective-tilted to simulate looking down from above */
-    .bf-room-bg {
-      position:absolute; inset:-18% -8%;
-      background:url('assets/rooms/room_living.jpg') center 38% / cover no-repeat;
-      transform:perspective(1100px) rotateX(32deg) scale(1.1);
-      transform-origin:50% 55%;
-      filter:brightness(.52) saturate(.82) contrast(1.05);
-      pointer-events:none; z-index:0;
-    }
-
-    /* Warm vignette — darkens edges, keeps center luminous like the Battlefield sample */
-    .bf-room-overlay {
-      position:absolute; inset:0; z-index:1; pointer-events:none;
-      background:
-        radial-gradient(ellipse 70% 60% at 50% 54%, transparent 0%, rgba(0,0,0,.55) 100%),
-        linear-gradient(to bottom,
-          rgba(0,0,0,.65) 0%, rgba(0,0,0,.15) 18%,
-          rgba(0,0,0,.08) 50%, rgba(0,0,0,.15) 78%,
-          rgba(0,0,0,.72) 100%
-        ),
-        linear-gradient(to right, rgba(0,0,0,.45) 0%, transparent 18%, transparent 82%, rgba(0,0,0,.45) 100%);
+    /* SVG floor plan fills the entire battlefield frame */
+    .bf-floorplan-svg {
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      z-index:0; pointer-events:none;
     }
 
     /* Zone label — centered near the top */
@@ -416,8 +400,8 @@
     /* Cards wrapper — floats directly on the room, no mat */
     .cards-rows-wrap {
       position:relative; z-index:9;
-      width:100%; max-width:1060px;
-      padding:0 1.5rem;
+      width:100%; max-width:1160px;
+      padding:0 2rem;
     }
 
     /* Row divider — subtle golden line between back and front rows */
@@ -438,32 +422,32 @@
 
     /* Card row containers */
     .cards-row {
-      display:flex; gap:10px;
+      display:flex; gap:24px;
       justify-content:center; align-items:flex-end;
     }
     /* Back row — slightly smaller and dimmer to suggest depth */
     .cards-back-row .battle-card { filter:brightness(.82); }
     .cards-back-row .battle-card:hover {
-      transform:rotate(17deg) scale(1.13) translateY(-16px);
-      filter:brightness(1) drop-shadow(0 22px 40px rgba(0,0,0,.78))
-             drop-shadow(0 0 18px var(--cg,rgba(201,168,76,.5)));
+      transform:translateY(-26px) scale(1.18);
+      filter:brightness(1) drop-shadow(0 26px 44px rgba(0,0,0,.82))
+             drop-shadow(0 0 22px var(--cg,rgba(201,168,76,.55)));
       z-index:50;
     }
     /* Back row card width slightly smaller for perspective */
-    .cards-back-row .battle-card { width:132px; }
-    .cards-back-row .bc-art { height:78px; }
+    .cards-back-row .battle-card { width:156px; }
+    .cards-back-row .bc-art { height:88px; }
 
     /* ── BATTLE CARD ── */
     .battle-card {
-      width:140px; position:relative; cursor:pointer;
+      width:172px; position:relative; cursor:pointer;
       transform-origin:50% 96%;
       transition:transform .48s cubic-bezier(.34,1.56,.64,1), filter .48s ease;
       z-index:1;
     }
     .battle-card:hover {
-      transform:rotate(17deg) scale(1.13) translateY(-16px);
-      filter:drop-shadow(0 22px 40px rgba(0,0,0,.75))
-             drop-shadow(0 0 18px var(--cg,rgba(201,168,76,.5)));
+      transform:translateY(-26px) scale(1.18);
+      filter:drop-shadow(0 26px 44px rgba(0,0,0,.82))
+             drop-shadow(0 0 22px var(--cg,rgba(201,168,76,.55)));
       z-index:50;
     }
     /* MTG card frame */
@@ -477,7 +461,7 @@
       font-size:.56rem; font-weight:700; color:#180E02; letter-spacing:.02em;
     }
     .bc-art {
-      width:100%; height:86px;
+      width:100%; height:96px;
       background-size:cover; background-position:center;
       border-top:1.5px solid rgba(0,0,0,.35);
       border-bottom:1.5px solid rgba(0,0,0,.35);
@@ -595,9 +579,255 @@
     <div class="tab-panel active" id="tab-battlefield">
       <div class="battlefield-landing">
 
-        <!-- Room background layers -->
-        <div class="bf-room-bg"></div>
-        <div class="bf-room-overlay"></div>
+        <!-- Custom floor plan SVG backdrop — The Gathering, Praia da Silveira -->
+<svg class="bf-floorplan-svg" xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Wood floor grain -->
+    <pattern id="wg" width="72" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(1.5)">
+      <rect width="72" height="1" y="1" fill="rgba(170,120,55,.04)"/>
+    </pattern>
+    <!-- Stone wall texture -->
+    <pattern id="st" width="38" height="26" patternUnits="userSpaceOnUse">
+      <rect x="1" y="1" width="16" height="11" fill="rgba(190,165,135,.055)" rx="1"/>
+      <rect x="19" y="1" width="18" height="11" fill="rgba(165,145,115,.04)" rx="1"/>
+      <rect x="1" y="14" width="18" height="11" fill="rgba(175,155,125,.048)" rx="1"/>
+      <rect x="21" y="14" width="16" height="11" fill="rgba(185,160,130,.042)" rx="1"/>
+    </pattern>
+    <!-- Room atmospheric glow (warm overhead light over social area) -->
+    <radialGradient id="roomGlow" cx="44%" cy="52%" r="52%">
+      <stop offset="0%"   stop-color="rgba(255,210,130,.16)"/>
+      <stop offset="40%"  stop-color="rgba(220,170,90,.07)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+    <!-- Vignette (edges darken) -->
+    <radialGradient id="vig" cx="50%" cy="50%" r="72%">
+      <stop offset="35%" stop-color="rgba(0,0,0,0)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,.78)"/>
+    </radialGradient>
+    <!-- Rug base gradient -->
+    <radialGradient id="rugFill" cx="50%" cy="50%" r="60%">
+      <stop offset="0%"   stop-color="rgba(42,28,10,.96)"/>
+      <stop offset="100%" stop-color="rgba(22,14,4,.98)"/>
+    </radialGradient>
+    <!-- Pool water gradient -->
+    <radialGradient id="poolWater" cx="40%" cy="35%" r="65%">
+      <stop offset="0%"   stop-color="rgba(80,185,240,.32)"/>
+      <stop offset="100%" stop-color="rgba(20,90,140,.18)"/>
+    </radialGradient>
+    <!-- Deck/terrace gradient -->
+    <linearGradient id="deckGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="rgba(30,22,10,.85)"/>
+      <stop offset="100%" stop-color="rgba(18,12,4,.95)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ── 1. TERRAIN / EXTERIOR ── -->
+  <rect width="1280" height="720" fill="#090d07"/>
+  <!-- Atlantic Forest texture outside house -->
+  <rect width="1280" height="720" fill="url(#wg)" opacity=".3"/>
+  <!-- Tree clusters at corners (characteristic of hilltop site) -->
+  <ellipse cx="68"  cy="68"  rx="62" ry="52" fill="#14200c" opacity=".85"/>
+  <ellipse cx="30"  cy="140" rx="48" ry="40" fill="#111c0a" opacity=".75"/>
+  <ellipse cx="145" cy="38"  rx="38" ry="32" fill="#16220e" opacity=".7"/>
+  <ellipse cx="1215" cy="55"  rx="58" ry="48" fill="#14200c" opacity=".85"/>
+  <ellipse cx="1255" cy="140" rx="44" ry="38" fill="#111c0a" opacity=".75"/>
+  <ellipse cx="1100" cy="28"  rx="42" ry="30" fill="#16220e" opacity=".65"/>
+  <ellipse cx="55"  cy="660" rx="55" ry="45" fill="#14200c" opacity=".7"/>
+  <ellipse cx="1220" cy="640" rx="52" ry="44" fill="#111c0a" opacity=".7"/>
+  <ellipse cx="1260" cy="580" rx="35" ry="50" fill="#0e1808" opacity=".6"/>
+  <!-- Ocean horizon hint at very top -->
+  <rect x="0" y="0" width="1280" height="42" fill="#09101a" opacity=".8"/>
+  <line x1="0" y1="40" x2="1280" y2="40" stroke="rgba(60,110,180,.14)" stroke-width="1.2"/>
+
+  <!-- ── 2. HOUSE FOOTPRINT (boomerang/angular L-shape from actual floor plan) ── -->
+  <!-- The house has two wings meeting at an angle:
+       Left wing = social area (living room + kitchen + deck)
+       Right wing = suite corridor
+       They meet at ~120° angle at the utility/circulation hub -->
+
+  <!-- Outer shadow for depth -->
+  <polygon
+    points="58,195 310,88 660,72 960,68 1200,185 1228,460 1070,598 740,648 680,682 340,680 120,572 48,360"
+    fill="#0e0b06" opacity=".85"/>
+
+  <!-- Main house floor — warm dark wood -->
+  <polygon
+    points="70,204 318,98 655,82 955,78 1192,192 1218,454 1062,586 736,636 672,670 346,668 128,562 60,354"
+    fill="#1e1508"/>
+
+  <!-- Wood grain on entire floor -->
+  <polygon
+    points="70,204 318,98 655,82 955,78 1192,192 1218,454 1062,586 736,636 672,670 346,668 128,562 60,354"
+    fill="url(#wg)"/>
+
+  <!-- ── 3. INTERIOR ZONE DIFFERENTIATION ── -->
+  <!-- Social / living room zone (left wing — the main play area) -->
+  <polygon
+    points="70,204 560,180 600,380 560,580 346,668 128,562 60,354"
+    fill="#211708" opacity=".6"/>
+
+  <!-- Kitchen / dining zone (center hub) -->
+  <polygon
+    points="500,100 740,95 780,310 740,480 500,490 440,300"
+    fill="#1c1406" opacity=".5"/>
+
+  <!-- Suite corridor (right wing) -->
+  <polygon
+    points="740,95 955,78 1192,192 1218,454 1062,586 736,636 680,440 780,310"
+    fill="#191204" opacity=".5"/>
+
+  <!-- ── 4. GARAGE / ENTRY APPROACH (top, outside main house) ── -->
+  <rect x="430" y="0" width="260" height="88" fill="#161208" opacity=".6" rx="2"/>
+  <rect x="475" y="14" width="170" height="62" fill="#0e0c08" opacity=".7" rx="1"/>
+  <!-- Driveway lines -->
+  <line x1="510" y1="14" x2="510" y2="76" stroke="rgba(201,168,76,.06)" stroke-width="1"/>
+  <line x1="560" y1="14" x2="560" y2="76" stroke="rgba(201,168,76,.06)" stroke-width="1"/>
+  <line x1="610" y1="14" x2="610" y2="76" stroke="rgba(201,168,76,.06)" stroke-width="1"/>
+
+  <!-- ── 5. STONE FIREPLACE / TV WALL (signature feature of living room, back wall) ── -->
+  <!-- Stone wall band across living room -->
+  <polygon
+    points="90,215 440,120 640,118 660,158 440,160 90,254"
+    fill="url(#st)"/>
+  <polygon
+    points="90,215 440,120 640,118 660,158 440,160 90,254"
+    fill="rgba(22,18,14,.82)"/>
+  <!-- Fireplace opening -->
+  <polygon
+    points="200,182 290,156 340,157 350,178 290,196 202,200"
+    fill="#080604" rx="2"/>
+  <!-- TV / Frame screen -->
+  <polygon
+    points="380,152 540,136 568,142 560,166 380,180 372,164"
+    fill="#050405" rx="1" opacity=".9"/>
+
+  <!-- ── 6. CENTRAL RUG (the main play zone — where cards sit) ── -->
+  <!-- Rug shadow -->
+  <ellipse cx="405" cy="444" rx="300" ry="148" fill="rgba(0,0,0,.38)"/>
+  <!-- Rug base -->
+  <ellipse cx="400" cy="438" rx="296" ry="144" fill="url(#rugFill)"/>
+  <!-- Outer rug border (golden) -->
+  <ellipse cx="400" cy="438" rx="294" ry="142"
+    fill="none" stroke="rgba(201,168,76,.28)" stroke-width="2.5"/>
+  <!-- Second border -->
+  <ellipse cx="400" cy="438" rx="274" ry="122"
+    fill="none" stroke="rgba(201,168,76,.14)" stroke-width="1.5"/>
+  <!-- Rug inner pattern — diamond motif -->
+  <polygon
+    points="400,320 500,438 400,556 300,438"
+    fill="none" stroke="rgba(201,168,76,.13)" stroke-width="1.5"/>
+  <!-- Rug cross lines -->
+  <line x1="400" y1="330" x2="400" y2="546" stroke="rgba(201,168,76,.07)" stroke-width="1"/>
+  <line x1="310" y1="438" x2="490" y2="438" stroke="rgba(201,168,76,.07)" stroke-width="1"/>
+  <!-- Center motif -->
+  <ellipse cx="400" cy="438" rx="40" ry="40"
+    fill="none" stroke="rgba(201,168,76,.11)" stroke-width="1"/>
+
+  <!-- ── 7. FURNITURE SILHOUETTES (top view) ── -->
+  <!-- Green L-sofa (lower-left of rug, seen from above) -->
+  <rect x="72" y="470" width="150" height="55" fill="#182010" rx="5" opacity=".85"/>
+  <rect x="72" y="390" width="44" height="135" fill="#182010" rx="5" opacity=".82"/>
+  <!-- Cushion hints on sofa -->
+  <rect x="86"  y="476" width="34" height="44" fill="#1e2814" rx="3" opacity=".6"/>
+  <rect x="128" y="476" width="34" height="44" fill="#1e2814" rx="3" opacity=".6"/>
+  <rect x="170" y="476" width="34" height="44" fill="#1e2814" rx="3" opacity=".6"/>
+  <!-- Second sofa (right of rug) -->
+  <rect x="620" y="500" width="110" height="48" fill="#182010" rx="5" opacity=".78"/>
+  <rect x="680" y="430" width="48" height="118" fill="#182010" rx="5" opacity=".75"/>
+  <!-- Coffee table (oval, in front of sofa) -->
+  <ellipse cx="380" cy="550" rx="70" ry="38" fill="#140e06" opacity=".75"/>
+  <ellipse cx="380" cy="550" rx="68" ry="36"
+    fill="none" stroke="rgba(201,168,76,.1)" stroke-width="1"/>
+
+  <!-- Dining table (top view, center of kitchen zone) -->
+  <ellipse cx="560" cy="280" rx="115" ry="68" fill="#16100a" opacity=".85"/>
+  <ellipse cx="560" cy="280" rx="113" ry="66"
+    fill="none" stroke="rgba(120,95,55,.2)" stroke-width="1"/>
+  <!-- Chairs around dining table (small rectangles) -->
+  <rect x="490" y="200" width="38" height="16" fill="#120e08" rx="3" opacity=".7"/>
+  <rect x="545" y="200" width="38" height="16" fill="#120e08" rx="3" opacity=".7"/>
+  <rect x="600" y="200" width="38" height="16" fill="#120e08" rx="3" opacity=".7"/>
+  <rect x="490" y="344" width="38" height="16" fill="#120e08" rx="3" opacity=".7"/>
+  <rect x="545" y="344" width="38" height="16" fill="#120e08" rx="3" opacity=".7"/>
+  <rect x="600" y="344" width="38" height="16" fill="#120e08" rx="3" opacity=".7"/>
+  <rect x="430" y="262" width="16" height="36" fill="#120e08" rx="3" opacity=".7"/>
+  <rect x="692" y="262" width="16" height="36" fill="#120e08" rx="3" opacity=".7"/>
+
+  <!-- ── 8. SUITE ROOMS (right wing, seen from above) ── -->
+  <!-- Suite dividing walls -->
+  <line x1="785" y1="175" x2="1072" y2="330" stroke="rgba(100,82,55,.2)" stroke-width="2"/>
+  <line x1="830" y1="310" x2="1108" y2="452" stroke="rgba(100,82,55,.18)" stroke-width="1.5"/>
+  <line x1="840" y1="430" x2="1118" y2="556" stroke="rgba(100,82,55,.16)" stroke-width="1.5"/>
+  <!-- Bed silhouettes in suites -->
+  <rect x="845" y="122" width="88" height="58" fill="#141008" rx="3" opacity=".7" transform="rotate(-28 889 151)"/>
+  <rect x="970" y="188" width="88" height="58" fill="#141008" rx="3" opacity=".7" transform="rotate(-28 1014 217)"/>
+  <rect x="1010" y="335" width="88" height="58" fill="#141008" rx="3" opacity=".7" transform="rotate(-28 1054 364)"/>
+  <rect x="998" y="468" width="88" height="58" fill="#141008" rx="3" opacity=".7" transform="rotate(-28 1042 497)"/>
+
+  <!-- ── 9. DECK / TERRACE (extends from living room, glass floor view) ── -->
+  <polygon
+    points="128,562 346,668 680,682 672,670 340,668 110,580"
+    fill="url(#deckGrad)" opacity=".9"/>
+  <!-- Deck railing/edge line -->
+  <polygon
+    points="128,562 346,668 680,682 672,670 340,668 110,580"
+    fill="none" stroke="rgba(201,168,76,.18)" stroke-width="1.5"/>
+  <!-- Garden view through glass (green tint) -->
+  <polygon
+    points="135,560 350,666 674,678 670,672 345,664 130,556"
+    fill="rgba(20,40,14,.38)"/>
+
+  <!-- ── 10. POOL (hilltop pool, upper-right of house visible from above) ── -->
+  <ellipse cx="1148" cy="156" rx="56" ry="38" fill="#0c1e2c" opacity=".82"/>
+  <ellipse cx="1148" cy="156" rx="52" ry="34" fill="url(#poolWater)"/>
+  <ellipse cx="1148" cy="156" rx="50" ry="32"
+    fill="none" stroke="rgba(80,185,240,.35)" stroke-width="1.5"/>
+  <!-- Pool shimmer -->
+  <ellipse cx="1138" cy="150" rx="24" ry="10" fill="rgba(140,220,255,.08)"/>
+  <ellipse cx="1155" cy="162" rx="16" ry="6"  fill="rgba(120,210,245,.06)"/>
+  <!-- Pool label hint -->
+  <line x1="1112" y1="140" x2="1184" y2="140" stroke="rgba(80,185,240,.12)" stroke-width="1"/>
+  <line x1="1112" y1="172" x2="1184" y2="172" stroke="rgba(80,185,240,.10)" stroke-width="1"/>
+
+  <!-- ── 11. INTERIOR WALL LINES ── -->
+  <!-- Main dividing wall between social and suite zones -->
+  <line x1="690" y1="160" x2="810" y2="460" stroke="rgba(100,82,55,.22)" stroke-width="2.5"/>
+  <!-- Kitchen boundary -->
+  <line x1="440" y1="136" x2="500" y2="460" stroke="rgba(90,75,50,.15)" stroke-width="1.5"/>
+  <!-- Lavabo/laundry area -->
+  <rect x="640" y="168" width="58" height="88" fill="#141008" opacity=".5" rx="2"/>
+  <line x1="640" y1="210" x2="698" y2="210" stroke="rgba(90,75,50,.18)" stroke-width="1"/>
+
+  <!-- ── 12. WINDOW LIGHT LEAKS (warm exterior light through glass walls) ── -->
+  <!-- Living room glass wall (light from ocean side, lower-left) -->
+  <polygon
+    points="60,340 80,340 100,420 80,440 60,440"
+    fill="rgba(200,180,130,.05)" opacity=".8"/>
+  <!-- Deck glass doors (bottom of living room) -->
+  <rect x="140" y="545" width="300" height="14" fill="rgba(180,220,240,.06)" rx="2"/>
+  <!-- Ocean view from deck -->
+  <polygon
+    points="140,558 440,620 440,638 140,565"
+    fill="rgba(60,120,180,.05)"/>
+
+  <!-- ── 13. ATMOSPHERIC LIGHTING ── -->
+  <!-- Main warm room glow (over social / living area) -->
+  <rect width="1280" height="720" fill="url(#roomGlow)"/>
+  <!-- Pendant light suggestion (above dining table) -->
+  <ellipse cx="560" cy="220" rx="55" ry="28" fill="rgba(255,220,150,.05)"/>
+  <circle cx="520" cy="218" r="5" fill="rgba(255,230,160,.14)"/>
+  <circle cx="560" cy="215" r="5" fill="rgba(255,230,160,.14)"/>
+  <circle cx="600" cy="218" r="5" fill="rgba(255,230,160,.14)"/>
+  <!-- Fireplace glow -->
+  <ellipse cx="275" cy="220" rx="90" ry="45" fill="rgba(255,140,40,.05)"/>
+
+  <!-- ── 14. EDGE VIGNETTE ── -->
+  <rect width="1280" height="720" fill="url(#vig)"/>
+
+  <!-- ── 15. SUBTLE FLOOR SHEEN (central social area) ── -->
+  <ellipse cx="400" cy="460" rx="340" ry="100" fill="rgba(220,180,90,.025)"/>
+</svg>
 
         <div class="bf-zone-label">
           <span class="bf-zone-text">COMMANDER'S BATTLEFIELD</span>
