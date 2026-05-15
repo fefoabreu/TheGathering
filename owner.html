@@ -358,76 +358,251 @@
 
     /* ══ BATTLEFIELD LANDING ══════════════════════════════════════ */
     .battlefield-landing {
-      min-height:calc(100vh - 108px);
+      min-height:calc(100vh - 110px);
       display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      padding:1.8rem 1.5rem 2rem;
+      align-items:center; justify-content:flex-end;
+      padding:0 1.5rem 1.8rem;
       position:relative; overflow:hidden;
-      /* MTG Arena battlefield — sky fading to enchanted ground */
-      background:
-        radial-gradient(ellipse 1100px 280px at 50% 14%, rgba(201,168,76,.065) 0%, transparent 62%),
-        radial-gradient(ellipse 500px 180px at  8% 26%, rgba(232,228,168,.04)  0%, transparent 52%),
-        radial-gradient(ellipse 500px 180px at 92% 26%, rgba(91,170,212,.04)   0%, transparent 52%),
-        radial-gradient(ellipse 420px 160px at 28% 24%, rgba(74,144,64,.032)   0%, transparent 50%),
-        radial-gradient(ellipse 420px 160px at 72% 24%, rgba(208,88,64,.032)   0%, transparent 50%),
-        radial-gradient(ellipse 380px 160px at 50% 22%, rgba(120,88,168,.025)  0%, transparent 50%),
-        linear-gradient(180deg,
-          #030407 0%, #04060A 10%, #060809 22%,
-          #07090B 34%, #080B0A 46%,
-          #0A1208 56%, #0C1408 65%,
-          #0A1108 75%, #060C06 88%, #040807 100%
-        );
-    }
-    /* Horizon shimmer — where sky meets battlefield */
-    .battlefield-landing::before {
-      content:''; position:absolute; z-index:1;
-      top:38%; left:4%; right:4%; height:1px;
-      background:linear-gradient(90deg,
-        transparent 0%, rgba(232,228,168,.16) 15%,
-        rgba(201,168,76,.28) 30%, rgba(74,144,64,.12) 42%,
-        rgba(91,170,212,.12) 50%, rgba(201,168,76,.28) 62%,
-        rgba(232,228,168,.16) 80%, transparent 100%
+      /* Sunset beach sky — deep night → violet dusk → burnt-orange horizon → ocean → dark ground */
+      background:linear-gradient(180deg,
+        #060318  0%,  #0A0525  5%,
+        #120838  10%, #1C0A42  15%,
+        #2A0C40  20%, #3C1030  26%,
+        #561618  31%, #7A2208  36%,
+        #9C3A06  40%, #B04C08  43%, /* vivid horizon peak */
+        #8A3C0A  47%, #5A3018  51%,
+        #243830  56%, #122830  62%,
+        #0C1E2A  70%, #081828  80%,
+        #051018  90%, #030C12 100%
       );
-      filter:blur(1px); pointer-events:none;
     }
-    /* Ground mist at screen bottom */
+    /* Warm golden horizon shimmer line */
+    .battlefield-landing::before {
+      content:''; position:absolute; z-index:4;
+      top:46%; left:0; right:0; height:3px;
+      background:linear-gradient(90deg,
+        transparent 0%, rgba(220,130,30,.0) 6%,
+        rgba(255,190,60,.55) 20%, rgba(255,220,100,.8) 35%,
+        rgba(255,200,70,.65) 50%, rgba(255,220,100,.8) 65%,
+        rgba(255,190,60,.55) 80%, rgba(220,130,30,.0) 94%, transparent 100%
+      );
+      filter:blur(2.5px); pointer-events:none;
+    }
+    /* Bottom ground vignette */
     .battlefield-landing::after {
-      content:''; position:absolute; z-index:1;
-      bottom:0; left:0; right:0; height:18%;
-      background:linear-gradient(to top, rgba(3,7,3,.92) 0%, transparent 100%);
+      content:''; position:absolute; z-index:8;
+      bottom:0; left:0; right:0; height:22%;
+      background:linear-gradient(to top, rgba(4,8,12,.92) 0%, transparent 100%);
       pointer-events:none;
     }
-    /* Zone label above the mat */
-    .bf-zone-label { text-align:center; margin-bottom:1.5rem; position:relative; z-index:3; }
+
+    /* ── LOGO WATERMARK BACKDROP ── */
+    .bf-logo-bg {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-44%);
+      width:clamp(340px,60vw,720px); aspect-ratio:1;
+      pointer-events:none; z-index:1;
+    }
+    .bf-logo-bg img {
+      width:100%; height:100%; object-fit:contain;
+      opacity:.065;
+      filter:brightness(1.7) saturate(.22);
+    }
+
+    /* ── STAR FIELD (top sky) ── */
+    .bf-stars {
+      position:absolute; inset:0; z-index:1; pointer-events:none;
+      background-image:
+        radial-gradient(1px 1px at  7%  5%, rgba(255,255,255,.65) 0%,transparent 100%),
+        radial-gradient(1px 1px at 13% 11%, rgba(255,255,240,.50) 0%,transparent 100%),
+        radial-gradient(2px 2px at 20%  3%, rgba(255,255,255,.70) 0%,transparent 100%),
+        radial-gradient(1px 1px at 29%  8%, rgba(255,255,240,.45) 0%,transparent 100%),
+        radial-gradient(1px 1px at 37%  4%, rgba(255,255,255,.55) 0%,transparent 100%),
+        radial-gradient(2px 2px at 45% 12%, rgba(255,255,240,.50) 0%,transparent 100%),
+        radial-gradient(1px 1px at 53%  6%, rgba(255,255,255,.60) 0%,transparent 100%),
+        radial-gradient(1px 1px at 61%  2%, rgba(255,245,200,.50) 0%,transparent 100%),
+        radial-gradient(2px 2px at 68%  9%, rgba(255,255,255,.65) 0%,transparent 100%),
+        radial-gradient(1px 1px at 76%  5%, rgba(255,255,240,.45) 0%,transparent 100%),
+        radial-gradient(1px 1px at 83% 13%, rgba(255,255,255,.55) 0%,transparent 100%),
+        radial-gradient(1px 1px at 90%  7%, rgba(255,245,200,.50) 0%,transparent 100%),
+        radial-gradient(1px 1px at 96%  3%, rgba(255,255,255,.60) 0%,transparent 100%),
+        radial-gradient(1px 1px at  4% 19%, rgba(255,255,240,.35) 0%,transparent 100%),
+        radial-gradient(1px 1px at 16% 22%, rgba(255,255,255,.40) 0%,transparent 100%),
+        radial-gradient(1px 1px at 26% 17%, rgba(255,255,240,.35) 0%,transparent 100%),
+        radial-gradient(2px 2px at 42% 20%, rgba(255,255,255,.45) 0%,transparent 100%),
+        radial-gradient(1px 1px at 57% 18%, rgba(255,255,240,.38) 0%,transparent 100%),
+        radial-gradient(1px 1px at 71% 24%, rgba(255,255,255,.35) 0%,transparent 100%),
+        radial-gradient(1px 1px at 87% 17%, rgba(255,245,200,.40) 0%,transparent 100%);
+      -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,.75) 20%,rgba(0,0,0,0) 44%);
+      mask-image:linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,.75) 20%,rgba(0,0,0,0) 44%);
+    }
+
+    /* ── SUN GLOW at horizon ── */
+    .bf-sun-glow {
+      position:absolute; top:43%; left:50%;
+      transform:translate(-50%,-50%);
+      width:clamp(500px,80vw,1000px); height:260px;
+      background:radial-gradient(ellipse at 50% 72%,
+        rgba(255,200,80,.60) 0%, rgba(255,140,30,.42) 18%,
+        rgba(220,80,10,.22) 40%, rgba(160,40,5,.08) 65%, transparent 82%
+      );
+      pointer-events:none; z-index:2; filter:blur(10px);
+    }
+
+    /* ── FAR MOUNTAIN RANGE (purple-blue silhouettes) ── */
+    .bf-mountains-far {
+      position:absolute; bottom:58%; left:-2%; right:-2%;
+      height:clamp(130px,22vw,240px);
+      background:linear-gradient(180deg,
+        rgba(60,22,80,0) 0%, rgba(50,18,65,.65) 35%,
+        rgba(36,12,52,.92) 68%, rgba(22,8,38,.98) 100%
+      );
+      clip-path:polygon(
+        0% 100%, 0% 62%,
+        2.5% 50%, 5% 61%, 7.5% 44%, 10% 56%, 12.5% 38%,
+        15% 52%, 17.5% 32%, 20% 48%, 22.5% 24%, 25% 42%,
+        27.5% 20%, 30% 38%, 32.5% 16%, 35% 34%, 37.5% 22%,
+        40% 36%, 42.5% 14%, 45% 30%, 47.5% 18%, 50% 12%,
+        52.5% 28%, 55% 16%, 57.5% 32%, 60% 18%, 62.5% 34%,
+        65% 22%, 67.5% 38%, 70% 28%, 72.5% 42%, 75% 30%,
+        77.5% 46%, 80% 36%, 82.5% 50%, 85% 38%, 87.5% 54%,
+        90% 40%, 92.5% 56%, 95% 44%, 97.5% 58%, 100% 48%,
+        100% 100%
+      );
+      pointer-events:none; z-index:2; filter:blur(.6px);
+    }
+
+    /* ── NEAR MOUNTAIN RANGE (dark green hills) ── */
+    .bf-mountains-near {
+      position:absolute; bottom:50%; left:-2%; right:-2%;
+      height:clamp(110px,18vw,200px);
+      background:linear-gradient(180deg,
+        rgba(10,25,10,0) 0%, rgba(8,22,6,.78) 30%,
+        rgba(5,16,4,.96) 65%, rgba(3,12,3,.99) 100%
+      );
+      clip-path:polygon(
+        0% 100%, 0% 72%,
+        3% 60%, 6% 70%, 9% 54%, 12% 65%, 15% 50%, 18% 62%,
+        21% 48%, 24% 60%, 27% 52%, 30% 65%, 33% 54%,
+        36% 68%, 39% 55%, 42% 68%, 45% 56%, 48% 70%,
+        51% 54%, 54% 66%, 57% 50%, 60% 62%, 63% 48%,
+        66% 62%, 69% 50%, 72% 63%, 75% 52%, 78% 66%,
+        81% 54%, 84% 68%, 87% 56%, 90% 70%, 93% 58%,
+        96% 72%, 100% 62%, 100% 100%
+      );
+      pointer-events:none; z-index:3;
+    }
+
+    /* ── OCEAN SURFACE ── */
+    .bf-ocean {
+      position:absolute; top:42%; left:0; right:0;
+      height:22%;
+      background:linear-gradient(180deg,
+        rgba(18,58,80,0) 0%, rgba(14,50,72,.45) 22%,
+        rgba(10,42,62,.72) 58%, rgba(8,34,50,.90) 100%
+      );
+      pointer-events:none; z-index:4;
+    }
+    /* Sunset reflection on the ocean */
+    .bf-ocean-glint {
+      position:absolute; top:42%; left:25%; right:25%;
+      height:14%;
+      background:radial-gradient(ellipse at 50% 0%,
+        rgba(255,190,60,.18) 0%, rgba(255,150,30,.07) 45%, transparent 72%
+      );
+      pointer-events:none; z-index:5;
+    }
+
+    /* ── WAVE SHIMMER LINES ── */
+    .bf-wave { position:absolute; left:0; right:0; height:2px; pointer-events:none; z-index:5; }
+    .bf-wave-1 {
+      top:46%;
+      background:linear-gradient(90deg,
+        transparent 0%, rgba(120,190,220,0) 8%,
+        rgba(175,220,245,.45) 22%, rgba(210,240,255,.62) 38%,
+        rgba(175,220,245,.45) 60%, rgba(120,190,220,0) 78%, transparent 100%
+      );
+      filter:blur(1px); animation:waveShimmer 5s ease-in-out infinite;
+    }
+    .bf-wave-2 {
+      top:50%;
+      background:linear-gradient(90deg,
+        transparent 0%, rgba(120,190,220,0) 14%,
+        rgba(155,205,235,.30) 30%, rgba(195,228,250,.44) 52%,
+        rgba(155,205,235,.30) 70%, rgba(120,190,220,0) 85%, transparent 100%
+      );
+      filter:blur(1.5px); animation:waveShimmer 6.5s ease-in-out infinite; animation-delay:-2.8s;
+    }
+    .bf-wave-3 {
+      top:54%;
+      background:linear-gradient(90deg,
+        transparent 0%, rgba(120,190,220,0) 5%,
+        rgba(135,195,225,.18) 20%, rgba(175,220,248,.30) 44%,
+        rgba(135,195,225,.18) 66%, rgba(120,190,220,0) 86%, transparent 100%
+      );
+      filter:blur(2px); animation:waveShimmer 7.8s ease-in-out infinite; animation-delay:-1.4s;
+    }
+    @keyframes waveShimmer {
+      0%   { opacity:.45; transform:scaleX(.96) translateX(-1%); }
+      40%  { opacity:1;   transform:scaleX(1.03) translateX(1.2%); }
+      70%  { opacity:.7;  transform:scaleX(.98) translateX(.4%); }
+      100% { opacity:.45; transform:scaleX(.96) translateX(-1%); }
+    }
+
+    /* ── BEACH SAND STRIP ── */
+    .bf-beach {
+      position:absolute; bottom:28%; left:0; right:0; height:70px;
+      background:linear-gradient(180deg,
+        transparent 0%, rgba(115,75,28,.10) 45%, rgba(135,88,32,.20) 100%
+      );
+      pointer-events:none; z-index:5;
+    }
+    /* Zone label — pinned to the top of the frame, above the scene */
+    .bf-zone-label {
+      text-align:center; position:absolute; top:2rem; left:0; right:0;
+      z-index:10; pointer-events:none;
+    }
     .bf-zone-text {
       font-family:'Cinzel Decorative',serif; font-size:1.05rem; font-weight:700;
       color:var(--gold); letter-spacing:.22em; display:block;
-      text-shadow:0 0 22px rgba(201,168,76,.45);
+      text-shadow:0 0 28px rgba(201,168,76,.6), 0 2px 12px rgba(0,0,0,.8);
     }
     .bf-zone-sub {
       font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.2em;
       text-transform:uppercase; color:var(--text-dim);
       margin-top:.4rem; font-style:italic; display:block;
     }
-    /* ── PLAY MAT ── */
+    /* ── PLAY MAT — glass surface over the sunset scene ── */
     .battlefield-mat {
-      position:relative; z-index:2;
+      position:relative; z-index:9;
       width:100%; max-width:1020px;
-      /* Mat surface: subtle stone/grass grid + depth gradient */
+      /* Semi-transparent glass: lets the scene bleed through */
       background:
-        repeating-linear-gradient(  0deg, rgba(201,168,76,.015) 0, transparent 1px, transparent 54px),
-        repeating-linear-gradient( 90deg, rgba(201,168,76,.015) 0, transparent 1px, transparent 54px),
-        radial-gradient(ellipse 80% 60% at 50% 50%, rgba(24,40,18,.92) 0%, rgba(10,18,8,.97) 100%);
-      border:1.5px solid rgba(201,168,76,.24);
+        repeating-linear-gradient(  0deg, rgba(201,168,76,.018) 0, transparent 1px, transparent 54px),
+        repeating-linear-gradient( 90deg, rgba(201,168,76,.018) 0, transparent 1px, transparent 54px),
+        radial-gradient(ellipse 90% 70% at 50% 50%, rgba(12,24,16,.62) 0%, rgba(6,14,10,.72) 100%);
+      backdrop-filter:blur(18px) saturate(1.4) brightness(1.08);
+      -webkit-backdrop-filter:blur(18px) saturate(1.4) brightness(1.08);
+      border:1.5px solid rgba(201,168,76,.30);
       border-radius:18px;
       padding:1.8rem 2.2rem 2.2rem;
       box-shadow:
-        0 0 0 1px rgba(0,0,0,.88),
-        0 -8px 60px rgba(0,0,0,.65),
-        0 24px 80px rgba(0,0,0,.5),
-        inset 0 0 120px rgba(0,0,0,.42),
-        inset 0 1px 0 rgba(201,168,76,.14),
-        0 0 55px rgba(201,168,76,.06);
+        0 0 0 1px rgba(0,0,0,.75),
+        0 -8px 60px rgba(0,0,0,.55),
+        0 24px 80px rgba(0,0,0,.4),
+        inset 0 0 80px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(201,168,76,.22),
+        0 0 80px rgba(255,140,30,.08),
+        0 0 55px rgba(201,168,76,.08);
+    }
+    /* Sunset bloom on the mat's top edge */
+    .battlefield-mat::before {
+      content:''; position:absolute; top:-50px; left:8%; right:8%;
+      height:50px; pointer-events:none;
+      background:radial-gradient(ellipse at 50% 100%,
+        rgba(255,160,40,.28) 0%, rgba(230,100,20,.12) 50%, transparent 80%
+      );
+      filter:blur(4px);
     }
     /* Corner rune ornaments */
     .mat-corner {
@@ -611,6 +786,19 @@
     <!-- ══ BATTLEFIELD LANDING ══ -->
     <div class="tab-panel active" id="tab-battlefield">
       <div class="battlefield-landing">
+
+        <!-- Scene layers: logo → stars → sun → mountains → ocean → waves → beach -->
+        <div class="bf-logo-bg"><img src="assets/logo-circle.png" alt=""></div>
+        <div class="bf-stars"></div>
+        <div class="bf-sun-glow"></div>
+        <div class="bf-mountains-far"></div>
+        <div class="bf-mountains-near"></div>
+        <div class="bf-ocean"></div>
+        <div class="bf-ocean-glint"></div>
+        <div class="bf-wave bf-wave-1"></div>
+        <div class="bf-wave bf-wave-2"></div>
+        <div class="bf-wave bf-wave-3"></div>
+        <div class="bf-beach"></div>
 
         <div class="bf-zone-label">
           <span class="bf-zone-text">COMMANDER'S BATTLEFIELD</span>
