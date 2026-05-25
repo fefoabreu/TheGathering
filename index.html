@@ -84,7 +84,7 @@
       min-height:100vh;
       background:var(--ocean-deep);
       display:flex; flex-direction:column; align-items:center; justify-content:center;
-      text-align:center; padding:2rem;
+      text-align:center; padding:2rem 2rem 160px;
       position:relative; overflow:hidden;
     }
     /* gradient overlay sits above the video */
@@ -351,13 +351,13 @@
     .owner-link a:hover { color:rgba(249,244,236,.45); }
 
     /* ── SUITE FLIP TILES ───────────────────────────── */
-    .suite-tile { height:450px; }
+    .suite-tile { height:500px; }
     .suite-front {
       background:var(--white);
       display:flex; flex-direction:column;
     }
     .suite-front .suite-bar { flex-shrink:0; }
-    .suite-front .suite-body { flex:1; overflow:hidden; }
+    .suite-front .suite-body { flex:1; overflow:visible; }
     .suite-front .suite-link { font-size:.75rem; padding:.45rem .8rem; }
     .suite-back-mosaic {
       transform:rotateY(180deg);
