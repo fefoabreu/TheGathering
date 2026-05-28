@@ -1368,7 +1368,7 @@
   // ── State ─────────────────────────────────────────────────
   let guideCards = [...DEFAULT_GUIDE_CARDS];
   let revealIndex = 0;
-  let guideOpened = localStorage.getItem('tg_guide_opened') === 'true';
+  let guideOpened = sessionStorage.getItem('tg_guide_opened') === 'true';
 
   // ── Helpers ───────────────────────────────────────────────
   const CAT_LABELS = { coffee:'Coffee', burgers:'Burgers', sushi:'Sushi', cowork:'Cowork', poke:'Poke Bowl', 'happy-hour':'Happy Hour', sandboarding:'Adventure', acougue:'Açougue', pizza:'Pizza' };
@@ -1483,7 +1483,7 @@
 
     // Show guide grid
     guideOpened = true;
-    localStorage.setItem('tg_guide_opened', 'true');
+    sessionStorage.setItem('tg_guide_opened', 'true');
     document.getElementById('guide-sealed').style.display = 'none';
     const opened = document.getElementById('guide-opened');
     opened.style.display = 'block';
