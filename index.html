@@ -977,7 +977,7 @@
         <div class="guide-filter-bar" id="guide-filter-bar">
           <button class="gf-btn active" data-cat="all" onclick="filterGuide('all',this)">All</button>
         </div>
-        <button class="reopen-btn" onclick="reopenBooster()">✦ Reopen Booster</button>
+        <button class="reopen-btn" onclick="resetToSealed()">✦ Reseal Booster</button>
       </div>
       <div class="guide-cards-grid" id="guide-cards-grid"></div>
     </div>
@@ -1491,23 +1491,17 @@
     document.getElementById('guide').scrollIntoView({behavior:'smooth'});
   }
 
-  function reopenBooster() {
-    revealIndex = 0;
-    document.getElementById('phase-pack').style.display = 'flex';
-    document.getElementById('op-top').classList.remove('opening');
-    document.getElementById('op-bottom').classList.remove('opening');
-    document.getElementById('phase-reveal').classList.remove('show');
-    document.getElementById('phase-done').classList.remove('show');
-    document.getElementById('booster-overlay').classList.add('show');
-    spawnOverlayStars();
-    setTimeout(() => {
-      document.getElementById('op-top').classList.add('opening');
-      document.getElementById('op-bottom').classList.add('opening');
-    }, 400);
-    setTimeout(() => {
-      document.getElementById('phase-pack').style.display = 'none';
-      showRevealPhase();
-    }, 1400);
+  function resetToSealed() {
+    // Reset opened state — takes user back to the sealed booster pack
+    guideOpened = false;
+    sessionStorage.removeItem('tg_guide_opened');
+    document.getElementById('guide-opened').style.display = 'none';
+    const sealed = document.getElementById('guide-sealed');
+    sealed.style.display = 'flex';
+    // Re-trigger fade-in animation
+    sealed.classList.remove('on');
+    requestAnimationFrame(() => sealed.classList.add('on'));
+    document.getElementById('guide').scrollIntoView({behavior:'smooth'});
   }
 
   // Close overlay on Escape
