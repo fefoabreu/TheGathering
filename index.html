@@ -1370,6 +1370,10 @@
   let revealIndex = 0;
   let guideOpened = localStorage.getItem('tg_guide_opened') === 'true';
 
+  // ── Helpers ───────────────────────────────────────────────
+  const CAT_LABELS = { coffee:'Coffee', burgers:'Burgers', sushi:'Sushi', cowork:'Cowork', poke:'Poke Bowl', 'happy-hour':'Happy Hour', sandboarding:'Adventure', acougue:'Açougue', pizza:'Pizza' };
+  function getCatLabel(cat) { return CAT_LABELS[cat] || cat; }
+
   // ── Firebase init ─────────────────────────────────────────
   (function initGuide() {
     if (typeof TG_FIREBASE_ENABLED !== 'undefined' && TG_FIREBASE_ENABLED && typeof firebase !== 'undefined') {
@@ -1597,10 +1601,6 @@
       el.appendChild(s);
     }
   }
-
-  // ── Helpers ───────────────────────────────────────────────
-  const CAT_LABELS = { coffee:'Coffee', burgers:'Burgers', sushi:'Sushi', cowork:'Cowork', poke:'Poke Bowl', 'happy-hour':'Happy Hour', sandboarding:'Adventure', acougue:'Açougue', pizza:'Pizza' };
-  function getCatLabel(cat) { return CAT_LABELS[cat] || cat; }
 
   // Cards from external guide-data message (real-time Firebase update)
   function applyGuideUpdate(cards) {
