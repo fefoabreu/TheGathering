@@ -9,6 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Pacifico&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
+  <!-- Firebase SDK (for real-time guide sync) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
     :root {
@@ -408,6 +412,197 @@
     .fu.d1 { transition-delay:.1s; }
     .fu.d2 { transition-delay:.2s; }
     .fu.d3 { transition-delay:.3s; }
+
+    /* ═══════════════════════════════════════════════════════════
+       GAROPABA GUIDE — BOOSTER PACK SECTION
+    ═══════════════════════════════════════════════════════════ */
+    .guide-bg {
+      background:linear-gradient(180deg,#020A16 0%,#040D1C 50%,#020A16 100%);
+      position:relative; overflow:hidden;
+    }
+    .guide-bg::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(1px 1px at 8% 12%,rgba(255,255,255,.5) 0%,transparent 100%),
+        radial-gradient(1px 1px at 22% 38%,rgba(212,163,64,.4) 0%,transparent 100%),
+        radial-gradient(1.5px 1.5px at 35% 22%,rgba(255,255,255,.3) 0%,transparent 100%),
+        radial-gradient(1px 1px at 48% 8%,rgba(255,255,255,.5) 0%,transparent 100%),
+        radial-gradient(1.5px 1.5px at 58% 45%,rgba(91,170,212,.4) 0%,transparent 100%),
+        radial-gradient(1px 1px at 72% 18%,rgba(255,255,255,.4) 0%,transparent 100%),
+        radial-gradient(1px 1px at 85% 35%,rgba(212,163,64,.35) 0%,transparent 100%),
+        radial-gradient(1.5px 1.5px at 92% 65%,rgba(255,255,255,.3) 0%,transparent 100%),
+        radial-gradient(1px 1px at 15% 72%,rgba(255,255,255,.4) 0%,transparent 100%),
+        radial-gradient(1px 1px at 65% 78%,rgba(91,170,212,.3) 0%,transparent 100%),
+        radial-gradient(1px 1px at 78% 88%,rgba(212,163,64,.4) 0%,transparent 100%),
+        radial-gradient(1.5px 1.5px at 42% 92%,rgba(255,255,255,.35) 0%,transparent 100%),
+        radial-gradient(ellipse 800px 400px at 50% 30%,rgba(42,100,148,.08) 0%,transparent 70%),
+        radial-gradient(ellipse 600px 300px at 20% 70%,rgba(212,163,64,.05) 0%,transparent 60%);
+    }
+    .guide-sealed-state { display:flex; flex-direction:column; align-items:center; padding:1rem 0 3.5rem; }
+    .guide-teaser { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.1rem; color:rgba(249,244,236,.45); margin-bottom:2.8rem; text-align:center; letter-spacing:.04em; }
+    .booster-pack-outer { perspective:1200px; cursor:pointer; position:relative; }
+    .booster-pack-inner {
+      width:224px; height:336px; border-radius:14px; position:relative; overflow:hidden;
+      background:linear-gradient(160deg,#071428 0%,#0E2040 20%,#152E50 35%,#1A3D5A 50%,#152E50 65%,#0E2040 80%,#071428 100%);
+      border:2.5px solid rgba(212,163,64,.6);
+      box-shadow:0 0 0 1px rgba(0,0,0,.9),0 0 30px rgba(212,163,64,.38),0 0 70px rgba(212,163,64,.15),0 30px 70px rgba(0,0,0,.8);
+      animation:bp-float 4s ease-in-out infinite, bp-glow 3s ease-in-out infinite;
+      transition:transform .4s cubic-bezier(.23,1,.32,1), box-shadow .4s ease;
+    }
+    .booster-pack-outer:hover .booster-pack-inner {
+      transform:scale(1.06) rotateY(-8deg) rotateX(3deg);
+      box-shadow:0 0 0 1px rgba(0,0,0,.9),0 0 55px rgba(212,163,64,.65),0 0 110px rgba(212,163,64,.3),0 40px 80px rgba(0,0,0,.9);
+    }
+    @keyframes bp-float { 0%,100%{transform:translateY(0) rotateX(0)} 50%{transform:translateY(-10px) rotateX(2deg)} }
+    @keyframes bp-glow  { 0%,100%{box-shadow:0 0 0 1px rgba(0,0,0,.9),0 0 30px rgba(212,163,64,.38),0 0 70px rgba(212,163,64,.15),0 30px 70px rgba(0,0,0,.8)} 50%{box-shadow:0 0 0 1px rgba(0,0,0,.9),0 0 55px rgba(212,163,64,.6),0 0 100px rgba(212,163,64,.28),0 30px 70px rgba(0,0,0,.8)} }
+    .pack-shimmer {
+      position:absolute; inset:0; pointer-events:none; z-index:5;
+      background:linear-gradient(115deg,transparent 0%,transparent 38%,rgba(255,255,255,.07) 46%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.07) 54%,transparent 62%,transparent 100%);
+      background-size:300% 300%; animation:pack-shimmer-move 2.8s ease-in-out infinite;
+    }
+    @keyframes pack-shimmer-move { 0%{background-position:200% 200%} 50%{background-position:-200% -200%} 100%{background-position:200% 200%} }
+    .pack-set-label { position:relative; z-index:2; text-align:center; padding:.65rem .5rem .4rem; font-family:'Cinzel',serif; font-size:.5rem; letter-spacing:.28em; color:rgba(212,163,64,.82); border-bottom:1px solid rgba(212,163,64,.18); text-transform:uppercase; }
+    .pack-art-area {
+      position:relative; z-index:1; height:148px; overflow:hidden;
+      background:radial-gradient(ellipse at 30% 60%,rgba(224,120,64,.38) 0%,transparent 52%),radial-gradient(ellipse at 70% 30%,rgba(42,100,148,.48) 0%,transparent 55%),radial-gradient(ellipse at 50% 85%,rgba(45,90,39,.42) 0%,transparent 50%),linear-gradient(135deg,#0D1E35 0%,#1A3A5A 30%,#0D2840 50%,#1A3A5A 70%,#0D1E35 100%);
+    }
+    .pack-art-area::before { content:''; position:absolute; inset:0; background:url('assets/rooms/room_deck.jpg') center/cover; opacity:.35; filter:saturate(1.4) contrast(1.1); }
+    .pack-art-area::after  { content:''; position:absolute; inset:0; background:linear-gradient(to bottom,rgba(7,20,40,.25) 0%,transparent 35%,transparent 65%,rgba(7,20,40,.6) 100%); }
+    .pack-center-text { position:relative; z-index:2; text-align:center; padding:.8rem .5rem .3rem; border-top:1px solid rgba(212,163,64,.14); }
+    .pack-title-main { font-family:'Cinzel Decorative',serif; font-size:.82rem; letter-spacing:.18em; color:var(--gold); text-shadow:0 0 20px rgba(212,163,64,.65); }
+    .pack-title-sub  { font-family:'Cinzel',serif; font-size:.52rem; letter-spacing:.18em; color:rgba(212,163,64,.7); margin-top:.2rem; }
+    .pack-bottom-row { position:relative; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:.55rem .9rem; margin-top:.25rem; border-top:1px solid rgba(212,163,64,.12); }
+    .pack-rarity-dots { display:flex; gap:.28rem; align-items:center; }
+    .rdot { width:8px; height:8px; border-radius:50%; animation:rdot-pulse 2s ease-in-out infinite; }
+    .rdot.mythic   { background:#FF6820; box-shadow:0 0 6px #FF6820; animation-delay:0s; }
+    .rdot.rare     { background:#C9A84C; box-shadow:0 0 5px #C9A84C; animation-delay:.22s; }
+    .rdot.uncommon { background:#8898A8; box-shadow:0 0 4px #8898A8; animation-delay:.44s; }
+    .rdot.common   { background:rgba(170,160,148,.55); }
+    @keyframes rdot-pulse { 0%,100%{transform:scale(1);opacity:.7} 50%{transform:scale(1.35);opacity:1} }
+    .pack-card-count { font-family:'Cinzel',serif; font-size:.48rem; letter-spacing:.12em; color:rgba(212,163,64,.45); }
+    .pack-tap-hint { position:absolute; bottom:0; left:0; right:0; z-index:6; text-align:center; padding:.5rem; font-family:'Cinzel',serif; font-size:.54rem; letter-spacing:.22em; color:rgba(212,163,64,.75); background:linear-gradient(to top,rgba(7,20,40,.88),transparent); animation:tap-flash 2s ease-in-out infinite; }
+    @keyframes tap-flash { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+    /* Booster overlay */
+    .booster-overlay { position:fixed; inset:0; z-index:9000; background:rgba(1,4,10,.97); display:none; align-items:center; justify-content:center; overflow:hidden; }
+    .booster-overlay.show { display:flex; animation:overlay-in .3s ease; }
+    @keyframes overlay-in { from{opacity:0} to{opacity:1} }
+    .overlay-stars { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+    .ostar { position:absolute; border-radius:50%; background:rgba(255,255,255,.6); animation:ostar-twinkle linear infinite; }
+    @keyframes ostar-twinkle { 0%,100%{opacity:.1} 50%{opacity:.8} }
+
+    /* Phase: pack opening */
+    .phase-pack { position:relative; z-index:10; display:flex; align-items:center; justify-content:center; width:100%; height:100%; }
+    .opening-pack-wrap { position:relative; width:224px; height:336px; }
+    .op-half { position:absolute; left:0; right:0; overflow:hidden; transition:transform .7s cubic-bezier(.23,1,.32,1); }
+    .op-top    { top:0; height:50%; transform-origin:center bottom; }
+    .op-bottom { top:50%; height:50%; transform-origin:center top; }
+    .op-half-art { width:224px; height:336px; border-radius:14px; background:linear-gradient(160deg,#071428 0%,#0E2040 20%,#152E50 35%,#1A3D5A 50%,#152E50 65%,#0E2040 80%,#071428 100%); border:2.5px solid rgba(212,163,64,.6); position:absolute; }
+    .op-top    .op-half-art { top:0; }
+    .op-bottom .op-half-art { top:-168px; }
+    .op-top.opening    { transform:translateY(-130%) rotate(-7deg); }
+    .op-bottom.opening { transform:translateY(130%)  rotate(7deg); }
+    .op-burst { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:0; height:0; border-radius:50%; background:radial-gradient(circle,rgba(212,163,64,.95) 0%,rgba(212,163,64,.4) 35%,transparent 70%); pointer-events:none; transition:width .5s ease,height .5s ease,opacity .5s ease; opacity:0; }
+    .op-burst.burst { width:600px; height:600px; opacity:0; }
+
+    /* Phase: single card reveal */
+    .phase-reveal { position:relative; z-index:10; display:none; flex-direction:column; align-items:center; justify-content:center; width:100%; padding:2rem 1rem; gap:1.4rem; }
+    .phase-reveal.show { display:flex; }
+    .reveal-card-wrap { position:relative; animation:reveal-card-pop .55s cubic-bezier(.23,1,.32,1) both; }
+    @keyframes reveal-card-pop { from{transform:scale(.25) translateY(60px) rotateX(50deg);opacity:0} to{transform:scale(1) translateY(0) rotateX(0deg);opacity:1} }
+    .reveal-progress-bar { width:280px; height:3px; background:rgba(212,163,64,.12); border-radius:2px; overflow:hidden; }
+    .reveal-progress-fill { height:100%; background:var(--gold); border-radius:2px; transition:width .45s ease; box-shadow:0 0 8px rgba(212,163,64,.5); }
+    .reveal-counter { font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:.2em; color:rgba(212,163,64,.45); }
+    .reveal-next-btn { background:none; border:1px solid rgba(212,163,64,.38); color:rgba(212,163,64,.8); padding:.72rem 2.2rem; border-radius:30px; cursor:pointer; font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.16em; transition:all .3s; animation:btn-breathe 2s ease-in-out infinite; }
+    .reveal-next-btn:hover { border-color:var(--gold); color:var(--gold); background:rgba(212,163,64,.07); }
+    @keyframes btn-breathe { 0%,100%{box-shadow:0 0 0 rgba(212,163,64,0)} 50%{box-shadow:0 0 18px rgba(212,163,64,.28)} }
+    .glow-mythic   { box-shadow:0 0 40px rgba(255,104,32,.85),0 0 80px rgba(255,104,32,.45),0 0 140px rgba(255,104,32,.2); }
+    .glow-rare     { box-shadow:0 0 30px rgba(201,168,76,.85),0 0 60px rgba(201,168,76,.45); }
+    .glow-uncommon { box-shadow:0 0 18px rgba(136,152,168,.65),0 0 38px rgba(136,152,168,.3); }
+    .glow-common   { box-shadow:0 0 10px rgba(200,190,180,.28); }
+
+    /* Phase: done */
+    .phase-done { position:relative; z-index:10; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:3rem; }
+    .phase-done.show { display:flex; }
+    .done-title { font-family:'Cinzel Decorative',serif; font-size:clamp(1.4rem,4vw,2.2rem); color:var(--gold); letter-spacing:.14em; text-shadow:0 0 30px rgba(212,163,64,.65); animation:done-rise .8s ease both; }
+    .done-sub { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.15rem; color:rgba(249,244,236,.55); margin-top:.6rem; animation:done-rise .8s ease .15s both; }
+    .done-btn { margin-top:2.4rem; padding:1rem 3rem; background:linear-gradient(180deg,#C9A84C,#A48030); color:#060402; border:none; border-radius:30px; font-family:'Cinzel',serif; font-size:.9rem; letter-spacing:.14em; cursor:pointer; font-weight:700; box-shadow:0 4px 24px rgba(201,168,76,.38); transition:all .3s; animation:done-rise .8s ease .3s both; }
+    .done-btn:hover { transform:translateY(-2px); box-shadow:0 8px 36px rgba(201,168,76,.55); }
+    @keyframes done-rise { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Guide grid */
+    .guide-filter-bar { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:2rem; justify-content:center; }
+    .gf-btn { padding:.42rem 1.1rem; border-radius:20px; background:rgba(255,255,255,.04); border:1px solid rgba(212,163,64,.22); color:rgba(249,244,236,.5); font-size:.76rem; font-family:'Cinzel',serif; letter-spacing:.1em; cursor:pointer; transition:all .3s; }
+    .gf-btn:hover { border-color:rgba(212,163,64,.5); color:rgba(249,244,236,.82); }
+    .gf-btn.active { background:rgba(212,163,64,.12); border-color:var(--gold); color:var(--gold); }
+    .reopen-btn { display:inline-flex; align-items:center; gap:.5rem; padding:.42rem 1.1rem; border-radius:20px; background:rgba(212,163,64,.06); border:1px solid rgba(212,163,64,.2); color:rgba(212,163,64,.55); font-size:.7rem; font-family:'Cinzel',serif; letter-spacing:.12em; cursor:pointer; transition:all .3s; }
+    .reopen-btn:hover { background:rgba(212,163,64,.12); color:rgba(212,163,64,.85); }
+    .guide-cards-grid { display:flex; flex-wrap:wrap; gap:1.2rem; justify-content:center; }
+
+    /* MTG Guide Card */
+    .guide-card { width:186px; flex-shrink:0; cursor:pointer; transform-origin:center 95%; transition:transform .45s cubic-bezier(.23,1,.32,1),filter .45s ease; animation:gcard-in .6s cubic-bezier(.23,1,.32,1) both; }
+    @keyframes gcard-in { from{opacity:0;transform:translateY(30px) scale(.9)} to{opacity:1;transform:translateY(0) scale(1)} }
+    .guide-card:hover { transform:translateY(-16px) scale(1.07) rotateY(-5deg); z-index:20; filter:drop-shadow(0 24px 40px rgba(0,0,0,.8)); }
+    .guide-card.hidden { display:none; }
+    .guide-card.inactive { opacity:.55; filter:grayscale(.55); }
+    .guide-card.inactive:hover { opacity:.75; }
+    .gc-frame { border-radius:10px; overflow:hidden; border-width:3px; border-style:solid; box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.5),0 8px 24px rgba(0,0,0,.65); }
+    .gc-white .gc-frame { background:linear-gradient(180deg,#EDE8C4,#D0C47A,#E8DCA8); border-color:#BCA85A; }
+    .gc-blue  .gc-frame { background:linear-gradient(180deg,#94CEEC,#3880B8,#8CBCE4); border-color:#2060A0; }
+    .gc-black .gc-frame { background:linear-gradient(180deg,#565470,#20203A,#484660); border-color:#404060; }
+    .gc-red   .gc-frame { background:linear-gradient(180deg,#E47050,#A03018,#D06040); border-color:#882010; }
+    .gc-green .gc-frame { background:linear-gradient(180deg,#70B860,#287030,#5AA048); border-color:#1A5020; }
+    .gc-gold  .gc-frame { background:linear-gradient(180deg,#D8AC50,#886020,#C89840); border-color:#705018; }
+    .gc-title-bar { display:flex; justify-content:space-between; align-items:center; padding:4px 7px 3px; font-family:'Cinzel',serif; font-size:.53rem; font-weight:700; color:#12080A; letter-spacing:.02em; }
+    .gc-white .gc-title-bar { background:rgba(232,220,160,.95); }
+    .gc-blue  .gc-title-bar { background:rgba(148,200,232,.95); }
+    .gc-black .gc-title-bar { background:rgba(100,96,130,.95); color:#E8DCC8; }
+    .gc-red   .gc-title-bar { background:rgba(228,112,80,.95); }
+    .gc-green .gc-title-bar { background:rgba(112,184,96,.95); }
+    .gc-gold  .gc-title-bar { background:rgba(216,172,80,.95); }
+    .gc-name { flex:1; font-size:.55rem; font-weight:700; line-height:1.1; }
+    .gc-ico  { font-size:.88rem; flex-shrink:0; margin-left:3px; }
+    .gc-art  { height:86px; position:relative; border-top:1.5px solid rgba(0,0,0,.4); border-bottom:1.5px solid rgba(0,0,0,.4); overflow:hidden; }
+    .gc-white .gc-art { background:linear-gradient(135deg,#F8F0D0,#E8D888,#F4ECA8); }
+    .gc-blue  .gc-art { background:linear-gradient(135deg,#082848,#1A5080,#0A3860); }
+    .gc-black .gc-art { background:linear-gradient(135deg,#0A0818,#1A1428,#080410); }
+    .gc-red   .gc-art { background:linear-gradient(135deg,#3A0C04,#7A200A,#4A1008); }
+    .gc-green .gc-art { background:linear-gradient(135deg,#082818,#185828,#0A3A18); }
+    .gc-gold  .gc-art { background:linear-gradient(135deg,#3A2808,#7A5010,#4A3008); }
+    .gc-art-icon { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:2.6rem; opacity:.52; filter:drop-shadow(0 2px 6px rgba(0,0,0,.55)); }
+    .gc-typeline { font-family:'Cinzel',serif; font-size:.42rem; font-weight:600; color:#120808; padding:3px 7px; letter-spacing:.03em; }
+    .gc-white .gc-typeline { background:rgba(232,220,160,.88); }
+    .gc-blue  .gc-typeline { background:rgba(148,200,232,.88); }
+    .gc-black .gc-typeline { background:rgba(100,96,130,.88); color:#D8CCE0; }
+    .gc-red   .gc-typeline { background:rgba(228,112,80,.88); }
+    .gc-green .gc-typeline { background:rgba(112,184,96,.88); }
+    .gc-gold  .gc-typeline { background:rgba(216,172,80,.88); }
+    .gc-textbox { padding:5px 7px 16px; min-height:72px; position:relative; }
+    .gc-white .gc-textbox { background:rgba(252,244,204,.96); }
+    .gc-blue  .gc-textbox { background:rgba(196,224,244,.96); }
+    .gc-black .gc-textbox { background:rgba(188,180,208,.96); }
+    .gc-red   .gc-textbox { background:rgba(248,216,200,.96); }
+    .gc-green .gc-textbox { background:rgba(196,240,196,.96); }
+    .gc-gold  .gc-textbox { background:rgba(252,232,188,.96); }
+    .gc-rules  { font-size:.46rem; line-height:1.48; color:#1A100A; font-family:'Inter',sans-serif; }
+    .gc-flavor { font-size:.42rem; line-height:1.3; color:#3A2818; font-style:italic; border-top:1px solid rgba(0,0,0,.12); padding-top:3px; margin-top:4px; font-family:'Inter',sans-serif; }
+    .gc-rarity { position:absolute; bottom:3px; right:5px; width:10px; height:10px; border-radius:50%; }
+    .gc-rarity.rarity-mythic   { background:#FF6820; box-shadow:0 0 5px #FF6820; }
+    .gc-rarity.rarity-rare     { background:#C9A84C; box-shadow:0 0 4px #C9A84C; }
+    .gc-rarity.rarity-uncommon { background:#8898A8; box-shadow:0 0 3px #8898A8; }
+    .gc-rarity.rarity-common   { background:rgba(170,160,148,.55); }
+
+    /* Card detail modal */
+    .card-detail-overlay { position:fixed; inset:0; z-index:9500; background:rgba(0,0,0,.9); display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
+    .card-detail-overlay.show { display:flex; animation:fade-in .2s ease; }
+    @keyframes fade-in { from{opacity:0} to{opacity:1} }
+    .card-detail-inner { position:relative; max-width:380px; width:92%; animation:modal-pop .38s cubic-bezier(.23,1,.32,1); }
+    @keyframes modal-pop { from{transform:scale(.82) translateY(30px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+    .card-detail-close { position:absolute; top:-14px; right:-14px; width:30px; height:30px; border-radius:50%; background:rgba(212,163,64,.92); border:none; color:#060402; font-size:1rem; font-weight:700; cursor:pointer; z-index:1; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.55); transition:all .3s; }
+    .card-detail-close:hover { background:var(--gold); transform:scale(1.1); }
+    .card-detail-address { margin-top:1.2rem; text-align:center; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.9rem; color:rgba(249,244,236,.45); }
+    .card-detail-tags { display:flex; flex-wrap:wrap; gap:.35rem; justify-content:center; margin-top:.8rem; }
+    .card-detail-tag { padding:.2rem .6rem; border-radius:12px; font-size:.65rem; background:rgba(212,163,64,.1); border:1px solid rgba(212,163,64,.22); color:rgba(212,163,64,.7); font-family:'Cinzel',serif; letter-spacing:.07em; }
   </style>
 </head>
 <body>
@@ -419,6 +614,7 @@
     <a href="#experiences">Experiences</a>
     <a href="#suites">Suites</a>
     <a href="#location">Location</a>
+    <a href="#guide" id="nav-guide" onclick="openGuideFromNav(event)">Garopaba Guide</a>
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="cta-nav">Book Now</a>
     <a href="owner.html" class="owner-nav">Owner Access</a>
   </div>
@@ -739,6 +935,101 @@
   </div>
 </div>
 
+<!-- ══ GAROPABA GUIDE ══════════════════════════════════════ -->
+<div class="guide-bg" id="guide">
+  <div class="wrap">
+    <div class="sh fu">
+      <p class="eyebrow gold">The Realm</p>
+      <h2 class="light">The Ultimate <em class="gold">Garopaba</em> Guide</h2>
+      <p class="light">Hand-picked by TheGathering. Open the booster to reveal the best spots in town.</p>
+    </div>
+
+    <!-- SEALED BOOSTER STATE -->
+    <div id="guide-sealed" class="guide-sealed-state fu">
+      <p class="guide-teaser">10 curated spots. One booster pack. Crack it open.</p>
+      <div class="booster-pack-outer" id="booster-pack-btn" onclick="startBoosterOpen()">
+        <div class="booster-pack-inner">
+          <div class="pack-shimmer"></div>
+          <div class="pack-set-label">The Gathering · Garopaba</div>
+          <div class="pack-art-area"></div>
+          <div class="pack-center-text">
+            <div class="pack-title-main">ULTIMATE</div>
+            <div class="pack-title-sub">Garopaba Experience</div>
+          </div>
+          <div class="pack-bottom-row">
+            <span class="pack-rarity-dots">
+              <span class="rdot mythic"></span>
+              <span class="rdot rare"></span>
+              <span class="rdot rare"></span>
+              <span class="rdot uncommon"></span>
+              <span class="rdot common"></span>
+            </span>
+            <span class="pack-card-count">10 Cards</span>
+          </div>
+          <div class="pack-tap-hint">✦ Tap to Open ✦</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPENED GUIDE STATE (hidden until booster opened) -->
+    <div id="guide-opened" style="display:none">
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;align-items:center;margin-bottom:2rem">
+        <div class="guide-filter-bar" id="guide-filter-bar">
+          <button class="gf-btn active" data-cat="all" onclick="filterGuide('all',this)">All</button>
+        </div>
+        <button class="reopen-btn" onclick="reopenBooster()">✦ Reopen Booster</button>
+      </div>
+      <div class="guide-cards-grid" id="guide-cards-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOSTER OPENING OVERLAY ──────────────────────────────── -->
+<div id="booster-overlay" class="booster-overlay">
+
+  <!-- Stars -->
+  <div class="overlay-stars" id="overlay-stars"></div>
+
+  <!-- Phase 1: Pack opening animation -->
+  <div class="phase-pack" id="phase-pack">
+    <div class="opening-pack-wrap">
+      <div class="op-half op-top" id="op-top">
+        <div class="op-half-art"></div>
+      </div>
+      <div class="op-half op-bottom" id="op-bottom">
+        <div class="op-half-art"></div>
+      </div>
+      <div class="op-burst" id="op-burst"></div>
+    </div>
+  </div>
+
+  <!-- Phase 2: Card reveal (one at a time) -->
+  <div class="phase-reveal" id="phase-reveal">
+    <div class="reveal-card-wrap" id="reveal-card-wrap"></div>
+    <div class="reveal-progress-bar">
+      <div class="reveal-progress-fill" id="reveal-progress-fill"></div>
+    </div>
+    <div class="reveal-counter" id="reveal-counter">1 / 10</div>
+    <button class="reveal-next-btn" id="reveal-next-btn" onclick="revealNextCard()">Tap to Continue</button>
+  </div>
+
+  <!-- Phase 3: All revealed -->
+  <div class="phase-done" id="phase-done">
+    <div class="done-title">Guide Unlocked ✦</div>
+    <div class="done-sub">Your curated Garopaba collection is ready</div>
+    <button class="done-btn" onclick="finishBoosterOpen()">Explore the Guide →</button>
+  </div>
+
+</div>
+
+<!-- Card detail modal -->
+<div class="card-detail-overlay" id="card-detail-overlay" onclick="closeCardDetail(event)">
+  <div class="card-detail-inner" id="card-detail-inner">
+    <button class="card-detail-close" onclick="closeCardDetailBtn()">✕</button>
+    <!-- content injected by JS -->
+  </div>
+</div>
+
 <!-- SUITES -->
 <div class="suites-bg" id="suites">
   <div class="wrap">
@@ -1024,6 +1315,297 @@
     if (!v) return;
     v.muted = !v.muted;
     btn.textContent = v.muted ? '🔇' : '🔊';
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  //  GAROPABA GUIDE — Data, Firebase, Animation, Rendering
+  // ═══════════════════════════════════════════════════════════
+
+  // ── Default card data ─────────────────────────────────────
+  const DEFAULT_GUIDE_CARDS = [
+    { id:'cafecito', name:'Cafecito Co', category:'coffee', categoryLabel:'Coffee Shop', emoji:'☕', color:'white',
+      description:'Specialty pour-overs, single-origin beans, artisan pastries and the best WiFi in Garopaba. A sanctuary for slow mornings and focused remote work.',
+      address:'Garopaba, SC', tags:['coffee','wifi','specialty','cozy'],
+      flavor:'"A morning here sets the tone for the whole day."', active:true, order:0, rarity:'rare' },
+    { id:'gina', name:'Gina', category:'burgers', categoryLabel:'Burger Joint', emoji:'🍔', color:'red',
+      description:'Garopaba\'s most beloved smash burger house. Handcrafted patties, crispy fries, and a vibe that pulls locals back every single night.',
+      address:'Garopaba, SC', tags:['burgers','smash','local-favorite'],
+      flavor:'"One bite, and you understand why there\'s always a line."', active:true, order:1, rarity:'rare' },
+    { id:'h2o', name:'H2O Sushi', category:'sushi', categoryLabel:'Sushi Bar', emoji:'🍣', color:'blue',
+      description:'Fresh South Atlantic catches transformed into precision Japanese craft. The sushi counter at H2O is Garopaba\'s best-kept dining secret — sit at the bar.',
+      address:'Garopaba, SC', tags:['sushi','japanese','seafood','premium'],
+      flavor:'"Ocean-to-plate, the Garopaba way."', active:true, order:2, rarity:'mythic' },
+    { id:'kimo', name:'Kimo', category:'cowork', categoryLabel:'Cowork Space', emoji:'💻', color:'black',
+      description:'Work from the coast without sacrificing focus. Garopaba\'s premier coworking space — fast fiber, private desks, and a community that actually inspires.',
+      address:'Garopaba, SC', tags:['cowork','fiber','desks','focus'],
+      flavor:'"The future of work smells like salt air."', active:true, order:3, rarity:'uncommon' },
+    { id:'ora-poke', name:'Ora Poke', category:'poke', categoryLabel:'Poke Bowl', emoji:'🥗', color:'green',
+      description:'Hawaiian spirit meets Brazilian ingredients. Fresh tuna, local tropical fruits, and house sauces — bowls that have become the daily ritual of every serious beachgoer.',
+      address:'Garopaba, SC', tags:['poke','healthy','fresh','bowls'],
+      flavor:'"Paradise in a bowl."', active:true, order:4, rarity:'uncommon' },
+    { id:'arca', name:'Arca', category:'happy-hour', categoryLabel:'Happy Hour', emoji:'🍹', color:'gold',
+      description:'The soul of Garopaba\'s bar scene. Craft cocktails, live music, and a terrace that faces the sunset. When you want the definitive end to a perfect beach day.',
+      address:'Garopaba, SC', tags:['bar','cocktails','music','sunset','terrace'],
+      flavor:'"When the sun drops, Arca comes alive."', active:true, order:5, rarity:'rare' },
+    { id:'antonia', name:'Antônia', category:'happy-hour', categoryLabel:'Happy Hour', emoji:'🥂', color:'gold',
+      description:'Antônia\'s warm, bohemian atmosphere draws the town\'s creatives. Natural wines, small plates, conversations that run deep into the night.',
+      address:'Garopaba, SC', tags:['bar','wine','bohemian','natural-wine'],
+      flavor:'"A place you discover by word of mouth."', active:true, order:6, rarity:'rare' },
+    { id:'ski-dunas', name:'Ski Dunas Bar', category:'sandboarding', categoryLabel:'Adventure · Sand Dunes', emoji:'🏂', color:'blue',
+      description:'Your base camp for Garopaba\'s legendary sand dunes. Rent a board, fuel up with a cold beer, and carve down some of Brazil\'s most thrilling sand mountains.',
+      address:'Garopaba, SC', tags:['adventure','sandboarding','dunes','adrenaline'],
+      flavor:'"Adrenaline with an ocean view."', active:true, order:7, rarity:'uncommon' },
+    { id:'acougue-tba', name:'Açougue Premium', category:'acougue', categoryLabel:'Açougue · Butcher', emoji:'🥩', color:'red',
+      description:'The finest cuts in Garopaba. Premium Angus beef, artisanal sausages, and a selection that transforms any churrasco into a proper occasion.',
+      address:'Scouting · Garopaba', tags:['meat','churrasco','premium','butcher'],
+      flavor:'"The perfect cut is still being scouted."', active:false, order:8, rarity:'common' },
+    { id:'pizza-tba', name:'Pizzaria TBA', category:'pizza', categoryLabel:'Pizzaria', emoji:'🍕', color:'red',
+      description:'Wood-fired, slow-fermented dough and toppings from the Santa Catarina highlands. Coming soon to TheGathering\'s curated deck — the search is on.',
+      address:'Scouting · Garopaba', tags:['pizza','wood-fired','italian'],
+      flavor:'"The best pizza in Garopaba awaits discovery."', active:false, order:9, rarity:'common' },
+  ];
+
+  // ── State ─────────────────────────────────────────────────
+  let guideCards = [...DEFAULT_GUIDE_CARDS];
+  let revealIndex = 0;
+  let guideOpened = localStorage.getItem('tg_guide_opened') === 'true';
+
+  // ── Firebase init ─────────────────────────────────────────
+  (function initGuide() {
+    if (typeof TG_FIREBASE_ENABLED !== 'undefined' && TG_FIREBASE_ENABLED && typeof firebase !== 'undefined') {
+      try {
+        if (!firebase.apps.length) firebase.initializeApp(TG_FIREBASE_CONFIG);
+        const db = firebase.firestore();
+        db.collection(TG_GUIDE_PATH.collection).doc(TG_GUIDE_PATH.doc)
+          .onSnapshot(snap => {
+            if (snap.exists) {
+              const data = snap.data();
+              if (data && Array.isArray(data.cards) && data.cards.length) {
+                guideCards = data.cards;
+                if (guideOpened) renderGuideGrid();
+              }
+            }
+          }, err => console.warn('Guide Firebase error:', err));
+      } catch(e) { console.warn('Guide Firebase init failed:', e.message); }
+    }
+    // Show sealed or opened based on localStorage
+    if (guideOpened) {
+      document.getElementById('guide-sealed').style.display = 'none';
+      document.getElementById('guide-opened').style.display = 'block';
+      renderGuideGrid();
+    }
+  })();
+
+  // ── Nav shortcut ──────────────────────────────────────────
+  function openGuideFromNav(e) {
+    e.preventDefault();
+    document.getElementById('guide').scrollIntoView({behavior:'smooth'});
+    if (!guideOpened) {
+      setTimeout(() => startBoosterOpen(), 600);
+    }
+  }
+
+  // ── Booster opening sequence ──────────────────────────────
+  function startBoosterOpen() {
+    const overlay = document.getElementById('booster-overlay');
+    overlay.classList.add('show');
+    spawnOverlayStars();
+    // Shake → open
+    setTimeout(() => {
+      document.getElementById('op-top').classList.add('opening');
+      document.getElementById('op-bottom').classList.add('opening');
+      const burst = document.getElementById('op-burst');
+      burst.style.width = '0'; burst.style.height = '0'; burst.style.opacity = '0';
+      setTimeout(() => {
+        burst.style.transition = 'width .5s ease, height .5s ease, opacity .6s ease .1s';
+        burst.style.width = '700px'; burst.style.height = '700px'; burst.style.opacity = '0';
+        burst.style.background = 'radial-gradient(circle,rgba(212,163,64,.9) 0%,rgba(212,163,64,.4) 30%,transparent 65%)';
+      }, 50);
+    }, 400);
+    // Transition to card reveal
+    setTimeout(() => {
+      document.getElementById('phase-pack').style.display = 'none';
+      revealIndex = 0;
+      showRevealPhase();
+    }, 1400);
+  }
+
+  function showRevealPhase() {
+    const phase = document.getElementById('phase-reveal');
+    phase.classList.add('show');
+    renderRevealCard(revealIndex);
+  }
+
+  function renderRevealCard(idx) {
+    const activeCards = guideCards.filter(c => c.active !== false);
+    const card = activeCards[idx] || guideCards[idx];
+    if (!card) { showDonePhase(); return; }
+    const total = Math.min(guideCards.length, 10);
+
+    // Update progress
+    document.getElementById('reveal-progress-fill').style.width = ((idx + 1) / total * 100) + '%';
+    document.getElementById('reveal-counter').textContent = (idx + 1) + ' / ' + total;
+    if (idx === total - 1) document.getElementById('reveal-next-btn').textContent = 'See Your Collection →';
+
+    // Build the card (large version)
+    const wrap = document.getElementById('reveal-card-wrap');
+    wrap.className = 'reveal-card-wrap glow-' + (card.rarity || 'common');
+    wrap.innerHTML = buildGuideCardHTML(card, true);
+    // Re-trigger animation
+    wrap.style.animation = 'none';
+    requestAnimationFrame(() => { wrap.style.animation = ''; });
+  }
+
+  function revealNextCard() {
+    const total = Math.min(guideCards.length, 10);
+    revealIndex++;
+    if (revealIndex >= total) { showDonePhase(); return; }
+    renderRevealCard(revealIndex);
+  }
+
+  function showDonePhase() {
+    document.getElementById('phase-reveal').classList.remove('show');
+    document.getElementById('phase-done').classList.add('show');
+  }
+
+  function finishBoosterOpen() {
+    document.getElementById('booster-overlay').classList.remove('show');
+    // Reset overlay for potential re-open
+    document.getElementById('phase-pack').style.display = 'flex';
+    document.getElementById('op-top').classList.remove('opening');
+    document.getElementById('op-bottom').classList.remove('opening');
+    document.getElementById('phase-reveal').classList.remove('show');
+    document.getElementById('phase-done').classList.remove('show');
+
+    // Show guide grid
+    guideOpened = true;
+    localStorage.setItem('tg_guide_opened', 'true');
+    document.getElementById('guide-sealed').style.display = 'none';
+    const opened = document.getElementById('guide-opened');
+    opened.style.display = 'block';
+    renderGuideGrid();
+    document.getElementById('guide').scrollIntoView({behavior:'smooth'});
+  }
+
+  function reopenBooster() {
+    revealIndex = 0;
+    document.getElementById('phase-pack').style.display = 'flex';
+    document.getElementById('op-top').classList.remove('opening');
+    document.getElementById('op-bottom').classList.remove('opening');
+    document.getElementById('phase-reveal').classList.remove('show');
+    document.getElementById('phase-done').classList.remove('show');
+    document.getElementById('booster-overlay').classList.add('show');
+    spawnOverlayStars();
+    setTimeout(() => {
+      document.getElementById('op-top').classList.add('opening');
+      document.getElementById('op-bottom').classList.add('opening');
+    }, 400);
+    setTimeout(() => {
+      document.getElementById('phase-pack').style.display = 'none';
+      showRevealPhase();
+    }, 1400);
+  }
+
+  // Close overlay on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const ov = document.getElementById('booster-overlay');
+      if (ov.classList.contains('show')) finishBoosterOpen();
+    }
+  });
+
+  // ── Guide grid rendering ──────────────────────────────────
+  function renderGuideGrid() {
+    const grid = document.getElementById('guide-cards-grid');
+    const filterBar = document.getElementById('guide-filter-bar');
+    const cats = ['all', ...new Set(guideCards.map(c => c.category))];
+    filterBar.innerHTML = cats.map((cat, i) => {
+      const label = cat === 'all' ? 'All' : getCatLabel(cat);
+      return `<button class="gf-btn ${i===0?'active':''}" data-cat="${cat}" onclick="filterGuide('${cat}',this)">${label}</button>`;
+    }).join('');
+    grid.innerHTML = guideCards.map((c, i) =>
+      `<div class="guide-card ${c.active===false?'inactive':''}" id="gc-${c.id}"
+            style="animation-delay:${i*.07}s"
+            onclick="openCardDetail('${c.id}')">
+        ${buildGuideCardHTML(c, false)}
+      </div>`
+    ).join('');
+  }
+
+  function filterGuide(cat, btn) {
+    document.querySelectorAll('.gf-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.guide-card').forEach(el => {
+      const card = guideCards.find(c => `gc-${c.id}` === el.id);
+      if (!card) return;
+      el.classList.toggle('hidden', cat !== 'all' && card.category !== cat);
+    });
+  }
+
+  // ── Card HTML builder ─────────────────────────────────────
+  function buildGuideCardHTML(card, large) {
+    const w = large ? 'style="width:260px"' : '';
+    return `<div class="gc-${card.color||'gold'}" ${w}>
+      <div class="gc-frame">
+        <div class="gc-title-bar">
+          <span class="gc-name">${card.name}</span>
+          <span class="gc-ico">${card.emoji}</span>
+        </div>
+        <div class="gc-art">
+          <div class="gc-art-icon">${card.emoji}</div>
+        </div>
+        <div class="gc-typeline">${card.categoryLabel}</div>
+        <div class="gc-textbox">
+          <p class="gc-rules">${card.description}</p>
+          ${card.flavor ? `<p class="gc-flavor">${card.flavor}</p>` : ''}
+          <span class="gc-rarity rarity-${card.rarity||'common'}"></span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ── Card detail modal ─────────────────────────────────────
+  function openCardDetail(id) {
+    const card = guideCards.find(c => c.id === id);
+    if (!card) return;
+    const inner = document.getElementById('card-detail-inner');
+    inner.innerHTML = `
+      <button class="card-detail-close" onclick="closeCardDetailBtn()">✕</button>
+      ${buildGuideCardHTML(card, true)}
+      <div class="card-detail-address">📍 ${card.address}</div>
+      <div class="card-detail-tags">${(card.tags||[]).map(t=>`<span class="card-detail-tag">${t}</span>`).join('')}</div>
+    `;
+    document.getElementById('card-detail-overlay').classList.add('show');
+  }
+  function closeCardDetail(e) {
+    if (e.target === document.getElementById('card-detail-overlay'))
+      document.getElementById('card-detail-overlay').classList.remove('show');
+  }
+  function closeCardDetailBtn() {
+    document.getElementById('card-detail-overlay').classList.remove('show');
+  }
+
+  // ── Overlay stars ─────────────────────────────────────────
+  function spawnOverlayStars() {
+    const el = document.getElementById('overlay-stars');
+    if (el.children.length > 5) return;
+    for (let i = 0; i < 60; i++) {
+      const s = document.createElement('div');
+      s.className = 'ostar';
+      const sz = .5 + Math.random() * 2;
+      s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;animation-duration:${2+Math.random()*3}s;animation-delay:${-Math.random()*3}s;`;
+      el.appendChild(s);
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  const CAT_LABELS = { coffee:'Coffee', burgers:'Burgers', sushi:'Sushi', cowork:'Cowork', poke:'Poke Bowl', 'happy-hour':'Happy Hour', sandboarding:'Adventure', acougue:'Açougue', pizza:'Pizza' };
+  function getCatLabel(cat) { return CAT_LABELS[cat] || cat; }
+
+  // Cards from external guide-data message (real-time Firebase update)
+  function applyGuideUpdate(cards) {
+    guideCards = cards;
+    if (guideOpened) renderGuideGrid();
   }
 </script>
 </body>

@@ -8,6 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <style>
     /* ══ BATTLEFIELD TOKENS ══════════════════════════════════ */
     :root {
@@ -568,6 +572,143 @@
     ::-webkit-scrollbar-track { background:rgba(4,6,8,.8); }
     ::-webkit-scrollbar-thumb { background:rgba(201,168,76,.2); border-radius:3px; }
     ::-webkit-scrollbar-thumb:hover { background:rgba(201,168,76,.38); }
+
+    /* ═══════════════════════════════════════════════════════════
+       DECK BUILDER — Garopaba Guide tab
+    ═══════════════════════════════════════════════════════════ */
+    .tab-btn[data-tab="environment"].active { color:#4A9040; border-bottom-color:#4A9040; text-shadow:0 0 14px rgba(74,144,64,.45); }
+    .tab-btn[data-tab="environment"].active::after { background:#4A9040; box-shadow:0 0 10px rgba(74,144,64,.6); }
+
+    .db-layout { display:grid; grid-template-columns:300px 1fr; gap:1.5rem; align-items:start; }
+    @media(max-width:900px){ .db-layout { grid-template-columns:1fr; } }
+
+    /* Left panel: deck list */
+    .deck-panel { position:sticky; top:120px; }
+    .deck-list { display:flex; flex-direction:column; gap:.4rem; max-height:65vh; overflow-y:auto; padding-right:4px; margin-bottom:1.2rem; }
+    .deck-item {
+      display:flex; align-items:center; gap:.7rem;
+      padding:.65rem .9rem; border-radius:8px;
+      background:rgba(16,22,36,.92); border:1px solid var(--border);
+      transition:all .3s; cursor:default;
+    }
+    .deck-item:hover { border-color:var(--border-hi); }
+    .deck-item .di-ico { font-size:1.1rem; flex-shrink:0; }
+    .deck-item .di-info { flex:1; min-width:0; }
+    .deck-item .di-name { font-size:.85rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .deck-item .di-cat  { font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mute); margin-top:.12rem; }
+    .deck-item .di-remove { background:none; border:none; cursor:pointer; color:var(--text-mute); font-size:.9rem; padding:.2rem .35rem; border-radius:4px; transition:all .3s; flex-shrink:0; }
+    .deck-item .di-remove:hover { color:var(--danger); background:rgba(196,80,80,.12); }
+    .deck-item.active-card { border-color:rgba(74,144,64,.4); background:rgba(16,22,36,.95); }
+    .deck-item.active-card .di-name { color:var(--mg); }
+    .inactive-item .di-name { color:var(--text-mute); font-style:italic; }
+
+    /* Publish button */
+    .publish-btn {
+      width:100%; padding:.85rem 1rem;
+      background:linear-gradient(180deg,#4A9040,#2A6020);
+      color:#DAFADA; border:none; border-radius:8px;
+      font-family:'Cinzel',serif; font-size:.78rem; letter-spacing:.14em;
+      cursor:pointer; font-weight:700;
+      box-shadow:0 2px 14px rgba(74,144,64,.25);
+      transition:all .3s; display:flex; align-items:center; justify-content:center; gap:.5rem;
+    }
+    .publish-btn:hover { background:linear-gradient(180deg,#5AB050,#3A7030); box-shadow:0 0 24px rgba(74,144,64,.45); transform:translateY(-1px); }
+    .publish-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+    .publish-status { text-align:center; font-size:.72rem; margin-top:.6rem; min-height:1rem; font-family:'Cinzel',serif; letter-spacing:.08em; }
+    .publish-status.ok   { color:var(--success); }
+    .publish-status.err  { color:var(--danger); }
+    .publish-status.info { color:var(--text-dim); }
+
+    /* Right panel: collection */
+    .collection-grid { display:flex; flex-wrap:wrap; gap:.9rem; }
+    .coll-card {
+      width:152px; cursor:pointer; position:relative;
+      transform-origin:center 95%;
+      transition:transform .4s cubic-bezier(.23,1,.32,1), filter .4s ease;
+    }
+    .coll-card:hover { transform:translateY(-12px) scale(1.06) rotateY(-4deg); z-index:20; filter:drop-shadow(0 20px 34px rgba(0,0,0,.85)); }
+    .coll-card .gc-frame { border-radius:8px; overflow:hidden; border-width:2.5px; border-style:solid; box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.65); }
+    .coll-card .gc-white .gc-frame { background:linear-gradient(180deg,#EDE8C4,#D0C47A,#E8DCA8); border-color:#BCA85A; }
+    .coll-card .gc-blue  .gc-frame { background:linear-gradient(180deg,#94CEEC,#3880B8,#8CBCE4); border-color:#2060A0; }
+    .coll-card .gc-black .gc-frame { background:linear-gradient(180deg,#565470,#20203A,#484660); border-color:#404060; }
+    .coll-card .gc-red   .gc-frame { background:linear-gradient(180deg,#E47050,#A03018,#D06040); border-color:#882010; }
+    .coll-card .gc-green .gc-frame { background:linear-gradient(180deg,#70B860,#287030,#5AA048); border-color:#1A5020; }
+    .coll-card .gc-gold  .gc-frame { background:linear-gradient(180deg,#D8AC50,#886020,#C89840); border-color:#705018; }
+    /* Active badge overlay */
+    .coll-card .active-badge {
+      position:absolute; top:6px; left:6px; z-index:5;
+      background:rgba(74,144,64,.92); border-radius:20px;
+      padding:2px 7px; font-size:.5rem; font-family:'Cinzel',serif;
+      letter-spacing:.1em; color:#DAFADA; display:none;
+    }
+    .coll-card.in-deck .active-badge { display:block; }
+    .coll-card.in-deck .gc-frame { box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 0 0 2px rgba(74,144,64,.6),0 6px 18px rgba(0,0,0,.65); }
+    /* Edit button */
+    .coll-edit-btn {
+      position:absolute; bottom:6px; right:6px; z-index:5;
+      background:rgba(201,168,76,.85); border:none; border-radius:5px;
+      color:#060402; font-size:.55rem; padding:2px 6px;
+      cursor:pointer; font-family:'Cinzel',serif; letter-spacing:.08em;
+      opacity:0; transition:opacity .2s;
+    }
+    .coll-card:hover .coll-edit-btn { opacity:1; }
+
+    /* Shared MTG card frame styles (mirrored from guest guide) */
+    .gc-white .gc-frame{background:linear-gradient(180deg,#EDE8C4,#D0C47A,#E8DCA8);border-color:#BCA85A}
+    .gc-blue  .gc-frame{background:linear-gradient(180deg,#94CEEC,#3880B8,#8CBCE4);border-color:#2060A0}
+    .gc-black .gc-frame{background:linear-gradient(180deg,#565470,#20203A,#484660);border-color:#404060}
+    .gc-red   .gc-frame{background:linear-gradient(180deg,#E47050,#A03018,#D06040);border-color:#882010}
+    .gc-green .gc-frame{background:linear-gradient(180deg,#70B860,#287030,#5AA048);border-color:#1A5020}
+    .gc-gold  .gc-frame{background:linear-gradient(180deg,#D8AC50,#886020,#C89840);border-color:#705018}
+    .gc-frame{border-radius:8px;overflow:hidden;border-width:2.5px;border-style:solid;box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 6px 18px rgba(0,0,0,.65)}
+    .gc-title-bar{display:flex;justify-content:space-between;align-items:center;padding:3px 6px;font-family:'Cinzel',serif;font-size:.5rem;font-weight:700;color:#12080A;letter-spacing:.02em}
+    .gc-white .gc-title-bar{background:rgba(232,220,160,.95)}.gc-blue .gc-title-bar{background:rgba(148,200,232,.95)}.gc-black .gc-title-bar{background:rgba(100,96,130,.95);color:#E8DCC8}.gc-red .gc-title-bar{background:rgba(228,112,80,.95)}.gc-green .gc-title-bar{background:rgba(112,184,96,.95)}.gc-gold .gc-title-bar{background:rgba(216,172,80,.95)}
+    .gc-name{flex:1;font-size:.48rem;font-weight:700;line-height:1.1}.gc-ico{font-size:.8rem;flex-shrink:0;margin-left:2px}
+    .gc-art{height:70px;position:relative;border-top:1.5px solid rgba(0,0,0,.4);border-bottom:1.5px solid rgba(0,0,0,.4);overflow:hidden}
+    .gc-white .gc-art{background:linear-gradient(135deg,#F8F0D0,#E8D888)}.gc-blue .gc-art{background:linear-gradient(135deg,#082848,#1A5080)}.gc-black .gc-art{background:linear-gradient(135deg,#0A0818,#1A1428)}.gc-red .gc-art{background:linear-gradient(135deg,#3A0C04,#7A200A)}.gc-green .gc-art{background:linear-gradient(135deg,#082818,#185828)}.gc-gold .gc-art{background:linear-gradient(135deg,#3A2808,#7A5010)}
+    .gc-art-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.1rem;opacity:.52;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55))}
+    .gc-typeline{font-family:'Cinzel',serif;font-size:.38rem;font-weight:600;color:#120808;padding:2px 6px;letter-spacing:.03em}
+    .gc-white .gc-typeline{background:rgba(232,220,160,.88)}.gc-blue .gc-typeline{background:rgba(148,200,232,.88)}.gc-black .gc-typeline{background:rgba(100,96,130,.88);color:#D8CCE0}.gc-red .gc-typeline{background:rgba(228,112,80,.88)}.gc-green .gc-typeline{background:rgba(112,184,96,.88)}.gc-gold .gc-typeline{background:rgba(216,172,80,.88)}
+    .gc-textbox{padding:4px 6px 12px;min-height:58px;position:relative}
+    .gc-white .gc-textbox{background:rgba(252,244,204,.96)}.gc-blue .gc-textbox{background:rgba(196,224,244,.96)}.gc-black .gc-textbox{background:rgba(188,180,208,.96)}.gc-red .gc-textbox{background:rgba(248,216,200,.96)}.gc-green .gc-textbox{background:rgba(196,240,196,.96)}.gc-gold .gc-textbox{background:rgba(252,232,188,.96)}
+    .gc-rules{font-size:.4rem;line-height:1.4;color:#1A100A;font-family:'Inter',sans-serif}
+    .gc-rarity{position:absolute;bottom:2px;right:4px;width:8px;height:8px;border-radius:50%}
+    .gc-rarity.rarity-mythic{background:#FF6820;box-shadow:0 0 4px #FF6820}.gc-rarity.rarity-rare{background:#C9A84C;box-shadow:0 0 3px #C9A84C}.gc-rarity.rarity-uncommon{background:#8898A8;box-shadow:0 0 3px #8898A8}.gc-rarity.rarity-common{background:rgba(170,160,148,.55)}
+
+    /* Add / Edit card modal */
+    .card-edit-overlay {
+      position:fixed; inset:0; z-index:9500;
+      background:rgba(0,0,0,.88); display:none;
+      align-items:center; justify-content:center;
+      backdrop-filter:blur(8px);
+    }
+    .card-edit-overlay.show { display:flex; animation:panel-in .3s ease; }
+    .card-edit-modal {
+      width:min(560px,96vw);
+      background:linear-gradient(160deg,rgba(16,22,36,.99),rgba(10,14,24,.99));
+      border-radius:var(--r); padding:1.8rem;
+      box-shadow:0 0 0 1px rgba(201,168,76,.38),0 0 50px rgba(0,0,0,.8);
+      position:relative;
+    }
+    .card-edit-modal::before { content:''; position:absolute; inset:-1px; border-radius:calc(var(--r)+1px); z-index:-1; background:linear-gradient(135deg,rgba(201,168,76,.42) 0%,transparent 40%,transparent 60%,rgba(201,168,76,.32) 100%); }
+    .cem-title { font-family:'Cinzel',serif; font-size:.88rem; color:var(--gold); letter-spacing:.14em; margin-bottom:1.5rem; display:flex; align-items:center; gap:.8rem; }
+    .cem-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,rgba(201,168,76,.3),transparent); }
+    .cem-close { position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-mute); cursor:pointer; font-size:1.1rem; transition:color .3s; }
+    .cem-close:hover { color:var(--gold); }
+    .cem-grid { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+    @media(max-width:500px){ .cem-grid { grid-template-columns:1fr; } }
+    .cem-field { display:flex; flex-direction:column; gap:.35rem; }
+    .cem-field.full { grid-column:1/-1; }
+    .cem-label { font-family:'Cinzel',serif; font-size:.64rem; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dim); }
+    .cem-input { padding:.65rem .9rem; border-radius:8px; background:rgba(6,10,18,.95); border:1px solid var(--border); color:var(--text); font-size:.88rem; outline:none; font-family:'Inter',sans-serif; transition:border-color .3s,box-shadow .3s; color-scheme:dark; }
+    .cem-input:focus { border-color:var(--gold); box-shadow:0 0 12px rgba(201,168,76,.12); }
+    textarea.cem-input { resize:vertical; min-height:70px; }
+    select.cem-input option { background:rgba(12,16,26,.99); }
+    .cem-check-row { display:flex; align-items:center; gap:.6rem; margin-top:.5rem; }
+    .cem-check-row label { font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.1em; color:var(--text-dim); }
+    .cem-check-row input[type=checkbox] { accent-color:var(--mg); width:15px; height:15px; }
+    .cem-actions { display:flex; gap:.75rem; margin-top:1.4rem; justify-content:flex-end; }
+    .cem-preview { margin-top:1rem; display:flex; justify-content:center; }
   </style>
 </head>
 <body>
@@ -632,6 +773,7 @@
     <button class="tab-btn" data-tab="guests">             <i class="ms ms-g ms-cost"></i> Creatures</button>
     <button class="tab-btn" data-tab="housekeeping">       <i class="ms ms-r ms-cost"></i> Upkeep</button>
     <button class="tab-btn" data-tab="vendors">            <i class="ms ms-c ms-cost"></i> Artifacts</button>
+    <button class="tab-btn" data-tab="environment">        <i class="ms ms-g ms-cost"></i> Environment</button>
     <button class="tab-btn" data-tab="projects">           <i class="ms ms-b ms-cost"></i> Sorceries</button>
     <button class="tab-btn" data-tab="links">              <i class="ms ms-w ms-cost"></i> Portals</button>
   </div>
@@ -786,6 +928,25 @@
                 </div>
               </div>
               <div class="bc-enter-hint">tap · Artifacts</div>
+            </div>
+
+            <!-- ENVIRONMENT (Green/Forest) — Garopaba Guide -->
+            <div class="battle-card" onclick="enterSection('environment')"
+                 style="--cb:#4A9040;--cg:rgba(74,144,64,.55)">
+              <div class="bc-frame" style="border-color:#4A9040;background:linear-gradient(180deg,#081408,#0C1C0A)">
+                <div class="bc-title" style="background:rgba(74,144,64,.88)">
+                  <span>Garopaba Realm</span>
+                  <span class="bc-mana"><i class="ms ms-g ms-cost"></i></span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_deck.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(74,144,64,.78)">Enchantment — Guide Deck Builder</div>
+                <div class="bc-text" style="background:rgba(200,238,200,.96)">
+                  <p class="bc-rules">Tap: Curate the Ultimate Garopaba Guide. Add, edit, and publish spots. Changes go live instantly for guests.</p>
+                  <p class="bc-flavor">"The best places, hand-picked."</p>
+                  <div class="bc-pt">10</div>
+                </div>
+              </div>
+              <div class="bc-enter-hint">tap · Realm</div>
             </div>
 
             <!-- SORCERIES (Black/Swamp) -->
@@ -949,6 +1110,43 @@
       </div>
     </div>
 
+    <!-- ══ ENVIRONMENT (Garopaba Guide Deck Builder) ══ -->
+    <div class="tab-panel" id="tab-environment">
+
+      <div class="db-layout">
+
+        <!-- LEFT: Deck list -->
+        <div class="deck-panel">
+          <div class="section-title"><i class="ms ms-g ms-cost"></i> Active Deck</div>
+          <div class="mtg-card" style="margin-bottom:1rem">
+            <p style="font-size:.8rem;color:var(--text-dim);margin-bottom:1rem">Cards shown to guests when they open the booster. Toggle active on cards in the collection →</p>
+            <div class="deck-list" id="deck-list">
+              <div class="empty-state">Loading deck…</div>
+            </div>
+            <button class="publish-btn" id="publish-btn" onclick="publishDeck()">
+              <i class="ms ms-g ms-cost" style="font-size:.9rem"></i> Publish Deck to Guide
+            </button>
+            <div class="publish-status info" id="publish-status">
+              Changes auto-save · published via Firebase when connected
+            </div>
+          </div>
+          <div class="section-title" style="margin-top:1rem"><i class="ms ms-tap"></i> Add New Card</div>
+          <div class="mtg-card">
+            <button class="btn-sm btn-gold" style="width:100%" onclick="openCardEdit(null)">+ Add New Spot</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Collection -->
+        <div>
+          <div class="section-title"><i class="ms ms-c ms-cost"></i> Collection · All Spots</div>
+          <div class="collection-grid" id="collection-grid">
+            <div class="empty-state">Loading collection…</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ══ SORCERIES (Projects) ══ -->
     <div class="tab-panel" id="tab-projects">
       <div class="section-title"><i class="ms ms-b ms-cost"></i> House Projects</div>
@@ -1003,6 +1201,87 @@
 
   </div><!-- /content -->
 </div><!-- /app -->
+
+<!-- Card edit / add modal -->
+<div class="card-edit-overlay" id="card-edit-overlay" onclick="closeCemOutside(event)">
+  <div class="card-edit-modal" id="card-edit-modal">
+    <button class="cem-close" onclick="closeCem()">✕</button>
+    <div class="cem-title"><i class="ms ms-g ms-cost"></i> <span id="cem-title-text">Edit Spot</span></div>
+    <div class="cem-grid">
+      <div class="cem-field">
+        <label class="cem-label">Name</label>
+        <input type="text" class="cem-input" id="cem-name" placeholder="e.g. Cafecito Co">
+      </div>
+      <div class="cem-field">
+        <label class="cem-label">Emoji</label>
+        <input type="text" class="cem-input" id="cem-emoji" placeholder="☕" maxlength="4">
+      </div>
+      <div class="cem-field">
+        <label class="cem-label">Category</label>
+        <select class="cem-input" id="cem-category">
+          <option value="coffee">☕ Coffee Shop</option>
+          <option value="burgers">🍔 Burger Joint</option>
+          <option value="sushi">🍣 Sushi Bar</option>
+          <option value="cowork">💻 Cowork Space</option>
+          <option value="poke">🥗 Poke Bowl</option>
+          <option value="happy-hour">🍹 Happy Hour</option>
+          <option value="sandboarding">🏂 Sandboarding</option>
+          <option value="pizza">🍕 Pizzaria</option>
+          <option value="acougue">🥩 Açougue</option>
+          <option value="beach">🌊 Beach / Surf</option>
+          <option value="other">✦ Other</option>
+        </select>
+      </div>
+      <div class="cem-field">
+        <label class="cem-label">MTG Color</label>
+        <select class="cem-input" id="cem-color">
+          <option value="white">⬜ White (Plains)</option>
+          <option value="blue">🔵 Blue (Island)</option>
+          <option value="black">⚫ Black (Swamp)</option>
+          <option value="red">🔴 Red (Mountain)</option>
+          <option value="green">🟢 Green (Forest)</option>
+          <option value="gold">🟡 Gold (Multicolor)</option>
+        </select>
+      </div>
+      <div class="cem-field">
+        <label class="cem-label">Rarity</label>
+        <select class="cem-input" id="cem-rarity">
+          <option value="mythic">🔥 Mythic</option>
+          <option value="rare">✦ Rare</option>
+          <option value="uncommon">◆ Uncommon</option>
+          <option value="common">• Common</option>
+        </select>
+      </div>
+      <div class="cem-field">
+        <label class="cem-label">Address / Location</label>
+        <input type="text" class="cem-input" id="cem-address" placeholder="Rua ..., Garopaba SC">
+      </div>
+      <div class="cem-field full">
+        <label class="cem-label">Description (Rules Text)</label>
+        <textarea class="cem-input" id="cem-description" placeholder="What makes this spot special…"></textarea>
+      </div>
+      <div class="cem-field full">
+        <label class="cem-label">Flavor Text (italic quote)</label>
+        <input type="text" class="cem-input" id="cem-flavor" placeholder='"A line that captures the feeling…"'>
+      </div>
+      <div class="cem-field full">
+        <label class="cem-label">Tags (comma-separated)</label>
+        <input type="text" class="cem-input" id="cem-tags" placeholder="coffee, wifi, cozy, specialty">
+      </div>
+    </div>
+    <div class="cem-check-row">
+      <input type="checkbox" id="cem-active" checked>
+      <label for="cem-active">Active — show in guest booster pack</label>
+    </div>
+    <div class="cem-preview" id="cem-preview"></div>
+    <div class="cem-actions">
+      <button class="btn-sm btn-danger" id="cem-delete-btn" onclick="deleteCard()" style="display:none">Delete</button>
+      <button class="btn-sm btn-ghost" onclick="closeCem()">Cancel</button>
+      <button class="btn-sm btn-gold" onclick="saveCard()">Save Card</button>
+    </div>
+    <input type="hidden" id="cem-id">
+  </div>
+</div>
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────
@@ -1233,6 +1512,291 @@ function renderProjects(){
       <button onclick="deleteProject(${p.id})" title="Delete">✕</button>
     </div>`).join('');
 }
+
+// ═══════════════════════════════════════════════════════════
+//  DECK BUILDER — Garopaba Guide
+// ═══════════════════════════════════════════════════════════
+
+// ── Default seed data ─────────────────────────────────────
+const SEED_GUIDE_CARDS = [
+  { id:'cafecito', name:'Cafecito Co', category:'coffee', categoryLabel:'Coffee Shop', emoji:'☕', color:'white',
+    description:'Specialty pour-overs, single-origin beans, artisan pastries and the best WiFi in Garopaba. A sanctuary for slow mornings and focused remote work.',
+    address:'Garopaba, SC', tags:['coffee','wifi','specialty','cozy'],
+    flavor:'"A morning here sets the tone for the whole day."', active:true, order:0, rarity:'rare' },
+  { id:'gina', name:'Gina', category:'burgers', categoryLabel:'Burger Joint', emoji:'🍔', color:'red',
+    description:"Garopaba's most beloved smash burger house. Handcrafted patties, crispy fries, and a vibe that pulls locals back every single night.",
+    address:'Garopaba, SC', tags:['burgers','smash','local-favorite'],
+    flavor:'"One bite, and you understand why there\'s always a line."', active:true, order:1, rarity:'rare' },
+  { id:'h2o', name:'H2O Sushi', category:'sushi', categoryLabel:'Sushi Bar', emoji:'🍣', color:'blue',
+    description:"Fresh South Atlantic catches transformed into precision Japanese craft. The sushi counter at H2O is Garopaba's best-kept dining secret.",
+    address:'Garopaba, SC', tags:['sushi','japanese','seafood','premium'],
+    flavor:'"Ocean-to-plate, the Garopaba way."', active:true, order:2, rarity:'mythic' },
+  { id:'kimo', name:'Kimo', category:'cowork', categoryLabel:'Cowork Space', emoji:'💻', color:'black',
+    description:"Work from the coast without sacrificing focus. Garopaba's premier coworking space — fast fiber, private desks, and an inspiring community.",
+    address:'Garopaba, SC', tags:['cowork','fiber','desks','focus'],
+    flavor:'"The future of work smells like salt air."', active:true, order:3, rarity:'uncommon' },
+  { id:'ora-poke', name:'Ora Poke', category:'poke', categoryLabel:'Poke Bowl', emoji:'🥗', color:'green',
+    description:'Hawaiian spirit meets Brazilian ingredients. Fresh tuna, local tropical fruits, and house sauces in bowls that define the beachgoer ritual.',
+    address:'Garopaba, SC', tags:['poke','healthy','fresh','bowls'],
+    flavor:'"Paradise in a bowl."', active:true, order:4, rarity:'uncommon' },
+  { id:'arca', name:'Arca', category:'happy-hour', categoryLabel:'Happy Hour', emoji:'🍹', color:'gold',
+    description:"The soul of Garopaba's bar scene. Craft cocktails, live music, and a sunset terrace that defines the end of a perfect beach day.",
+    address:'Garopaba, SC', tags:['bar','cocktails','music','sunset'],
+    flavor:'"When the sun drops, Arca comes alive."', active:true, order:5, rarity:'rare' },
+  { id:'antonia', name:'Antônia', category:'happy-hour', categoryLabel:'Happy Hour', emoji:'🥂', color:'gold',
+    description:"Antônia's warm, bohemian atmosphere draws the town's creatives. Natural wines, small plates, and conversations that run long into the night.",
+    address:'Garopaba, SC', tags:['bar','wine','bohemian'],
+    flavor:'"A place you discover by word of mouth."', active:true, order:6, rarity:'rare' },
+  { id:'ski-dunas', name:'Ski Dunas Bar', category:'sandboarding', categoryLabel:'Adventure · Sand Dunes', emoji:'🏂', color:'blue',
+    description:"Your base camp for Garopaba's legendary sand dunes. Rent a board, fuel up with a cold beer, and carve down some of Brazil's most thrilling dunes.",
+    address:'Garopaba, SC', tags:['adventure','sandboarding','dunes'],
+    flavor:'"Adrenaline with an ocean view."', active:true, order:7, rarity:'uncommon' },
+  { id:'acougue-tba', name:'Açougue Premium', category:'acougue', categoryLabel:'Açougue · Butcher', emoji:'🥩', color:'red',
+    description:'The finest cuts in Garopaba. Premium Angus beef, artisanal sausages — the selection that turns any churrasco into an occasion.',
+    address:'Scouting · Garopaba', tags:['meat','churrasco','premium'],
+    flavor:'"The perfect cut is still being scouted."', active:false, order:8, rarity:'common' },
+  { id:'pizza-tba', name:'Pizzaria TBA', category:'pizza', categoryLabel:'Pizzaria', emoji:'🍕', color:'red',
+    description:"Wood-fired, slow-fermented dough and toppings from the Santa Catarina highlands. Coming soon to TheGathering's curated deck.",
+    address:'Scouting · Garopaba', tags:['pizza','wood-fired'],
+    flavor:'"The best pizza in Garopaba awaits discovery."', active:false, order:9, rarity:'common' },
+];
+
+// ── Deck state ────────────────────────────────────────────
+let deckCards = JSON.parse(localStorage.getItem('tg_deck_cards') || 'null') || SEED_GUIDE_CARDS.map(c=>({...c}));
+let cemEditId  = null; // id of card being edited, null = new card
+
+// ── Firebase deck integration ─────────────────────────────
+let dbRef = null;
+(function initDeckFirebase() {
+  if (typeof TG_FIREBASE_ENABLED !== 'undefined' && TG_FIREBASE_ENABLED && typeof firebase !== 'undefined') {
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(TG_FIREBASE_CONFIG);
+      const db = firebase.firestore();
+      dbRef = db.collection(TG_GUIDE_PATH.collection).doc(TG_GUIDE_PATH.doc);
+      // Load last published version as starting point
+      dbRef.get().then(snap => {
+        if (snap.exists && snap.data().cards && snap.data().cards.length) {
+          deckCards = snap.data().cards;
+          localStorage.setItem('tg_deck_cards', JSON.stringify(deckCards));
+          if (document.getElementById('tab-environment').classList.contains('active')) renderDeckBuilder();
+        }
+      });
+    } catch(e) { console.warn('Deck Firebase init:', e.message); }
+  }
+})();
+
+// Extend init to render deck builder
+const _origInit = init;
+function init() {
+  _origInit();
+  // pre-render deck builder so it's ready when tab is opened
+}
+
+// ── Rendering ─────────────────────────────────────────────
+function renderDeckBuilder() {
+  renderDeckList();
+  renderCollectionGrid();
+}
+
+function renderDeckList() {
+  const active = deckCards.filter(c => c.active !== false);
+  const inactive = deckCards.filter(c => c.active === false);
+  const el = document.getElementById('deck-list');
+  if (!deckCards.length) { el.innerHTML = '<div class="empty-state">No cards yet. Add spots in the collection →</div>'; return; }
+  el.innerHTML = [...active, ...inactive].map(c => `
+    <div class="deck-item ${c.active!==false?'active-card':'inactive-item'}" id="di-${c.id}">
+      <span class="di-ico">${c.emoji}</span>
+      <div class="di-info">
+        <div class="di-name">${c.name}</div>
+        <div class="di-cat">${c.categoryLabel||c.category} · ${c.rarity||'common'}</div>
+      </div>
+      <button class="di-remove" onclick="toggleCardActive('${c.id}')" title="${c.active!==false?'Deactivate':'Activate'}">
+        ${c.active!==false?'✓':'○'}
+      </button>
+    </div>`).join('');
+}
+
+function renderCollectionGrid() {
+  const el = document.getElementById('collection-grid');
+  el.innerHTML = deckCards.map(card => {
+    const inDeck = card.active !== false;
+    return `<div class="coll-card ${inDeck?'in-deck':''}" id="cc-${card.id}" onclick="toggleCardActive('${card.id}')">
+      <span class="active-badge">✓ Active</span>
+      ${buildOwnerCardHTML(card)}
+      <button class="coll-edit-btn" onclick="openCardEdit('${card.id}');event.stopPropagation()">Edit</button>
+    </div>`;
+  }).join('');
+}
+
+// Build small MTG card for collection
+function buildOwnerCardHTML(card) {
+  const cl = `gc-${card.color||'gold'}`;
+  return `<div class="${cl}">
+    <div class="gc-frame">
+      <div class="gc-title-bar">
+        <span class="gc-name" style="font-size:.48rem">${card.name}</span>
+        <span class="gc-ico" style="font-size:.8rem">${card.emoji}</span>
+      </div>
+      <div class="gc-art" style="height:70px">
+        <div class="gc-art-icon" style="font-size:2.1rem">${card.emoji}</div>
+      </div>
+      <div class="gc-typeline" style="font-size:.38rem">${card.categoryLabel||card.category}</div>
+      <div class="gc-textbox" style="min-height:58px;padding:4px 6px 12px">
+        <p class="gc-rules" style="font-size:.4rem;line-height:1.4">${(card.description||'').slice(0,90)}${card.description&&card.description.length>90?'…':''}</p>
+        <span class="gc-rarity rarity-${card.rarity||'common'}" style="width:8px;height:8px;bottom:2px;right:4px"></span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Toggle card active ─────────────────────────────────────
+function toggleCardActive(id) {
+  const card = deckCards.find(c => c.id === id);
+  if (!card) return;
+  card.active = !(card.active !== false);
+  saveDeckLocal();
+  renderDeckBuilder();
+}
+
+// ── Save to localStorage ──────────────────────────────────
+function saveDeckLocal() {
+  localStorage.setItem('tg_deck_cards', JSON.stringify(deckCards));
+}
+
+// ── Publish to Firebase ───────────────────────────────────
+async function publishDeck() {
+  const btn = document.getElementById('publish-btn');
+  const status = document.getElementById('publish-status');
+  btn.disabled = true;
+  saveDeckLocal();
+
+  if (!dbRef) {
+    status.className = 'publish-status info';
+    status.textContent = '✓ Saved locally (Firebase not connected — see firebase-config.js)';
+    btn.disabled = false;
+    return;
+  }
+  try {
+    status.className = 'publish-status info';
+    status.textContent = '⟳ Publishing…';
+    await dbRef.set({
+      cards: deckCards,
+      publishedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      version: Date.now()
+    });
+    status.className = 'publish-status ok';
+    status.textContent = '✦ Published! Guest booster updated live.';
+  } catch(e) {
+    status.className = 'publish-status err';
+    status.textContent = '✕ Error: ' + e.message;
+  }
+  btn.disabled = false;
+  setTimeout(() => { status.textContent = ''; status.className = 'publish-status'; }, 5000);
+}
+
+// ── Card edit modal ───────────────────────────────────────
+const CAT_LABELS_DB = { coffee:'Coffee Shop', burgers:'Burger Joint', sushi:'Sushi Bar', cowork:'Cowork Space', poke:'Poke Bowl', 'happy-hour':'Happy Hour', sandboarding:'Adventure · Sand Dunes', pizza:'Pizzaria', acougue:'Açougue · Butcher', beach:'Beach / Surf', other:'Spot' };
+
+function openCardEdit(id) {
+  cemEditId = id;
+  document.getElementById('cem-title-text').textContent = id ? 'Edit Spot' : 'Add New Spot';
+  document.getElementById('cem-delete-btn').style.display = id ? 'inline-flex' : 'none';
+
+  if (id) {
+    const card = deckCards.find(c => c.id === id);
+    if (!card) return;
+    document.getElementById('cem-id').value = card.id;
+    document.getElementById('cem-name').value = card.name || '';
+    document.getElementById('cem-emoji').value = card.emoji || '';
+    document.getElementById('cem-category').value = card.category || 'other';
+    document.getElementById('cem-color').value = card.color || 'gold';
+    document.getElementById('cem-rarity').value = card.rarity || 'common';
+    document.getElementById('cem-address').value = card.address || '';
+    document.getElementById('cem-description').value = card.description || '';
+    document.getElementById('cem-flavor').value = card.flavor || '';
+    document.getElementById('cem-tags').value = (card.tags||[]).join(', ');
+    document.getElementById('cem-active').checked = card.active !== false;
+  } else {
+    ['cem-name','cem-emoji','cem-address','cem-description','cem-flavor','cem-tags'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('cem-category').value = 'coffee';
+    document.getElementById('cem-color').value = 'gold';
+    document.getElementById('cem-rarity').value = 'common';
+    document.getElementById('cem-active').checked = true;
+  }
+  updateCemPreview();
+  document.getElementById('card-edit-overlay').classList.add('show');
+}
+
+function updateCemPreview() {
+  const card = {
+    name: document.getElementById('cem-name').value || 'New Spot',
+    emoji: document.getElementById('cem-emoji').value || '✦',
+    category: document.getElementById('cem-category').value,
+    categoryLabel: CAT_LABELS_DB[document.getElementById('cem-category').value] || 'Spot',
+    color: document.getElementById('cem-color').value,
+    rarity: document.getElementById('cem-rarity').value,
+    description: document.getElementById('cem-description').value,
+    flavor: document.getElementById('cem-flavor').value,
+  };
+  document.getElementById('cem-preview').innerHTML = `<div style="transform:scale(.9);transform-origin:top center">${buildOwnerCardHTML(card)}</div>`;
+}
+
+// Live preview updates
+['cem-name','cem-emoji','cem-category','cem-color','cem-rarity','cem-description','cem-flavor'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', updateCemPreview);
+  if (el && el.tagName === 'SELECT') el.addEventListener('change', updateCemPreview);
+});
+
+function saveCard() {
+  const id = cemEditId || ('card-' + Date.now());
+  const cat = document.getElementById('cem-category').value;
+  const card = {
+    id,
+    name: document.getElementById('cem-name').value.trim() || 'Unnamed Spot',
+    emoji: document.getElementById('cem-emoji').value.trim() || '✦',
+    category: cat,
+    categoryLabel: CAT_LABELS_DB[cat] || 'Spot',
+    color: document.getElementById('cem-color').value,
+    rarity: document.getElementById('cem-rarity').value,
+    address: document.getElementById('cem-address').value.trim(),
+    description: document.getElementById('cem-description').value.trim(),
+    flavor: document.getElementById('cem-flavor').value.trim(),
+    tags: document.getElementById('cem-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    active: document.getElementById('cem-active').checked,
+    order: cemEditId ? (deckCards.find(c=>c.id===cemEditId)||{order:deckCards.length}).order : deckCards.length,
+  };
+  if (cemEditId) {
+    const idx = deckCards.findIndex(c => c.id === cemEditId);
+    if (idx >= 0) deckCards[idx] = card;
+  } else {
+    deckCards.push(card);
+  }
+  saveDeckLocal();
+  renderDeckBuilder();
+  closeCem();
+}
+
+function deleteCard() {
+  if (!cemEditId) return;
+  if (!confirm('Remove this spot from the deck?')) return;
+  deckCards = deckCards.filter(c => c.id !== cemEditId);
+  saveDeckLocal();
+  renderDeckBuilder();
+  closeCem();
+}
+
+function closeCem() { document.getElementById('card-edit-overlay').classList.remove('show'); }
+function closeCemOutside(e) { if (e.target === document.getElementById('card-edit-overlay')) closeCem(); }
+
+// ── Wire deck builder tab activation ─────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.tab === 'environment') {
+      setTimeout(renderDeckBuilder, 50);
+    }
+  });
+});
 </script>
 </body>
 </html>
