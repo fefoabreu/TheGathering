@@ -4,24 +4,19 @@
 //  Enables real-time sync between the Owner Deck Builder
 //  and the Guest Booster Pack on the main site.
 //
-//  SETUP (one-time, ~5 min):
-//  1. Go to https://console.firebase.google.com
-//  2. Create a project (free Spark plan is enough)
-//  3. Enable Firestore Database → "Start in test mode"
-//  4. Project Settings → Your apps → Add Web App
-//  5. Copy the firebaseConfig object and paste below
-//  6. Set TG_FIREBASE_ENABLED = true
+//  Firebase web API keys are intentionally public — security is
+//  enforced by Firestore security rules, not the API key.
 // ──────────────────────────────────────────────────────────────
 
-const TG_FIREBASE_ENABLED = false;   // ← flip to true after setup
+const TG_FIREBASE_ENABLED = true;
 
 const TG_FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID"
+  apiKey:            "AIzaSyDgogQXGPYZsOWbSwEJBva0UcMUUNuDPH4",
+  authDomain:        "thegathering-996d2.firebaseapp.com",
+  projectId:         "thegathering-996d2",
+  storageBucket:     "thegathering-996d2.firebasestorage.app",
+  messagingSenderId: "736571740736",
+  appId:             "1:736571740736:web:ec86a8ea050bd5406945a5"
 };
 
 // Firestore path where the guide lives
