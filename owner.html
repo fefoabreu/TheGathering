@@ -1586,13 +1586,6 @@ let dbRef = null;
   }
 })();
 
-// Extend init to render deck builder
-const _origInit = init;
-function init() {
-  _origInit();
-  // pre-render deck builder so it's ready when tab is opened
-}
-
 // ── Rendering ─────────────────────────────────────────────
 function renderDeckBuilder() {
   renderDeckList();
