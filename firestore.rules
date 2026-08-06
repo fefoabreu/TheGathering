@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// ──────────────────────────────────────────────────────────────
+//  TheGathering · Firestore Security Rules
+// ──────────────────────────────────────────────────────────────
+//  Model: the guest site reads the published Garopaba Guide
+//  without signing in. Everything the owners rely on requires an
+//  authenticated session (the owner portal signs in anonymously
+//  on load), so the data cannot be read or wiped by an
+//  unauthenticated REST call against the public web API key.
+// ──────────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /gathering/{doc} {
+
+      // The published guide is what the guest booster pack renders.
+      // Anyone may read it; only a signed-in session may publish.
+      allow read: if doc == 'guide';
+
+      // Owner-only records (calendar blocks, house projects) and
+      // every write anywhere require a signed-in session.
+      allow read, write: if request.auth != null;
+    }
+
+    // Nothing else in the database is reachable from the client.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

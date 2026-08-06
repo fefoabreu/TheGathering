@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
@@ -228,7 +229,10 @@
     .tab-btn[data-tab="links"].active::after       { background:var(--mw); box-shadow:0 0 10px rgba(232,228,168,.55); }
 
     /* ══ CONTENT AREA ════════════════════════════════════════════ */
-    .content { max-width:1100px; margin:0 auto; padding:2rem 1.5rem; }
+    /* overflow-x:clip so the panel-in slide (starts 22px right) can never
+       hand the page a horizontal scrollbar mid-animation. clip, not hidden,
+       to leave position:sticky inside the panels working. */
+    .content { max-width:1100px; margin:0 auto; padding:2rem 1.5rem; overflow-x:clip; }
     .tab-panel { display:none; }
     .tab-panel.active { display:block; animation:panel-in .38s cubic-bezier(.23,1,.32,1); }
     @keyframes panel-in { from{opacity:0;transform:translateX(22px)} to{opacity:1;transform:translateX(0)} }
@@ -265,11 +269,23 @@
     .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg, rgba(201,168,76,.3) 0%, transparent 100%); }
     .section-title .ms { font-size:1rem; }
 
+    /* ══ CLOUD SYNC PILL ═════════════════════════════════════════ */
+    .sync-pill {
+      font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.1em; text-transform:uppercase;
+      padding:.3rem .68rem; border-radius:20px; white-space:nowrap; cursor:help;
+      border:1px solid transparent; transition:all .3s ease;
+    }
+    .sync-ok     { color:#7BC46C; background:rgba(74,144,64,.1);  border-color:rgba(74,144,64,.35); }
+    .sync-saving { color:var(--gold); background:rgba(201,168,76,.1); border-color:rgba(201,168,76,.35); }
+    .sync-local  { color:var(--text-dim); background:rgba(255,255,255,.04); border-color:var(--border); }
+    .sync-error  { color:#E08050; background:rgba(208,88,64,.1); border-color:rgba(208,88,64,.4); }
+
     /* ══ GRIDS ════════════════════════════════════════════════════ */
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
     .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
-    @media(max-width:800px){  .grid-2,.grid-3 { grid-template-columns:1fr; } }
+    /* Widest breakpoint first — a narrower one must be able to override it. */
     @media(max-width:1000px){ .grid-3 { grid-template-columns:1fr 1fr; } }
+    @media(max-width:800px){  .grid-2,.grid-3 { grid-template-columns:1fr; } }
 
     /* ══ LIFE TOTAL STATS ════════════════════════════════════════ */
     .stat { text-align:center; padding:2rem 1rem; }
@@ -729,6 +745,95 @@
     .cem-check-row input[type=checkbox] { accent-color:var(--mg); width:15px; height:15px; }
     .cem-actions { display:flex; gap:.75rem; margin-top:1.4rem; justify-content:flex-end; }
     .cem-preview { margin-top:1rem; display:flex; justify-content:center; }
+
+    /* ══════════════════════════════════════════════════════════
+       PHONE / TABLET
+       ══════════════════════════════════════════════════════════ */
+
+    html, body { max-width:100%; overflow-x:hidden; }
+
+    /* iOS zooms the page whenever a focused input is under 16px. */
+    @media(max-width:760px){
+      input, select, textarea { font-size:16px !important; }
+    }
+
+    @media(max-width:760px){
+      /* One row only — a wrapping topbar throws off the battlefield height */
+      .topbar { padding:.6rem .8rem; gap:.5rem; flex-wrap:nowrap; }
+      .topbar-brand img { width:32px; height:32px; }
+      .brand-name { font-size:.85rem; }
+      .topbar-right { gap:.45rem; margin-left:auto; flex-shrink:0; }
+      .mana-pool, .topbar-season { display:none; }   /* decorative only */
+      .sync-pill { font-size:.54rem; padding:.26rem .5rem; }
+      .logout-btn { padding:.35rem .6rem; font-size:.6rem; }
+
+      /* The desktop rule hardcodes calc(100vh - 108px); on a phone the
+         chrome is a different height and 100vh jumps with the URL bar. */
+      /* padding-top clears the absolutely-positioned zone label above. */
+      .battlefield-landing { height:auto; min-height:60svh; padding-top:5.5rem; padding-bottom:2rem; }
+
+      /* Battlefield: a centred fixed-width flex row can't fit a phone —
+         wrap it to two cards per line so none get clipped. */
+      .cards-rows-wrap { padding:0 1rem; }
+      .cards-row { flex-wrap:wrap; gap:14px; align-items:flex-start; }
+      .battle-card,
+      .cards-back-row .battle-card { width:calc(50% - 7px); max-width:172px; }
+      .mat-divider { margin:1rem 0; }
+
+      .content { padding:1.1rem .9rem 3rem; }
+      .section-title { font-size:.78rem; margin-bottom:1rem; }
+
+      /* Tab strip already scrolls — make the targets thumb-sized */
+      .tabs-nav { position:sticky; top:0; z-index:90; }
+      .tab-btn { padding:.8rem .95rem; font-size:.62rem; gap:.35rem; min-height:46px; }
+
+      .mtg-card { padding:1rem; }
+      table { font-size:.8rem; }
+      th { padding:.55rem .6rem; font-size:.58rem; }
+      td { padding:.6rem .6rem; }
+
+      /* Calendar: keep 7 columns, shrink the cells to fit the width */
+      .cal-grid { gap:2px; }
+      .cal-day { min-height:44px; padding:.25rem .3rem; font-size:.68rem; }
+      .cal-day .dn { font-size:.64rem; }
+      .cal-day-hdr { font-size:.52rem; letter-spacing:.04em; }
+      .cal-month-title { font-size:.8rem; }
+
+      /* Forms stack; every control is a comfortable tap target */
+      .form-row { flex-direction:column; align-items:stretch; gap:.6rem; }
+      .form-row input, .form-row select, .form-row button { width:100%; }
+      button, .btn-sm, .link-btn { min-height:44px; }
+
+      /* Deck builder */
+      .db-layout { gap:1rem; }
+      .collection-grid { justify-content:center; }
+
+      /* Card edit modal fills the screen instead of overflowing it */
+      .card-edit-modal { max-height:88vh; padding:1.2rem; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+      .cem-grid { grid-template-columns:1fr; }
+      .cem-actions { flex-direction:column-reverse; }
+      .cem-actions button { width:100%; }
+
+      /* Owner-block rows wrap instead of squeezing the Remove button off-screen */
+      #block-list > div { flex-wrap:wrap; }
+      #block-list > div button { margin-left:0 !important; width:100%; }
+    }
+
+    @media(max-width:420px){
+      .content { padding:.9rem .6rem 2.5rem; }
+      .mtg-card { padding:.85rem; }
+      .cal-day { min-height:38px; }
+      .tab-btn { padding:.75rem .7rem; }
+    }
+
+    /* On touch there is no hover — the lift fires on the tap that opens the
+       card and can push it past the viewport edge. Tap should just navigate. */
+    @media(hover:none){
+      .battle-card:hover,
+      .cards-back-row .battle-card:hover { transform:none; z-index:1; }
+      .coll-card:hover { transform:none; }
+      .battle-card:active { transform:scale(.97); }
+    }
   </style>
 </head>
 <body>
@@ -782,6 +887,7 @@
         <i class="ms ms-g ms-cost" title="Forest — Floresta"></i>
       </div>
       <span class="topbar-season">🌊 2026 Season</span>
+      <span class="sync-pill sync-local" id="sync-pill" title="Connecting…">◈ Connecting…</span>
       <button class="logout-btn" onclick="logout()">↩ Exit</button>
     </div>
   </div>
@@ -1029,7 +1135,7 @@
         </div>
         <div>
           <div class="section-title"><i class="ms ms-c ms-cost"></i> Monthly Costs</div>
-          <div class="mtg-card">
+          <div class="mtg-card" style="overflow-x:auto">
             <table>
               <thead><tr><th>Service</th><th>Provider</th><th style="text-align:right">R$/mo</th></tr></thead>
               <tbody>
@@ -1091,7 +1197,7 @@
         <div class="sched-card"><div class="sched-type">🔧 Hydraulic / Plumbing</div><div class="sched-name">Emerson Alves</div><div class="sched-detail">📞 +55 48 99655-7266</div><div class="sched-cost">Rate TBD / call-out</div><div class="sched-next">🗓 On-call as needed</div></div>
       </div>
       <div class="section-title"><i class="ms ms-r ms-cost"></i> Keyless Entry Codes</div>
-      <div class="mtg-card">
+      <div class="mtg-card" style="overflow-x:auto">
         <table>
           <thead><tr><th>Door / Slot</th><th>Person</th><th>Code</th></tr></thead>
           <tbody>
@@ -1481,9 +1587,106 @@ function renderCalendar() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+//  CLOUD SYNC — owner calendar blocks + house projects
+// ═══════════════════════════════════════════════════════════
+//  Every owner shares one live copy. Writes are optimistic:
+//  the local cache updates and re-renders immediately, then the
+//  change is pushed to Firestore. If the cloud is unreachable the
+//  portal keeps working off localStorage and says so in the header.
+// ═══════════════════════════════════════════════════════════
+
+const TG_REFS = { blocks:null, projects:null };
+let blocksCache   = JSON.parse(localStorage.getItem('tg_blocks')   || '[]');
+let projectsCache = JSON.parse(localStorage.getItem('tg_projects') || '[]');
+let tgPending     = {};   // key → newest payload still waiting on a connection
+
+function tgSyncStatus(state, detail) {
+  const el = document.getElementById('sync-pill');
+  if (!el) return;
+  const map = {
+    ok:      ['◈ Synced',        'sync-ok'],
+    saving:  ['◈ Saving…',       'sync-saving'],
+    local:   ['◈ This device',   'sync-local'],
+    error:   ['◈ Save failed',   'sync-error'],
+  };
+  const [label, cls] = map[state] || map.local;
+  el.textContent = label;
+  el.className = 'sync-pill ' + cls;
+  el.title = detail || label;
+}
+
+// Push a collection to the cloud. Falls back to a pending queue when offline.
+function tgPush(key, items) {
+  const ref = TG_REFS[key];
+  if (!ref) {
+    tgPending[key] = items;
+    tgSyncStatus('local', 'Saved on this device — cloud sync is not connected yet.');
+    return;
+  }
+  tgSyncStatus('saving');
+  ref.set({ items, updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+     .then(() => tgSyncStatus('ok', 'All owners see this copy.'))
+     .catch(err => {
+       tgPending[key] = items;
+       tgSyncStatus('error', 'Kept on this device: ' + err.message);
+     });
+}
+
+// Adopt a snapshot coming from another owner's device.
+function tgAdopt(key, items) {
+  if (key === 'blocks') {
+    blocksCache = items;
+    localStorage.setItem('tg_blocks', JSON.stringify(items));
+    if (document.getElementById('block-list')) { renderBlocks(); renderCalendar(); }
+  } else {
+    projectsCache = items;
+    localStorage.setItem('tg_projects', JSON.stringify(items));
+    if (document.getElementById('projects-list')) renderProjects();
+  }
+}
+
+(function initCloudSync() {
+  const enabled = typeof TG_FIREBASE_ENABLED !== 'undefined' && TG_FIREBASE_ENABLED
+                  && typeof firebase !== 'undefined';
+  if (!enabled) { tgSyncStatus('local', 'Firebase is not configured.'); return; }
+
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(TG_FIREBASE_CONFIG);
+  } catch (e) {
+    tgSyncStatus('local', 'Firebase init failed: ' + e.message);
+    return;
+  }
+
+  // Owner records require an authenticated session (see firestore.rules).
+  firebase.auth().signInAnonymously().catch(err => {
+    tgSyncStatus('local',
+      'Cloud sync is off: anonymous sign-in is not enabled on the Firebase project. ' +
+      'Everything still saves on this device. (' + err.code + ')');
+  });
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) return;
+    const db = firebase.firestore();
+    TG_REFS.blocks   = db.collection(TG_BLOCKS_PATH.collection).doc(TG_BLOCKS_PATH.doc);
+    TG_REFS.projects = db.collection(TG_PROJECTS_PATH.collection).doc(TG_PROJECTS_PATH.doc);
+
+    [['blocks', TG_REFS.blocks], ['projects', TG_REFS.projects]].forEach(([key, ref]) => {
+      ref.onSnapshot(snap => {
+        if (snap.exists && Array.isArray(snap.data().items)) tgAdopt(key, snap.data().items);
+        tgSyncStatus('ok', 'All owners see this copy.');
+      }, err => tgSyncStatus('error', err.message));
+    });
+
+    // Anything written while offline goes up now.
+    Object.keys(tgPending).forEach(k => { const d = tgPending[k]; delete tgPending[k]; tgPush(k, d); });
+    tgSyncStatus('ok', 'All owners see this copy.');
+  });
+})();
+
 // ── BLOCKS ────────────────────────────────────────────────────
-function getSavedBlocks(){return JSON.parse(localStorage.getItem('tg_blocks')||'[]');}
-function saveBlocks(a){localStorage.setItem('tg_blocks',JSON.stringify(a));}
+function getSavedBlocks(){return blocksCache;}
+function saveBlocks(a){blocksCache=a;localStorage.setItem('tg_blocks',JSON.stringify(a));tgPush('blocks',a);}
 function addBlock(){
   const from=document.getElementById('block-from').value, to=document.getElementById('block-to').value;
   const label=document.getElementById('block-label').value.trim()||'Owner Block';
@@ -1507,8 +1710,8 @@ function renderBlocks(){
 // ── PROJECTS ──────────────────────────────────────────────────
 const CAT  ={maintenance:'🔧 Maintenance',improvement:'✨ Improvement',repair:'🩹 Repair',cleaning:'🧹 Cleaning'};
 const PRIO ={high:'🔴 High',medium:'🟡 Medium',low:'🟢 Low'};
-function getProjects(){return JSON.parse(localStorage.getItem('tg_projects')||'[]');}
-function saveProjects(p){localStorage.setItem('tg_projects',JSON.stringify(p));}
+function getProjects(){return projectsCache;}
+function saveProjects(p){projectsCache=p;localStorage.setItem('tg_projects',JSON.stringify(p));tgPush('projects',p);}
 function addProject(){
   const t=document.getElementById('proj-title').value.trim(); if(!t)return;
   const p=getProjects();
@@ -1702,10 +1905,12 @@ async function publishDeck() {
     status.textContent = '✦ Published! Guest booster updated live.';
   } catch(e) {
     status.className = 'publish-status err';
-    status.textContent = '✕ Error: ' + e.message;
+    status.textContent = e.code === 'permission-denied'
+      ? '✕ Saved on this device — publishing needs anonymous sign-in enabled on the Firebase project.'
+      : '✕ Error: ' + e.message;
   }
   btn.disabled = false;
-  setTimeout(() => { status.textContent = ''; status.className = 'publish-status'; }, 5000);
+  setTimeout(() => { status.textContent = ''; status.className = 'publish-status'; }, 6000);
 }
 
 // ── Card edit modal ───────────────────────────────────────

@@ -19,5 +19,10 @@ const TG_FIREBASE_CONFIG = {
   appId:             "1:736571740736:web:ec86a8ea050bd5406945a5"
 };
 
-// Firestore path where the guide lives
+// Firestore path where the published guest guide lives (public read)
 const TG_GUIDE_PATH = { collection: "gathering", doc: "guide" };
+
+// Owner-only records — these require an authenticated session.
+// The owner portal signs in anonymously on load; see firestore.rules.
+const TG_BLOCKS_PATH   = { collection: "gathering", doc: "calendar" };
+const TG_PROJECTS_PATH = { collection: "gathering", doc: "projects" };

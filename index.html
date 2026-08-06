@@ -101,7 +101,51 @@
       padding:.4rem 1.1rem; transition:var(--ease)!important;
     }
     .nav-links .cta-nav:hover { background:var(--sunset); color:#fff!important; border-color:var(--sunset); }
-    @media(max-width:650px){ .nav-links { display:none; } }
+    /* ── Hamburger + mobile drawer ───────────────────────────── */
+    .nav-burger {
+      display:none; flex-direction:column; gap:5px; background:none; border:0;
+      padding:10px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    }
+    .nav-burger span {
+      display:block; width:24px; height:2px; border-radius:2px;
+      background:var(--text-light); transition:transform .3s ease, opacity .2s ease;
+    }
+    body.menu-open .nav-burger span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    body.menu-open .nav-burger span:nth-child(2){ opacity:0; }
+    body.menu-open .nav-burger span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+    .mobile-menu {
+      position:fixed; inset:0; z-index:190; display:none;
+      background:rgba(6,16,28,.75); backdrop-filter:blur(6px);
+    }
+    body.menu-open .mobile-menu { display:block; }
+    .mm-panel {
+      position:absolute; top:0; right:0; width:min(78vw,320px); height:100%;
+      background:rgba(13,33,55,.98); box-shadow:-8px 0 40px rgba(0,0,0,.5);
+      padding:5.5rem 1.6rem 2rem; display:flex; flex-direction:column; gap:.35rem;
+      animation:mm-slide .28s cubic-bezier(.23,1,.32,1);
+      overflow-y:auto; -webkit-overflow-scrolling:touch;
+    }
+    @keyframes mm-slide { from{transform:translateX(100%)} to{transform:translateX(0)} }
+    .mm-panel a {
+      color:var(--text-light); text-decoration:none; font-size:1rem; letter-spacing:.04em;
+      padding:.95rem .6rem; border-radius:10px; border-bottom:1px solid rgba(255,255,255,.07);
+      min-height:48px; display:flex; align-items:center;
+    }
+    .mm-panel a:active { background:rgba(255,255,255,.07); }
+    .mm-panel .mm-cta {
+      margin-top:1rem; justify-content:center; border:1.5px solid rgba(224,120,64,.6);
+      color:var(--sunset); font-weight:600; border-radius:30px; border-bottom-width:1.5px;
+    }
+    .mm-panel .mm-owner {
+      margin-top:auto; font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.12em;
+      text-transform:uppercase; color:rgba(249,244,236,.6); border-bottom:0;
+    }
+
+    @media(max-width:650px){
+      .nav-links { display:none; }
+      .nav-burger { display:flex; }
+    }
     .owner-nav {
       font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.12em;
       opacity:.65; transition:opacity .3s !important; text-decoration:none;
@@ -629,6 +673,65 @@
     .card-detail-address { margin-top:1.2rem; text-align:center; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.9rem; color:rgba(249,244,236,.45); }
     .card-detail-tags { display:flex; flex-wrap:wrap; gap:.35rem; justify-content:center; margin-top:.8rem; }
     .card-detail-tag { padding:.2rem .6rem; border-radius:12px; font-size:.65rem; background:rgba(212,163,64,.1); border:1px solid rgba(212,163,64,.22); color:rgba(212,163,64,.7); font-family:'Cinzel',serif; letter-spacing:.07em; }
+
+    /* ══════════════════════════════════════════════════════════
+       PHONE / TABLET
+       ══════════════════════════════════════════════════════════ */
+
+    /* Never let a wide child (card row, tile, grid) scroll the page sideways. */
+    html, body { max-width:100%; overflow-x:hidden; }
+    img, video { max-width:100%; }
+
+    @media(max-width:900px){
+      .wrap { padding:4.5rem 1.5rem; }
+      .loc-grid { gap:1.5rem; }
+    }
+
+    @media(max-width:650px){
+      nav { padding:.9rem 1.1rem; }
+      nav.scrolled { padding:.7rem 1.1rem; }
+      .nav-brand-text { font-size:1.2rem; }
+
+      .wrap { padding:3.5rem 1.1rem; }
+      .sh { margin-bottom:2.2rem; }
+      .sh p { font-size:1.05rem; }
+
+      .hero { min-height:88vh; }
+      .hero-cta { flex-direction:column; align-items:stretch; gap:.7rem; padding:0 1.5rem; }
+      .hero-cta a { width:100%; text-align:center; }
+
+      /* Flip tiles: taller target, and tap (not hover) drives the flip */
+      .tile-wrap { height:270px; }
+      .tile-wrap:hover .tile { transform:none; }
+      .tile-wrap.flipped .tile { transform:rotateY(180deg); }
+
+      .suite-grid { grid-template-columns:1fr; gap:1.2rem; }
+      .cta-band p { font-size:1.1rem; }
+
+      /* Guide: booster pack + revealed cards */
+      .guide-cards-grid { gap:.85rem; }
+      .guide-filter-bar { gap:.4rem; margin-bottom:1.4rem; }
+      .gf-btn, .reopen-btn { padding:.5rem 1rem; font-size:.72rem; min-height:38px; }
+      .booster-pack-outer { transform:scale(.88); }
+      .card-detail-inner { width:88%; }
+      .card-detail-close { top:-10px; right:-10px; width:34px; height:34px; }
+
+      /* Reveal overlay has to fit a phone screen, buttons included */
+      .reveal-card-wrap { transform:scale(.86); }
+      .done-title { letter-spacing:.08em; }
+    }
+
+    @media(max-width:400px){
+      .wrap { padding:3rem .9rem; }
+      .booster-pack-outer { transform:scale(.78); }
+      .reveal-card-wrap { transform:scale(.76); }
+    }
+
+    /* Coarse pointers get no hover-flip — it fires on the tap that scrolls past. */
+    @media(hover:none){
+      .tile-wrap:hover .tile { transform:none; }
+      .tile-wrap.flipped .tile { transform:rotateY(180deg); }
+    }
   </style>
 </head>
 <body>
@@ -644,7 +747,23 @@
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="cta-nav">Book Now</a>
     <a href="owner.html" class="owner-nav">Owner Access</a>
   </div>
+  <button class="nav-burger" id="nav-burger" onclick="toggleMenu()"
+          aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- MOBILE MENU ─────────────────────────────────────────────── -->
+<div class="mobile-menu" id="mobile-menu" onclick="if(event.target===this)toggleMenu()">
+  <div class="mm-panel">
+    <a href="#experiences" onclick="toggleMenu()">Experiences</a>
+    <a href="#suites"      onclick="toggleMenu()">Suites</a>
+    <a href="#location"    onclick="toggleMenu()">Location</a>
+    <a href="#guide" onclick="toggleMenu();openGuideFromNav(event)">Garopaba Guide</a>
+    <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="mm-cta">Book Now</a>
+    <a href="owner.html" class="mm-owner">Owner Access</a>
+  </div>
+</div>
 
 <!-- HERO -->
 <section class="hero" id="home">
@@ -1313,6 +1432,20 @@
   // Sticky nav
   const nav = document.getElementById('nav');
   addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 60));
+
+  // Mobile menu — body scroll is locked while the drawer is open
+  function toggleMenu() {
+    const open = document.body.classList.toggle('menu-open');
+    document.body.style.overflow = open ? 'hidden' : '';
+    document.getElementById('nav-burger').setAttribute('aria-expanded', open);
+  }
+  function closeMenu() {
+    if (!document.body.classList.contains('menu-open')) return;
+    toggleMenu();
+  }
+  // Escape closes it; so does growing past the mobile breakpoint mid-session
+  addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+  matchMedia('(min-width:651px)').addEventListener('change', e => { if (e.matches) closeMenu(); });
 
   // Scroll-reveal
   const obs = new IntersectionObserver(entries => {
