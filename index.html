@@ -268,6 +268,10 @@
     @media(max-width:540px){ .tile-grid { grid-template-columns:1fr; } }
 
     .tile-wrap { perspective:1200px; height:310px; cursor:pointer; }
+    /* Must come after the base height above, or it loses on source order.
+       Two columns are narrower than the desktop card, so the backs wrap to
+       more lines and need a taller tile to stay uncropped. */
+    @media(max-width:880px){ .tile-wrap { height:335px; } }
     .tile {
       width:100%; height:100%; position:relative;
       transform-style:preserve-3d;
@@ -675,6 +679,78 @@
     .card-detail-tags { display:flex; flex-wrap:wrap; gap:.35rem; justify-content:center; margin-top:.8rem; }
     .card-detail-tag { padding:.2rem .6rem; border-radius:12px; font-size:.65rem; background:rgba(212,163,64,.1); border:1px solid rgba(212,163,64,.22); color:rgba(212,163,64,.7); font-family:'Cinzel',serif; letter-spacing:.07em; }
 
+    /* ══ TILE-BACK ACTIONS ═══════════════════════════════════════ */
+    .tb-actions {
+      position:absolute; top:.6rem; right:.6rem; z-index:3;
+      display:flex; align-items:center; gap:.4rem;
+    }
+    .tb-btn {
+      display:inline-flex; align-items:center; gap:.35rem;
+      padding:.34rem .6rem; border-radius:16px; cursor:pointer;
+      background:rgba(0,0,0,.42); border:1px solid rgba(212,163,64,.35);
+      color:rgba(249,244,236,.82); font-family:'Cinzel',serif;
+      font-size:.6rem; letter-spacing:.08em; line-height:1;
+      backdrop-filter:blur(5px); transition:all .25s;
+    }
+    .tb-btn:hover { background:rgba(212,163,64,.85); color:#0B0704; border-color:transparent; }
+    .tb-flip { padding:.34rem .5rem; font-size:.72rem; }
+
+    /* ══ GALLERY (photo lightbox) ════════════════════════════════ */
+    .gal-overlay {
+      position:fixed; inset:0; z-index:9700; display:none;
+      background:#05070B; flex-direction:column; align-items:center;
+      justify-content:center; padding:1.2rem;
+    }
+    .gal-overlay.show { display:flex; animation:fade-in .25s ease; }
+    .gal-title {
+      font-family:'Cinzel',serif; font-size:.66rem; letter-spacing:.24em;
+      text-transform:uppercase; color:rgba(212,163,64,.65); margin-bottom:.7rem;
+    }
+    .gal-stage {
+      position:relative; display:flex; align-items:center; justify-content:center;
+      width:min(1180px,100%); height:min(70vh,760px);
+    }
+    .gal-stage img {
+      max-width:100%; max-height:100%; border-radius:8px; display:block;
+      box-shadow:0 0 0 1px rgba(212,163,64,.2), 0 26px 80px rgba(0,0,0,.85);
+      animation:gal-in .3s ease;
+    }
+    @keyframes gal-in { from{opacity:0;transform:scale(.985)} to{opacity:1;transform:scale(1)} }
+    .gal-nav {
+      position:absolute; top:50%; transform:translateY(-50%);
+      width:46px; height:46px; border-radius:50%; cursor:pointer; z-index:2;
+      background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.16);
+      color:#fff; font-size:1.2rem; line-height:1;
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter:blur(6px); transition:all .25s;
+    }
+    .gal-nav:hover { background:rgba(212,163,64,.9); color:#0B0704; border-color:transparent; }
+    .gal-prev { left:-10px; } .gal-next { right:-10px; }
+    .gal-close {
+      position:absolute; top:1rem; right:1.25rem; z-index:3;
+      width:42px; height:42px; border-radius:50%; cursor:pointer;
+      background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.18);
+      color:#fff; font-size:1.15rem; line-height:1;
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter:blur(6px); transition:all .3s;
+    }
+    .gal-close:hover { background:rgba(212,163,64,.85); color:#060402; border-color:transparent; }
+    .gal-strip {
+      display:flex; gap:.5rem; margin-top:1rem; max-width:min(1180px,100%);
+      overflow-x:auto; padding:.25rem; scrollbar-width:none;
+    }
+    .gal-strip::-webkit-scrollbar { display:none; }
+    .gal-thumb {
+      width:78px; height:52px; flex-shrink:0; border-radius:5px; cursor:pointer;
+      object-fit:cover; opacity:.42; border:1.5px solid transparent; transition:all .25s;
+    }
+    .gal-thumb:hover  { opacity:.8; }
+    .gal-thumb.active { opacity:1; border-color:var(--gold); }
+    .gal-count {
+      font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.16em;
+      color:rgba(249,244,236,.4); margin-top:.7rem;
+    }
+
     /* ══ CINEMA (video tour modal) ═══════════════════════════════ */
     .cinema-overlay {
       position:fixed; inset:0; z-index:9600; display:none;
@@ -764,8 +840,9 @@
       .hero-cta a, .hero-cta button { width:100%; text-align:center; justify-content:center; }
       .scroll-line { margin-top:1.4rem; }   /* three stacked CTAs crowd it otherwise */
 
-      /* Flip tiles: taller target, and tap (not hover) drives the flip */
-      .tile-wrap { height:270px; }
+      /* Flip tiles: taller target, and tap (not hover) drives the flip.
+         Height must clear the longest card back — narrow cards wrap more. */
+      .tile-wrap { height:345px; }
       .tile-wrap:hover .tile { transform:none; }
       .tile-wrap.flipped .tile { transform:rotateY(180deg); }
 
@@ -783,6 +860,19 @@
       /* Reveal overlay has to fit a phone screen, buttons included */
       .reveal-card-wrap { transform:scale(.86); }
       .done-title { letter-spacing:.08em; }
+
+      /* Gallery: arrows inside the frame, smaller thumbnails */
+      .gal-overlay { padding:.6rem; }
+      .gal-stage { height:min(62vh,560px); }
+      .gal-prev { left:2px; } .gal-next { right:2px; }
+      .gal-nav { width:40px; height:40px; }
+      .gal-close { top:.5rem; right:.6rem; width:38px; height:38px; }
+      .gal-thumb { width:60px; height:42px; }
+      .gal-title { font-size:.58rem; letter-spacing:.18em; }
+
+      /* Card-back buttons need real tap targets */
+      .tb-btn { padding:.45rem .7rem; font-size:.62rem; min-height:34px; }
+      .tb-flip { padding:.45rem .6rem; }
 
       /* Cinema: edge-to-edge stage, tabs stacked under it */
       .cinema-overlay { padding:.6rem; justify-content:center; }
@@ -1004,6 +1094,19 @@
 </div>
 
 <!-- ══ GAROPABA GUIDE ══════════════════════════════════════ -->
+<!-- GALLERY — per-space photo lightbox ─────────────────────── -->
+<div class="gal-overlay" id="gallery" onclick="if(event.target===this)closeGallery()">
+  <button class="gal-close" onclick="closeGallery()" aria-label="Close">✕</button>
+  <p class="gal-title" id="gal-title"></p>
+  <div class="gal-stage">
+    <button class="gal-nav gal-prev" onclick="galStep(-1)" aria-label="Previous photo">‹</button>
+    <img id="gal-img" alt="">
+    <button class="gal-nav gal-next" onclick="galStep(1)" aria-label="Next photo">›</button>
+  </div>
+  <div class="gal-strip" id="gal-strip"></div>
+  <p class="gal-count" id="gal-count"></p>
+</div>
+
 <!-- CINEMA — video tour modal ──────────────────────────────── -->
 <div class="cinema-overlay" id="cinema" onclick="if(event.target===this)closeCinema()">
   <button class="cinema-close" onclick="closeCinema()" aria-label="Close">✕</button>
@@ -1039,9 +1142,13 @@
             <div class="fc"><span class="ico">🛋️</span><div class="name">Living Room</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('living')" aria-label="See more photos of Living Room">🖼 <span>6 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🛋️</div>
             <div class="b-title">Living Room · The Ranch</div>
-            <p class="b-desc">The heart of the house — a soaring pavilion under exposed timber trusses, anchored by the stone fireplace wall, 75″ Frame TV, Sonos sound and a curated wine bar. Where the whole gathering gathers.</p>
+            <p class="b-desc">A soaring pavilion under exposed timber trusses, anchored by the stone fireplace wall, 75″ Frame TV, Sonos sound and a curated wine bar. Where the whole gathering gathers.</p>
             <span class="b-tag">75″ Frame TV · Sonos · Wine Bar · Fireplace</span>
           </div>
         </div>
@@ -1054,6 +1161,10 @@
             <div class="fc"><span class="ico">🍽️</span><div class="name">The Kitchen</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('kitchen')" aria-label="See more photos of The Kitchen">🖼 <span>5 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🍽️</div>
             <div class="b-title">The Kitchen · Chef's Kitchen</div>
             <p class="b-desc">A full chef's kitchen with a stone island, gas cooktop and DeBacco appliances — wrapped in glass so whoever is cooking still gets the best view in the house.</p>
@@ -1069,6 +1180,10 @@
             <div class="fc"><span class="ico">🕯️</span><div class="name">Dining Room</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('dining')" aria-label="See more photos of Dining Room">🖼 <span>6 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🕯️</div>
             <div class="b-title">Dining Room · Sala de Jantar</div>
             <p class="b-desc">A ten-seat table under hand-woven pendant lights, framed by a warm timber wall. Built for long lunches that turn into longer dinners.</p>
@@ -1084,6 +1199,10 @@
             <div class="fc"><span class="ico">🌅</span><div class="name">The Deck</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('deck')" aria-label="See more photos of The Deck">🖼 <span>5 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🌅</div>
             <div class="b-title">The Deck · Sunset Deck</div>
             <p class="b-desc">Hardwood decking runs the length of the glass façade, edged in frameless glass balustrades. The best happy-hour seat in Garopaba — every single evening.</p>
@@ -1099,6 +1218,10 @@
             <div class="fc"><span class="ico">🏊</span><div class="name">The Pool</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('pool')" aria-label="See more photos of The Pool">🖼 <span>6 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🏊</div>
             <div class="b-title">The Pool · Infinity Pool</div>
             <p class="b-desc">A heated infinity pool set into the hillside deck, spilling toward the Atlantic Forest and the bay beyond. Sun all afternoon, silence all morning.</p>
@@ -1114,10 +1237,33 @@
             <div class="fc"><span class="ico">🌊</span><div class="name">The View</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('view')" aria-label="See more photos of The View">🖼 <span>4 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🌊</div>
             <div class="b-title">The View · Garopaba Bay</div>
-            <p class="b-desc">From the top of Morro da Silveira the whole bay opens up — town, coastline and open ocean in one uninterrupted sweep. On clear evenings you can watch the lights come on across the water.</p>
+            <p class="b-desc">From the top of Morro da Silveira the whole bay opens up — town, coastline and open ocean in one sweep. On clear evenings the lights come on across the water.</p>
             <span class="b-tag">Panoramic Bay · Sunrise & Sunset · Whale Season</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The Stairwell -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Stairwell">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/stairwell.jpg')">
+            <div class="fc"><span class="ico">🪜</span><div class="name">The Stairwell</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('stairwell')" aria-label="See more photos of The Stairwell">🖼 <span>4 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
+            <div class="b-ico">🪜</div>
+            <div class="b-title">The Stairwell · Fish Tank</div>
+            <p class="b-desc">A floating timber stair rises through a full-height glass shaft. Bookshelves line one side, the hillside fills the other, and the light moves across it all day.</p>
+            <span class="b-tag">Floating Timber Stair · Glass Shaft · Built-in Shelving</span>
           </div>
         </div>
       </div>
@@ -1129,10 +1275,14 @@
             <div class="fc"><span class="ico">📚</span><div class="name">The Library</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('library')" aria-label="See more photos of The Library">🖼 <span>2 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">📚</div>
             <div class="b-title">The Library · Reading Nook</div>
-            <p class="b-desc">Tucked beneath the floating timber staircase — books, board games and deep seating against a wall of glass. A full afternoon can disappear here.</p>
-            <span class="b-tag">Reading Nook · Board Games · Floating Stair</span>
+            <p class="b-desc">Tucked beneath the floating stair — books, board games and deep seating against a wall of glass. A full afternoon can disappear here.</p>
+            <span class="b-tag">Reading Nook · Board Games · Under the Stair</span>
           </div>
         </div>
       </div>
@@ -1144,6 +1294,10 @@
             <div class="fc"><span class="ico">🚪</span><div class="name">The Arrival</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('arrival')" aria-label="See more photos of The Arrival">🖼 <span>2 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🚪</div>
             <div class="b-title">The Arrival · Entrada Principal</div>
             <p class="b-desc">A stepped stone approach rises to the main entrance under a broad timber canopy. The moment the hill opens up and the house reveals itself.</p>
@@ -1159,6 +1313,10 @@
             <div class="fc"><span class="ico">🌿</span><div class="name">The Lawn</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('lawn')" aria-label="See more photos of The Lawn">🖼 <span>2 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🌿</div>
             <div class="b-title">The Lawn · Open Grounds</div>
             <p class="b-desc">Level lawn wrapping the pavilion — room for football, yoga at sunrise, or simply lying in the grass while the hill does the rest.</p>
@@ -1174,6 +1332,9 @@
             <div class="fc"><span class="ico">🧺</span><div class="name">Laundry</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🧺</div>
             <div class="b-title">Laundry · Utility Room</div>
             <p class="b-desc">A full laundry with washer, dryer and drying rack — the unglamorous detail that makes a two-week stay feel effortless.</p>
@@ -1189,6 +1350,10 @@
             <div class="fc"><span class="ico">🌾</span><div class="name">Suite Planície</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('suite_planicie')" aria-label="See more photos of Suite Planície">🖼 <span>5 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🌾</div>
             <div class="b-title">Suite Planície · Plains</div>
             <p class="b-desc">Warm neutral tones behind a slatted timber screen, with a private glass door opening to the valley. The quietest corner of the house.</p>
@@ -1204,6 +1369,10 @@
             <div class="fc"><span class="ico">🏝️</span><div class="name">Suite Ilha</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('suite_ilha')" aria-label="See more photos of Suite Ilha">🖼 <span>4 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🏝️</div>
             <div class="b-title">Suite Ilha · Island</div>
             <p class="b-desc">Deep ocean-blue accents and a full glass wall framing the hillside and the water beyond. Wake up to the bay.</p>
@@ -1219,6 +1388,10 @@
             <div class="fc"><span class="ico">🌴</span><div class="name">Suite Floresta</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('suite_floresta')" aria-label="See more photos of Suite Floresta">🖼 <span>4 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🌴</div>
             <div class="b-title">Suite Floresta · Forest</div>
             <p class="b-desc">Lush forest-green tones and flex bunk beds, with glass opening to the Atlantic Forest on the hillside. Grounding, natural and perfectly calm.</p>
@@ -1234,6 +1407,10 @@
             <div class="fc"><span class="ico">🌄</span><div class="name">Suite Montanha</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openGallery('suite_montanha')" aria-label="See more photos of Suite Montanha">🖼 <span>4 photos</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🌄</div>
             <div class="b-title">Suite Montanha · Mountain</div>
             <p class="b-desc">Bold red accents, bunk-style flex beds and a full glass door onto the Garopaba panorama — ocean and city stretching beyond the deck.</p>
@@ -1598,6 +1775,68 @@
   const nav = document.getElementById('nav');
   addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 60));
 
+  // ── Gallery: every photo we have of a given space ─────────
+  const HOUSE_GALLERY = {
+    living: { title:'Living Room', shots:['assets/house/gallery/living/01.jpg','assets/house/gallery/living/02.jpg','assets/house/gallery/living/03.jpg','assets/house/gallery/living/04.jpg','assets/house/gallery/living/05.jpg','assets/house/gallery/living/06.jpg'] },
+    kitchen: { title:'The Kitchen', shots:['assets/house/gallery/kitchen/01.jpg','assets/house/gallery/kitchen/02.jpg','assets/house/gallery/kitchen/03.jpg','assets/house/gallery/kitchen/04.jpg','assets/house/gallery/kitchen/05.jpg'] },
+    dining: { title:'Dining Room', shots:['assets/house/gallery/dining/01.jpg','assets/house/gallery/dining/02.jpg','assets/house/gallery/dining/03.jpg','assets/house/gallery/dining/04.jpg','assets/house/gallery/dining/05.jpg','assets/house/gallery/dining/06.jpg'] },
+    deck: { title:'The Deck', shots:['assets/house/gallery/deck/01.jpg','assets/house/gallery/deck/02.jpg','assets/house/gallery/deck/03.jpg','assets/house/gallery/deck/04.jpg','assets/house/gallery/deck/05.jpg'] },
+    pool: { title:'The Pool', shots:['assets/house/gallery/pool/01.jpg','assets/house/gallery/pool/02.jpg','assets/house/gallery/pool/03.jpg','assets/house/gallery/pool/04.jpg','assets/house/gallery/pool/05.jpg','assets/house/gallery/pool/06.jpg'] },
+    view: { title:'The View · Garopaba Bay', shots:['assets/house/gallery/view/01.jpg','assets/house/gallery/view/02.jpg','assets/house/gallery/view/03.jpg','assets/house/gallery/view/04.jpg'] },
+    stairwell: { title:'The Stairwell · Fish Tank', shots:['assets/house/gallery/stairwell/01.jpg','assets/house/gallery/stairwell/02.jpg','assets/house/gallery/stairwell/03.jpg','assets/house/gallery/stairwell/04.jpg'] },
+    library: { title:'The Library', shots:['assets/house/gallery/library/01.jpg','assets/house/gallery/library/02.jpg'] },
+    arrival: { title:'The Arrival', shots:['assets/house/gallery/arrival/01.jpg','assets/house/gallery/arrival/02.jpg'] },
+    lawn: { title:'The Lawn', shots:['assets/house/gallery/lawn/01.jpg','assets/house/gallery/lawn/02.jpg'] },
+    suite_planicie: { title:'Suite Planície', shots:['assets/house/gallery/suite_planicie/01.jpg','assets/house/gallery/suite_planicie/02.jpg','assets/house/gallery/suite_planicie/03.jpg','assets/house/gallery/suite_planicie/04.jpg','assets/house/gallery/suite_planicie/05.jpg'] },
+    suite_ilha: { title:'Suite Ilha', shots:['assets/house/gallery/suite_ilha/01.jpg','assets/house/gallery/suite_ilha/02.jpg','assets/house/gallery/suite_ilha/03.jpg','assets/house/gallery/suite_ilha/04.jpg'] },
+    suite_floresta: { title:'Suite Floresta', shots:['assets/house/gallery/suite_floresta/01.jpg','assets/house/gallery/suite_floresta/02.jpg','assets/house/gallery/suite_floresta/03.jpg','assets/house/gallery/suite_floresta/04.jpg'] },
+    suite_montanha: { title:'Suite Montanha', shots:['assets/house/gallery/suite_montanha/01.jpg','assets/house/gallery/suite_montanha/02.jpg','assets/house/gallery/suite_montanha/03.jpg','assets/house/gallery/suite_montanha/04.jpg'] },
+  };
+  let galSlug = null, galIndex = 0;
+
+  function openGallery(slug) {
+    const g = HOUSE_GALLERY[slug]; if (!g) return;
+    galSlug = slug; galIndex = 0;
+    document.getElementById('gal-title').textContent = g.title;
+    const strip = document.getElementById('gal-strip');
+    strip.innerHTML = g.shots.map((s,i) =>
+      `<img class="gal-thumb" src="${s}" loading="lazy" alt="" onclick="galGo(${i})">`).join('');
+    galGo(0);
+    document.getElementById('gallery').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function galGo(i) {
+    const g = HOUSE_GALLERY[galSlug]; if (!g) return;
+    galIndex = (i + g.shots.length) % g.shots.length;
+    document.getElementById('gal-img').src = g.shots[galIndex];
+    document.getElementById('gal-count').textContent = (galIndex+1) + ' / ' + g.shots.length;
+    const thumbs = document.querySelectorAll('#gal-strip .gal-thumb');
+    thumbs.forEach((t,n) => t.classList.toggle('active', n === galIndex));
+    thumbs[galIndex]?.scrollIntoView({block:'nearest', inline:'center'});
+    // Only one photo? The arrows have nothing to do.
+    const one = g.shots.length < 2;
+    document.querySelectorAll('.gal-nav').forEach(b => b.style.display = one ? 'none' : '');
+  }
+
+  function galStep(d) { galGo(galIndex + d); }
+
+  function closeGallery() {
+    const el = document.getElementById('gallery');
+    if (!el.classList.contains('show')) return;
+    el.classList.remove('show');
+    document.getElementById('gal-img').removeAttribute('src');
+    galSlug = null;
+    document.body.style.overflow = '';
+  }
+
+  // Arrow keys page through the open gallery
+  addEventListener('keydown', e => {
+    if (!document.getElementById('gallery').classList.contains('show')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); galStep(1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); galStep(-1); }
+  });
+
   // Brand mark returns to the top from anywhere on the page
   function goHome(e) {
     e.preventDefault();
@@ -1679,7 +1918,7 @@
     toggleMenu();
   }
   // Escape closes it; so does growing past the mobile breakpoint mid-session
-  addEventListener('keydown', e => { if (e.key === 'Escape') { closeCinema(); closeMenu(); } });
+  addEventListener('keydown', e => { if (e.key === 'Escape') { closeGallery(); closeCinema(); closeMenu(); } });
   matchMedia('(min-width:651px)').addEventListener('change', e => { if (e.matches) closeMenu(); });
 
   // Scroll-reveal
