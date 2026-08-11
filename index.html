@@ -682,9 +682,15 @@
       flex-direction:column; padding:1.5rem;
     }
     .cinema-overlay.show { display:flex; animation:fade-in .25s ease; }
+    /* The stage takes the shape of whatever is playing — the drone film is
+       landscape, the house tour is shot vertical. --cin-ar is the ratio and
+       --cin-arn the same value as a number, so the width can also be capped
+       by the available height and a portrait film never overflows. */
     .cinema-stage {
-      position:relative; width:min(1280px,100%);
-      aspect-ratio:16/9; background:#000; border-radius:10px; overflow:hidden;
+      position:relative;
+      --cin-ar:16/9; --cin-arn:1.7778;
+      width:min(1280px, 100%, calc(74vh * var(--cin-arn)));
+      aspect-ratio:var(--cin-ar); background:#000; border-radius:10px; overflow:hidden;
       box-shadow:0 0 0 1px rgba(212,163,64,.22), 0 30px 90px rgba(0,0,0,.9),
                  0 0 140px rgba(212,163,64,.09);
     }
@@ -834,8 +840,7 @@
 <!-- HERO -->
 <section class="hero" id="home">
   <video class="hero-video" autoplay muted loop playsinline>
-    <source src="assets/birds-eye.mov" type="video/mp4">
-    <source src="assets/birds-eye.mov" type="video/quicktime">
+    <source src="assets/birds-eye.mp4" type="video/mp4">
   </video>
   <button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Toggle ambient sound">🔇</button>
   <img src="assets/logo-circle.png" alt="The Gathering Silveira" class="hero-logo">
@@ -1605,7 +1610,7 @@
   const CINEMA = {
     tour:  { src:'assets/house-tour.mp4', title:'The House Tour',
              missing:'The house tour film is being finalised — check back shortly.' },
-    drone: { src:'assets/birds-eye.mov',  title:'Drone View · Morro da Silveira',
+    drone: { src:'assets/birds-eye.mp4',  title:'Drone View · Morro da Silveira',
              missing:'The drone film is being finalised — check back shortly.' },
   };
 
@@ -1621,6 +1626,9 @@
     document.getElementById('cin-tab-drone').classList.toggle('active', which === 'drone');
 
     stage.classList.remove('ready', 'errored');
+    // Drop the previous film's shape so switching doesn't flash the wrong one
+    stage.style.removeProperty('--cin-ar');
+    stage.style.removeProperty('--cin-arn');
     video.src = cfg.src;
     video.currentTime = 0;
     video.load();
@@ -1648,6 +1656,13 @@
   (function wireCinema(){
     const stage = document.getElementById('cinema-stage');
     const video = document.getElementById('cinema-video');
+    // Reshape the stage to the film's own aspect ratio once it is known.
+    video.addEventListener('loadedmetadata', () => {
+      const w = video.videoWidth, h = video.videoHeight;
+      if (!w || !h) return;
+      stage.style.setProperty('--cin-ar', w + '/' + h);
+      stage.style.setProperty('--cin-arn', (w / h).toFixed(4));
+    });
     video.addEventListener('loadeddata', () => stage.classList.add('ready'));
     // A missing or invalid file lands here — show the placeholder, not a dead player.
     video.addEventListener('error', () => { if (video.getAttribute('src')) stage.classList.add('errored'); });
