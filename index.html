@@ -597,6 +597,12 @@
     .reopen-btn { display:inline-flex; align-items:center; gap:.5rem; padding:.42rem 1.1rem; border-radius:20px; background:rgba(212,163,64,.06); border:1px solid rgba(212,163,64,.2); color:rgba(212,163,64,.55); font-size:.7rem; font-family:'Cinzel',serif; letter-spacing:.12em; cursor:pointer; transition:all .3s; }
     .reopen-btn:hover { background:rgba(212,163,64,.12); color:rgba(212,163,64,.85); }
     .guide-cards-grid { display:flex; flex-wrap:wrap; gap:1.2rem; justify-content:center; }
+    /* Only shown once the grid becomes a swipe rail on phones */
+    .guide-swipe-hint {
+      display:none; text-align:center; margin:-.6rem 0 .9rem;
+      font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.18em;
+      text-transform:uppercase; color:rgba(212,163,64,.45);
+    }
 
     /* MTG Guide Card */
     .guide-card { width:186px; flex-shrink:0; cursor:pointer; transform-origin:center 95%; transition:transform .45s cubic-bezier(.23,1,.32,1),filter .45s ease; animation:gcard-in .6s cubic-bezier(.23,1,.32,1) both; }
@@ -835,10 +841,28 @@
       .sh { margin-bottom:2.2rem; }
       .sh p { font-size:1.05rem; }
 
-      .hero { min-height:88vh; }
+      /* The absolute scroll-line needed 160px of bottom padding to clear;
+         in flow on mobile it doesn't, so give the hero its height back. */
+      .hero { min-height:88vh; padding:2rem 1.25rem 3rem; }
       .hero-cta { flex-direction:column; align-items:stretch; gap:.7rem; padding:0 1.5rem; }
       .hero-cta a, .hero-cta button { width:100%; text-align:center; justify-content:center; }
-      .scroll-line { margin-top:1.4rem; }   /* three stacked CTAs crowd it otherwise */
+
+      /* Was position:absolute;bottom:110px — it landed on top of the third
+         CTA once "Take a Tour" was added. In flow it can never collide. */
+      .scroll-line { position:static; transform:none; margin-top:1.6rem; }
+
+      /* Brand mark would sit on the hero logo; bring it in on scroll instead,
+         where it doubles as the back-to-top control. */
+      .nav-brand-text {
+        opacity:0; pointer-events:none; transform:translateX(-6px);
+        transition:opacity .3s ease, transform .3s ease;
+      }
+      nav.scrolled .nav-brand-text { opacity:1; pointer-events:auto; transform:none; }
+
+      /* Place on its own line, region beneath it */
+      .hero-location { letter-spacing:.2em; line-height:1.9; }
+      .hl-sep { display:none; }
+      .hl-region { display:block; }
 
       /* Flip tiles: taller target, and tap (not hover) drives the flip.
          Height must clear the longest card back — narrow cards wrap more. */
@@ -849,10 +873,36 @@
       .suite-grid { grid-template-columns:1fr; gap:1.2rem; }
       .cta-band p { font-size:1.1rem; }
 
-      /* Guide: booster pack + revealed cards */
-      .guide-cards-grid { gap:.85rem; }
+      /* Amenities: minmax(175px) can't fit twice in 355px, so the grid
+         collapsed to one column — 18 chips became 1174px of scrolling.
+         Tighter chips at 150px give two columns and halve that. */
+      .amen-grid { grid-template-columns:repeat(2,1fr); gap:.55rem; margin-top:1.8rem; }
+      .chip { padding:.6rem .7rem; font-size:.76rem; gap:.45rem; border-radius:9px; }
+      .chip .ci { font-size:1rem; }
+
+      /* Guide: a deck should be swiped, not scrolled past. One card per row
+         made this section ~3 screens tall; a snap rail makes it one. */
+      .guide-cards-grid {
+        flex-wrap:nowrap; overflow-x:auto; justify-content:flex-start;
+        scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+        scrollbar-width:none; gap:.85rem;
+        padding:.25rem 1.1rem 1rem; margin:0 -1.1rem;   /* bleed to the edges */
+        scroll-padding-left:1.1rem;
+      }
+      .guide-cards-grid::-webkit-scrollbar { display:none; }
+      .guide-card { scroll-snap-align:center; }
+      .guide-swipe-hint { display:block; }
       .guide-filter-bar { gap:.4rem; margin-bottom:1.4rem; }
-      .gf-btn, .reopen-btn { padding:.5rem 1rem; font-size:.72rem; min-height:38px; }
+      /* Narrow padding packs more chips per row; height stays tappable. */
+      .gf-btn, .reopen-btn { padding:.42rem .78rem; font-size:.66rem; min-height:40px; letter-spacing:.06em; }
+
+      /* Suite fronts clip by ~9px in Portuguese, which runs longer than English */
+      .suite-tile { height:540px; }
+
+      /* Footer and owner links were 15–18px tall — not a tap target */
+      .foot-links a { display:inline-block; padding:.55rem .4rem; }
+      .owner-link a { display:inline-block; padding:.6rem .5rem; }
+      .nav-brand-text { padding:.35rem 0; }
       .booster-pack-outer { transform:scale(.88); }
       .card-detail-inner { width:88%; }
       .card-detail-close { top:-10px; right:-10px; width:34px; height:34px; }
@@ -871,7 +921,7 @@
       .gal-title { font-size:.58rem; letter-spacing:.18em; }
 
       /* Card-back buttons need real tap targets */
-      .tb-btn { padding:.45rem .7rem; font-size:.62rem; min-height:34px; }
+      .tb-btn { padding:.5rem .75rem; font-size:.62rem; min-height:40px; }
       .tb-flip { padding:.45rem .6rem; }
 
       /* Cinema: edge-to-edge stage, tabs stacked under it */
@@ -942,7 +992,7 @@
   </video>
   <button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Toggle ambient sound">🔇</button>
   <img src="assets/logo-circle.png" alt="The Gathering Silveira" class="hero-logo">
-  <p class="hero-location">Praia da Silveira &nbsp;·&nbsp; Garopaba, SC &nbsp;·&nbsp; Brasil</p>
+  <p class="hero-location"><span class="hl-place">Praia da Silveira</span><span class="hl-sep">&nbsp;·&nbsp;</span><span class="hl-region">Garopaba, SC &nbsp;·&nbsp; Brasil</span></p>
   <p class="hero-tagline">"Where the mountain meets the sea"</p>
   <div class="hero-cta">
     <a href="https://www.airbnb.com/rooms/1608023407293236428" class="btn btn-primary" target="_blank" rel="noopener">Book Your Stay</a>
@@ -1504,6 +1554,7 @@
         </div>
         <button class="reopen-btn" onclick="resetToSealed()">✦ Reseal Booster</button>
       </div>
+      <p class="guide-swipe-hint">← swipe the deck →</p>
       <div class="guide-cards-grid" id="guide-cards-grid"></div>
     </div>
   </div>
@@ -1982,6 +2033,7 @@
     "Guide Unlocked ✦": "Guia Desbloqueado ✦",
     "Your curated Garopaba collection is ready": "Sua coleção de Garopaba está pronta",
     "Explore the Guide →": "Explorar o Guia →",
+  "← swipe the deck →": "← deslize o baralho →",
     "Coffee": "Café",
     "Burgers": "Hambúrguer",
     "Sushi": "Sushi",
