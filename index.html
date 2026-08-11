@@ -464,22 +464,6 @@
     }
 
     /* ── PÂNTANO WIP TILE ───────────────────────────── */
-    .pantano-row { display:flex; justify-content:center; margin-top:1.4rem; }
-    .pantano-tile { width:280px; height:340px; opacity:.78; }
-    .pantano-tile .suite-front { position:relative; }
-    .wip-banner {
-      position:absolute; top:0; left:0; right:0; z-index:3;
-      background:repeating-linear-gradient(
-        -45deg,
-        rgba(224,165,0,.18) 0px, rgba(224,165,0,.18) 8px,
-        rgba(20,20,30,.55) 8px, rgba(20,20,30,.55) 16px
-      );
-      border-bottom:1px solid rgba(224,165,0,.35);
-      padding:.32rem .7rem;
-      display:flex; align-items:center; justify-content:center; gap:.45rem;
-      font-size:.6rem; letter-spacing:.14em; text-transform:uppercase;
-      color:rgba(224,165,0,.85); font-weight:600; font-family:'Cinzel',serif;
-    }
 
     /* ── ANIMATIONS ──────────────────────────────────── */
     .fu { opacity:0; transform:translateY(28px); transition:opacity .65s ease, transform .65s ease; }
@@ -678,6 +662,22 @@
     .card-detail-address { margin-top:1.2rem; text-align:center; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:.9rem; color:rgba(249,244,236,.45); }
     .card-detail-tags { display:flex; flex-wrap:wrap; gap:.35rem; justify-content:center; margin-top:.8rem; }
     .card-detail-tag { padding:.2rem .6rem; border-radius:12px; font-size:.65rem; background:rgba(212,163,64,.1); border:1px solid rgba(212,163,64,.22); color:rgba(212,163,64,.7); font-family:'Cinzel',serif; letter-spacing:.07em; }
+
+
+    /* ══ LANGUAGE SWITCH ═════════════════════════════════════════ */
+    .lang-switch {
+      display:inline-flex; align-items:center; gap:2px; flex-shrink:0;
+      border:1px solid rgba(249,244,236,.28); border-radius:20px; padding:2px;
+    }
+    .lang-btn {
+      background:none; border:0; cursor:pointer; border-radius:16px;
+      padding:.26rem .6rem; font-family:'Cinzel',serif; font-size:.66rem;
+      letter-spacing:.1em; color:rgba(249,244,236,.6); transition:all .25s;
+    }
+    .lang-btn:hover  { color:var(--text-light); }
+    .lang-btn.active { background:rgba(249,244,236,.92); color:var(--ocean-deep); font-weight:600; }
+    .mm-lang { align-self:flex-start; margin:.8rem 0 .2rem; }
+    .mm-lang .lang-btn { padding:.5rem .9rem; font-size:.72rem; }
 
     /* ══ TILE-BACK ACTIONS ═══════════════════════════════════════ */
     .tb-actions {
@@ -907,6 +907,10 @@
     <a href="#location">Location</a>
     <a href="#guide" id="nav-guide" onclick="openGuideFromNav(event)">Garopaba Guide</a>
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="cta-nav">Book Now</a>
+    <div class="lang-switch" role="group" aria-label="Language / Idioma">
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" data-lang="pt" onclick="setLang('pt')">PT</button>
+    </div>
     <a href="owner.html" class="owner-nav">Owner Access</a>
   </div>
   <button class="nav-burger" id="nav-burger" onclick="toggleMenu()"
@@ -923,6 +927,10 @@
     <a href="#location"    onclick="toggleMenu()">Location</a>
     <a href="#guide" onclick="toggleMenu();openGuideFromNav(event)">Garopaba Guide</a>
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="mm-cta">Book Now</a>
+    <div class="lang-switch mm-lang" role="group" aria-label="Language / Idioma">
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" data-lang="pt" onclick="setLang('pt')">PT</button>
+    </div>
     <a href="owner.html" class="mm-owner">Owner Access</a>
   </div>
 </div>
@@ -961,6 +969,9 @@
             <div class="fc"><span class="ico">🏊</span><div class="name">Pool Day</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🏊</div>
             <div class="b-title">Pool Day</div>
             <p class="b-desc">Lounge by our private hillside pool overlooking the valley and distant ocean. Sip something cold, let the Brazilian sun do the rest. Pure restoration.</p>
@@ -976,6 +987,10 @@
             <div class="fc"><span class="ico">🏄</span><div class="name">Surfland Day</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openCinema('surfland')" aria-label="Watch the Surfland Day film">▶ <span>Watch</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🏄</div>
             <div class="b-title">Surfland Day</div>
             <p class="b-desc">Praia da Silveira is your front yard. Grab a board, paddle out, and ride the consistent Atlantic swells just steps from the house — world-class waves with a hillside retreat waiting at the top.</p>
@@ -991,6 +1006,9 @@
             <div class="fc"><span class="ico">🍹</span><div class="name">Craft Cocktails</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🍹</div>
             <div class="b-title">Craft Cocktails</div>
             <p class="b-desc">Our fully stocked bar and chef's kitchen are your playground. Mix craft cocktails as the hills glow amber — or let someone else shake while you take in the view.</p>
@@ -1006,6 +1024,9 @@
             <div class="fc"><span class="ico">🥂</span><div class="name">Happy Hour</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🥂</div>
             <div class="b-title">Happy Hour</div>
             <p class="b-desc">Nothing beats golden hour at The Gathering. Gather the crew on the deck, pour a round, and toast as the sun paints Morro Silveira in shades of fire.</p>
@@ -1021,6 +1042,9 @@
             <div class="fc"><span class="ico">📚</span><div class="name">Book Hub</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">📚</div>
             <div class="b-title">Book Hub</div>
             <p class="b-desc">Curl up in our curated reading corner stocked with books, board games, and quiet energy. The perfect escape from digital noise — and a full afternoon can disappear here.</p>
@@ -1036,6 +1060,10 @@
             <div class="fc"><span class="ico">🎬</span><div class="name">Movie Night</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openCinema('movienight')" aria-label="Watch the Movie Night film">▶ <span>Watch</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🎬</div>
             <div class="b-title">Movie Night</div>
             <p class="b-desc">The 75″ Frame TV transforms the living room into a private cinema. Pair it with the Sonos surround sound, dim the lights, and lose yourselves in a film while the Atlantic breeze rolls in.</p>
@@ -1051,6 +1079,9 @@
             <div class="fc"><span class="ico">🏔️</span><div class="name">Sandboarding</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🏔️</div>
             <div class="b-title">Sandboarding</div>
             <p class="b-desc">The giant dunes of Garopaba are practically at your door. Rent a board and carve down some of Brazil's most thrilling sand mountains. Pure adrenaline for all ages.</p>
@@ -1066,6 +1097,9 @@
             <div class="fc"><span class="ico">🐋</span><div class="name">Whale Watching</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🐋</div>
             <div class="b-title">Whale Watching</div>
             <p class="b-desc">June through November, humpback whales migrate through Garopaba. Watch from our elevated vantage point — or take a boat tour for a front-row seat to nature's greatest show.</p>
@@ -1081,6 +1115,10 @@
             <div class="fc"><span class="ico">🎆</span><div class="name">Réveillon Party</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back">
+            <div class="tb-actions">
+              <button class="tb-btn" onclick="event.stopPropagation();openCinema('reveillon')" aria-label="Watch the Réveillon Party film">▶ <span>Watch</span></button>
+              <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
+            </div>
             <div class="b-ico">🎆</div>
             <div class="b-title">Réveillon Party</div>
             <p class="b-desc">Ring in the New Year from the best seat in Garopaba. The Gathering's elevated terrace offers a panoramic front-row view of the midnight fireworks over the bay — a breathtaking way to welcome the new year.</p>
@@ -1347,14 +1385,14 @@
       <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Planície">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('assets/house/suite_planicie.jpg')">
-            <div class="fc"><span class="ico">🌾</span><div class="name">Suite Planície</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">🔆</span><div class="name">Suite Planície</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
             <div class="tb-actions">
               <button class="tb-btn" onclick="event.stopPropagation();openGallery('suite_planicie')" aria-label="See more photos of Suite Planície">🖼 <span>5 photos</span></button>
               <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
             </div>
-            <div class="b-ico">🌾</div>
+            <div class="b-ico">🔆</div>
             <div class="b-title">Suite Planície · Plains</div>
             <p class="b-desc">Warm neutral tones behind a slatted timber screen, with a private glass door opening to the valley. The quietest corner of the house.</p>
             <span class="b-tag">Queen Bed · 14 m² · Valley Outlook</span>
@@ -1366,14 +1404,14 @@
       <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Ilha">
         <div class="tile">
           <div class="tile-face tile-front" style="background-image:url('assets/house/suite_ilha.jpg')">
-            <div class="fc"><span class="ico">🏝️</span><div class="name">Suite Ilha</div><div class="hint">tap to explore</div></div>
+            <div class="fc"><span class="ico">💧</span><div class="name">Suite Ilha</div><div class="hint">tap to explore</div></div>
           </div>
           <div class="tile-face tile-back room-back">
             <div class="tb-actions">
               <button class="tb-btn" onclick="event.stopPropagation();openGallery('suite_ilha')" aria-label="See more photos of Suite Ilha">🖼 <span>4 photos</span></button>
               <button class="tb-btn tb-flip" onclick="event.stopPropagation();this.closest('.tile-wrap').classList.remove('flipped')" aria-label="Flip back" title="Flip back">↩</button>
             </div>
-            <div class="b-ico">🏝️</div>
+            <div class="b-ico">💧</div>
             <div class="b-title">Suite Ilha · Island</div>
             <p class="b-desc">Deep ocean-blue accents and a full glass wall framing the hillside and the water beyond. Wake up to the bay.</p>
             <span class="b-tag">Queen Bed · 14 m² · Ocean Outlook</span>
@@ -1521,9 +1559,9 @@
 <div class="suites-bg" id="suites">
   <div class="wrap">
     <div class="sh fu">
-      <p class="eyebrow">The Five Suites</p>
-      <h2>Five Elements. <em>Five Sanctuaries.</em></h2>
-      <p>Each suite is named after a land in the realm of Magic — the elemental forces that shape Praia da Silveira. Earth, water, fire, forest, and the wild dark of the southern cove.</p>
+      <p class="eyebrow">The Four Suites</p>
+      <h2>Four Elements. <em>Four Sanctuaries.</em></h2>
+      <p>Each suite is named after a land in the realm of Magic — the elemental forces that shape Praia da Silveira. Plains, island, forest and mountain.</p>
     </div>
     <div class="suite-grid">
 
@@ -1544,10 +1582,10 @@
           </div>
           <div class="tile-face suite-back-mosaic">
             <div class="suite-mosaic">
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/room_suite1.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite1_c.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite1_b.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/preview_25.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_planicie/01.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_planicie/02.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_planicie/03.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_planicie/04.jpg')"></div>
             </div>
             <div class="suite-mosaic-overlay">
               <div class="suite-mosaic-name">🔆 Suite Planície</div>
@@ -1574,10 +1612,10 @@
           </div>
           <div class="tile-face suite-back-mosaic">
             <div class="suite-mosaic">
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/room_suite2.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite2_b.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/preview_37.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite2_c.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_ilha/01.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_ilha/02.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_ilha/03.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_ilha/04.jpg')"></div>
             </div>
             <div class="suite-mosaic-overlay">
               <div class="suite-mosaic-name">💧 Suite Ilha</div>
@@ -1604,10 +1642,10 @@
           </div>
           <div class="tile-face suite-back-mosaic">
             <div class="suite-mosaic">
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/room_suite3.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite3_b.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite3_c.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/preview_49.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_montanha/01.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_montanha/02.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_montanha/03.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_montanha/04.jpg')"></div>
             </div>
             <div class="suite-mosaic-overlay">
               <div class="suite-mosaic-name">🌄 Suite Montanha</div>
@@ -1634,10 +1672,10 @@
           </div>
           <div class="tile-face suite-back-mosaic">
             <div class="suite-mosaic">
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/room_suite4.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite4_b.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/scan_suite4_c.jpg')"></div>
-              <div class="suite-mosaic-ph" style="background-image:url('assets/rooms/preview_58.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_floresta/01.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_floresta/02.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_floresta/03.jpg')"></div>
+              <div class="suite-mosaic-ph" style="background-image:url('assets/house/gallery/suite_floresta/04.jpg')"></div>
             </div>
             <div class="suite-mosaic-overlay">
               <div class="suite-mosaic-name">🌴 Suite Floresta</div>
@@ -1647,33 +1685,6 @@
         </div>
       </div>
 
-    </div>
-
-    <!-- Pântano — coming soon, under construction -->
-    <div class="pantano-row fu">
-      <div class="tile-wrap suite-tile pantano-tile" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Pântano">
-        <div class="tile">
-          <div class="tile-face suite-front">
-            <div class="wip-banner">🚧 Coming Soon</div>
-            <div class="suite-bar mb" style="margin-top:28px"></div>
-            <div class="suite-body">
-              <div class="suite-mana">🌑</div>
-              <div class="suite-pt">Pântano</div>
-              <div class="suite-en">Swamp · Home Office Suite 5</div>
-              <div class="suite-hr"></div>
-              <p class="suite-desc">A modern, fully equipped private office suite. Standing desk, dual monitors, fiber connection, and total quiet — the ultimate work-from-paradise setup.</p>
-              <div class="suite-meta"><span>🖥️ Full Office</span><span>⚡ Fiber</span><span>🌿 Garden View</span></div>
-            </div>
-          </div>
-          <div class="tile-face suite-back-mosaic" style="background:linear-gradient(138deg,#0a0814,#141028)">
-            <div class="suite-mosaic-overlay" style="background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 60%);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:1.5rem">
-              <div style="font-size:2.5rem;margin-bottom:1rem">🚧</div>
-              <div class="suite-mosaic-name" style="font-size:.95rem">Suite Pântano</div>
-              <div class="suite-mosaic-hint" style="margin-top:.6rem;line-height:1.6">Home Office Suite · Currently under development<br>The fifth element is coming.</div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
   </div>
@@ -1837,6 +1848,314 @@
     if (e.key === 'ArrowLeft')  { e.preventDefault(); galStep(-1); }
   });
 
+  // ── Bilingual: EN (source) ⇄ PT-BR ────────────────────────
+  // Keyed by the exact rendered English string, so no markup is
+  // instrumented and dynamically-rendered text translates too.
+  const TG_PT = {
+    "Experiences": "Experiências",
+    "Suites": "Suítes",
+    "Location": "Localização",
+    "Garopaba Guide": "Guia de Garopaba",
+    "Book Now": "Reservar",
+    "Owner Access": "Área do Proprietário",
+    "owner access": "área do proprietário",
+    "\"Where the mountain meets the sea\"": "\"Onde a montanha encontra o mar\"",
+    "Book Your Stay": "Reserve Sua Estadia",
+    "Explore the House": "Conheça a Casa",
+    "▶ Take a Tour": "▶ Faça um Tour",
+    "Discover": "Descubra",
+    "The Gathering Awaits": "The Gathering Espera Por Você",
+    "Experience the best of": "Viva o melhor de",
+    "From the top of Silveira — tap each tile to reveal the experience that awaits.": "Do alto da Silveira — toque em cada carta para revelar a experiência que espera por você.",
+    "tap to explore": "toque para explorar",
+    "Watch": "Assistir",
+    "Pool Day": "Dia de Piscina",
+    "Lounge by our private hillside pool overlooking the valley and distant ocean. Sip something cold, let the Brazilian sun do the rest. Pure restoration.": "Relaxe na piscina privativa na encosta, com vista para o vale e o oceano ao longe. Tome algo gelado e deixe o sol brasileiro fazer o resto. Puro descanso.",
+    "Private Pool · Hillside Views · Summer Bliss": "Piscina Privativa · Vista da Encosta · Delícia de Verão",
+    "Surfland Day": "Dia de Surf",
+    "Praia da Silveira is your front yard. Grab a board, paddle out, and ride the consistent Atlantic swells just steps from the house — world-class waves with a hillside retreat waiting at the top.": "A Praia da Silveira é o seu quintal. Pegue uma prancha, reme e surfe as ondulações constantes do Atlântico a poucos passos da casa — ondas de nível mundial com um refúgio esperando lá no alto.",
+    "Surf Lessons Available · All Levels · Gear Rental Nearby": "Aulas de Surf · Todos os Níveis · Aluguel de Equipamento por Perto",
+    "Craft Cocktails": "Coquetéis Autorais",
+    "Our fully stocked bar and chef's kitchen are your playground. Mix craft cocktails as the hills glow amber — or let someone else shake while you take in the view.": "O bar completo e a cozinha gourmet são o seu playground. Prepare coquetéis autorais enquanto os morros ganham tons dourados — ou deixe que outro agite a coqueteleira enquanto você admira a vista.",
+    "Fully Equipped Bar · Sunset Views · Social Ritual": "Bar Completo · Vista do Pôr do Sol · Ritual Social",
+    "Happy Hour": "Happy Hour",
+    "Nothing beats golden hour at The Gathering. Gather the crew on the deck, pour a round, and toast as the sun paints Morro Silveira in shades of fire.": "Nada supera o fim de tarde no The Gathering. Reúna a turma no deck, sirva uma rodada e brinde enquanto o sol pinta o Morro da Silveira em tons de fogo.",
+    "Outdoor Decks · Panoramic Sunsets · Group Ritual": "Decks Externos · Pôr do Sol Panorâmico · Ritual em Grupo",
+    "Book Hub": "Cantinho da Leitura",
+    "Curl up in our curated reading corner stocked with books, board games, and quiet energy. The perfect escape from digital noise — and a full afternoon can disappear here.": "Acomode-se no cantinho de leitura, com livros, jogos de tabuleiro e uma energia tranquila. A fuga perfeita do ruído digital — uma tarde inteira desaparece aqui.",
+    "Reading Nook · Board Games · Analog Bliss": "Canto de Leitura · Jogos de Tabuleiro · Prazer Analógico",
+    "Movie Night": "Noite de Cinema",
+    "The 75″ Frame TV transforms the living room into a private cinema. Pair it with the Sonos surround sound, dim the lights, and lose yourselves in a film while the Atlantic breeze rolls in.": "A Frame TV de 75″ transforma a sala em um cinema particular. Combine com o som surround Sonos, diminua as luzes e mergulhe no filme enquanto a brisa do Atlântico entra.",
+    "75″ Frame TV · Sonos Surround · Library of Films": "Frame TV 75″ · Som Surround Sonos · Acervo de Filmes",
+    "Sandboarding": "Sandboard",
+    "The giant dunes of Garopaba are practically at your door. Rent a board and carve down some of Brazil's most thrilling sand mountains. Pure adrenaline for all ages.": "As dunas gigantes de Garopaba estão praticamente na porta de casa. Alugue uma prancha e desça algumas das montanhas de areia mais emocionantes do Brasil. Adrenalina pura para todas as idades.",
+    "Giant Dunes · Rentals Nearby · All Levels Welcome": "Dunas Gigantes · Aluguel por Perto · Todos os Níveis",
+    "Whale Watching": "Observação de Baleias",
+    "June through November, humpback whales migrate through Garopaba. Watch from our elevated vantage point — or take a boat tour for a front-row seat to nature's greatest show.": "De junho a novembro, as baleias-jubarte migram por Garopaba. Observe do nosso mirante privilegiado — ou faça um passeio de barco para assistir de camarote ao maior espetáculo da natureza.",
+    "Jun–Nov Season · Hillside Views · Boat Tours Available": "Temporada Jun–Nov · Vista da Encosta · Passeios de Barco",
+    "Réveillon Party": "Festa de Réveillon",
+    "Ring in the New Year from the best seat in Garopaba. The Gathering's elevated terrace offers a panoramic front-row view of the midnight fireworks over the bay — a breathtaking way to welcome the new year.": "Comece o Ano Novo do melhor lugar de Garopaba. O terraço elevado oferece vista de camarote para os fogos da meia-noite sobre a baía — uma forma inesquecível de virar o ano.",
+    "Midnight Fireworks View · Hilltop Terrace · NYE Magic": "Vista dos Fogos · Terraço no Alto do Morro · Magia de Réveillon",
+    "The House Tour": "Tour pela Casa",
+    "Loading…": "Carregando…",
+    "This film isn't available yet.": "Este vídeo ainda não está disponível.",
+    "🏡 House Tour": "🏡 Tour pela Casa",
+    "🚁 Drone View": "🚁 Vista Aérea",
+    "Drone View · Morro da Silveira": "Vista Aérea · Morro da Silveira",
+    "The house tour film is being finalised — check back shortly.": "O vídeo do tour está sendo finalizado — volte em breve.",
+    "The drone film is being finalised — check back shortly.": "O vídeo aéreo está sendo finalizado — volte em breve.",
+    "This clip is still being cut — check back shortly.": "Este clipe ainda está em edição — volte em breve.",
+    "Inside The": "Por Dentro do",
+    "Gathering": "Gathering",
+    "Tap each space to step inside — every room designed with intention, crafted to feel like nowhere else.": "Toque em cada espaço para entrar — cada ambiente pensado com intenção, criado para não lembrar nenhum outro lugar.",
+    "Living Room": "Sala de Estar",
+    "Living Room · The Ranch": "Sala de Estar · The Ranch",
+    "A soaring pavilion under exposed timber trusses, anchored by the stone fireplace wall, 75″ Frame TV, Sonos sound and a curated wine bar. Where the whole gathering gathers.": "Um pavilhão amplo sob tesouras de madeira aparente, ancorado pela parede de pedra da lareira, Frame TV de 75″, som Sonos e uma adega selecionada. Onde todo mundo se reúne.",
+    "75″ Frame TV · Sonos · Wine Bar · Fireplace": "Frame TV 75″ · Sonos · Adega · Lareira",
+    "The Kitchen": "A Cozinha",
+    "The Kitchen · Chef's Kitchen": "A Cozinha · Cozinha Gourmet",
+    "A full chef's kitchen with a stone island, gas cooktop and DeBacco appliances — wrapped in glass so whoever is cooking still gets the best view in the house.": "Uma cozinha gourmet completa, com ilha de pedra, cooktop a gás e eletrodomésticos DeBacco — toda envidraçada, para que quem cozinha tenha a melhor vista da casa.",
+    "Gourmet Kitchen · Stone Island · Ocean Outlook": "Cozinha Gourmet · Ilha de Pedra · Vista para o Mar",
+    "Dining Room": "Sala de Jantar",
+    "Dining Room · Sala de Jantar": "Sala de Jantar · Espaço das Refeições",
+    "A ten-seat table under hand-woven pendant lights, framed by a warm timber wall. Built for long lunches that turn into longer dinners.": "Uma mesa para dez sob pendentes de fibra trançada à mão, emoldurada por uma parede de madeira. Feita para almoços longos que viram jantares ainda mais longos.",
+    "Seats 10+ · Pendant Lighting · Open to Kitchen": "Acomoda 10+ · Iluminação Pendente · Integrada à Cozinha",
+    "The Deck": "O Deck",
+    "The Deck · Sunset Deck": "O Deck · Deck do Pôr do Sol",
+    "Hardwood decking runs the length of the glass façade, edged in frameless glass balustrades. The best happy-hour seat in Garopaba — every single evening.": "O deck de madeira acompanha toda a fachada de vidro, com guarda-corpos de vidro sem moldura. O melhor lugar para o happy hour em Garopaba — todas as tardes.",
+    "Full-Length Deck · Glass Balustrades · Outdoor Dining": "Deck Integral · Guarda-Corpo de Vidro · Refeições ao Ar Livre",
+    "The Pool": "A Piscina",
+    "The Pool · Infinity Pool": "A Piscina · Borda Infinita",
+    "A heated infinity pool set into the hillside deck, spilling toward the Atlantic Forest and the bay beyond. Sun all afternoon, silence all morning.": "Uma piscina aquecida de borda infinita integrada ao deck da encosta, debruçada sobre a Mata Atlântica e a baía. Sol a tarde inteira, silêncio a manhã inteira.",
+    "Infinity Edge · Hillside Setting · All-Day Sun": "Borda Infinita · Na Encosta · Sol o Dia Todo",
+    "The View": "A Vista",
+    "The View · Garopaba Bay": "A Vista · Baía de Garopaba",
+    "From the top of Morro da Silveira the whole bay opens up — town, coastline and open ocean in one sweep. On clear evenings the lights come on across the water.": "Do alto do Morro da Silveira a baía inteira se abre — cidade, litoral e mar aberto em um só panorama. Em noites claras, as luzes se acendem do outro lado da água.",
+    "Panoramic Bay · Sunrise & Sunset · Whale Season": "Baía Panorâmica · Nascer e Pôr do Sol · Temporada de Baleias",
+    "The Stairwell": "A Escada",
+    "The Stairwell · Fish Tank": "A Escada · Fish Tank",
+    "A floating timber stair rises through a full-height glass shaft. Bookshelves line one side, the hillside fills the other, and the light moves across it all day.": "Uma escada de madeira flutuante sobe por um vão envidraçado de pé-direito duplo. Estantes de um lado, a encosta do outro, e a luz atravessando tudo o dia inteiro.",
+    "Floating Timber Stair · Glass Shaft · Built-in Shelving": "Escada Flutuante de Madeira · Vão de Vidro · Estantes Embutidas",
+    "The Library": "A Biblioteca",
+    "The Library · Reading Nook": "A Biblioteca · Canto de Leitura",
+    "Tucked beneath the floating stair — books, board games and deep seating against a wall of glass. A full afternoon can disappear here.": "Aninhada sob a escada flutuante — livros, jogos de tabuleiro e poltronas profundas diante de uma parede de vidro. Uma tarde inteira desaparece aqui.",
+    "Reading Nook · Board Games · Under the Stair": "Canto de Leitura · Jogos de Tabuleiro · Sob a Escada",
+    "The Arrival": "A Chegada",
+    "The Arrival · Entrada Principal": "A Chegada · Entrada Principal",
+    "A stepped stone approach rises to the main entrance under a broad timber canopy. The moment the hill opens up and the house reveals itself.": "Um caminho de pedra em degraus sobe até a entrada principal, sob um amplo beiral de madeira. O momento em que o morro se abre e a casa se revela.",
+    "Private Entrance · Covered Canopy · Stone Approach": "Entrada Privativa · Beiral Coberto · Caminho de Pedra",
+    "The Lawn": "O Gramado",
+    "The Lawn · Open Grounds": "O Gramado · Área Livre",
+    "Level lawn wrapping the pavilion — room for football, yoga at sunrise, or simply lying in the grass while the hill does the rest.": "Gramado plano contornando o pavilhão — espaço para futebol, ioga ao nascer do sol ou simplesmente deitar na grama enquanto o morro faz o resto.",
+    "Level Lawn · Garden Grounds · Pet Friendly": "Gramado Plano · Jardins · Aceita Pets",
+    "Laundry": "Lavanderia",
+    "Laundry · Utility Room": "Lavanderia · Área de Serviço",
+    "A full laundry with washer, dryer and drying rack — the unglamorous detail that makes a two-week stay feel effortless.": "Uma lavanderia completa com lavadora, secadora e varal — o detalhe sem glamour que faz duas semanas de estadia parecerem leves.",
+    "Washer · Dryer · Long-Stay Ready": "Lavadora · Secadora · Pronta para Longas Estadias",
+    "Suite Planície": "Suíte Planície",
+    "Suite Planície · Plains": "Suíte Planície · Plains",
+    "Warm neutral tones behind a slatted timber screen, with a private glass door opening to the valley. The quietest corner of the house.": "Tons neutros e quentes atrás de um painel ripado de madeira, com porta de vidro privativa abrindo para o vale. O canto mais silencioso da casa.",
+    "Queen Bed · 14 m² · Valley Outlook": "Cama Queen · 14 m² · Vista para o Vale",
+    "Suite Ilha": "Suíte Ilha",
+    "Suite Ilha · Island": "Suíte Ilha · Island",
+    "Deep ocean-blue accents and a full glass wall framing the hillside and the water beyond. Wake up to the bay.": "Detalhes em azul profundo e uma parede inteira de vidro emoldurando a encosta e o mar ao fundo. Acorde de frente para a baía.",
+    "Queen Bed · 14 m² · Ocean Outlook": "Cama Queen · 14 m² · Vista para o Mar",
+    "Suite Floresta": "Suíte Floresta",
+    "Suite Floresta · Forest": "Suíte Floresta · Forest",
+    "Lush forest-green tones and flex bunk beds, with glass opening to the Atlantic Forest on the hillside. Grounding, natural and perfectly calm.": "Tons de verde-mata e beliches flexíveis, com vidro abrindo para a Mata Atlântica na encosta. Aconchegante, natural e perfeitamente tranquila.",
+    "Flex Bunk Beds · 13.6 m² · Forest Panorama": "Beliches Flexíveis · 13,6 m² · Panorama da Mata",
+    "Suite Montanha": "Suíte Montanha",
+    "Suite Montanha · Mountain": "Suíte Montanha · Mountain",
+    "Bold red accents, bunk-style flex beds and a full glass door onto the Garopaba panorama — ocean and city stretching beyond the deck.": "Detalhes em vermelho marcante, beliches flexíveis e porta de vidro inteira para o panorama de Garopaba — mar e cidade se estendendo além do deck.",
+    "Flex Bunk Beds · 13.5 m² · Panoramic Balcony": "Beliches Flexíveis · 13,5 m² · Varanda Panorâmica",
+    "The Realm": "O Reino",
+    "The Ultimate": "O Guia Definitivo de",
+    "Hand-picked by TheGathering. Open the booster to reveal the best spots in town.": "Selecionado a dedo pelo TheGathering. Abra o booster e descubra os melhores lugares da cidade.",
+    "10 curated spots. One booster pack. Crack it open.": "10 lugares selecionados. Um pacote booster. Abra agora.",
+    "ULTIMATE": "DEFINITIVA",
+    "Garopaba Experience": "Experiência Garopaba",
+    "10 Cards": "10 Cartas",
+    "✦ Tap to Open ✦": "✦ Toque para Abrir ✦",
+    "All": "Todos",
+    "✦ Reseal Booster": "✦ Fechar o Booster",
+    "Tap to Continue": "Toque para Continuar",
+    "Guide Unlocked ✦": "Guia Desbloqueado ✦",
+    "Your curated Garopaba collection is ready": "Sua coleção de Garopaba está pronta",
+    "Explore the Guide →": "Explorar o Guia →",
+    "Coffee": "Café",
+    "Burgers": "Hambúrguer",
+    "Sushi": "Sushi",
+    "Cowork": "Coworking",
+    "Poke Bowl": "Poke",
+    "Adventure": "Aventura",
+    "Pizza": "Pizza",
+    "Coffee Shop": "Cafeteria",
+    "Burger Joint": "Hamburgueria",
+    "Sushi Bar": "Sushi Bar",
+    "Cowork Space": "Espaço de Coworking",
+    "Açougue · Butcher": "Açougue",
+    "Adventure · Sand Dunes": "Aventura · Dunas",
+    "Pizzaria": "Pizzaria",
+    "The Four Suites": "As Quatro Suítes",
+    "Four Elements.": "Quatro Elementos.",
+    "Four Sanctuaries.": "Quatro Santuários.",
+    "Each suite is named after a land in the realm of Magic — the elemental forces that shape Praia da Silveira. Plains, island, forest and mountain.": "Cada suíte leva o nome de um terreno do universo de Magic — as forças elementais que moldam a Praia da Silveira. Planície, ilha, floresta e montanha.",
+    "Plains · Premium Mezzanine Suite 1": "Plains · Suíte Premium Mezanino 1",
+    "The grandest suite in the house. Inspired by the open sands of Praia da Silveira — light, expansive, airy. King bed, nearly 20 m².": "A suíte mais imponente da casa. Inspirada nas areias abertas da Praia da Silveira — clara, ampla, arejada. Cama king, quase 20 m².",
+    "🛏️ King Bed": "🛏️ Cama King",
+    "🪟 Mezzanine": "🪟 Mezanino",
+    "tap to see the suite →": "toque para ver a suíte →",
+    "🔆 Suite Planície": "🔆 Suíte Planície",
+    "King Bed · 19.9 m² · tap to go back": "Cama King · 19,9 m² · toque para voltar",
+    "Island · Mezzanine Suite 2": "Island · Suíte Mezanino 2",
+    "Named for the deep blues of Mar Silveira. Serene and refined — ocean mood, King bed, mezzanine level.": "Batizada pelos azuis profundos do mar da Silveira. Serena e refinada — clima de mar, cama king, no mezanino.",
+    "🌊 Ocean Mood": "🌊 Clima de Mar",
+    "💧 Suite Ilha": "💧 Suíte Ilha",
+    "King Bed · 13.5 m² · tap to go back": "Cama King · 13,5 m² · toque para voltar",
+    "Mountain · Flex Suite 3": "Mountain · Suíte Flex 3",
+    "Bold and energetic like Morro Silveira — red-earth art, flexible bunk configuration, panoramic balcony.": "Marcante e enérgica como o Morro da Silveira — arte em tons de terra, beliches flexíveis, varanda panorâmica.",
+    "🛏️ Flex Bunks": "🛏️ Beliches Flexíveis",
+    "🏔️ Hilltop View": "🏔️ Vista do Alto",
+    "🌄 Suite Montanha": "🌄 Suíte Montanha",
+    "Flex Bunks · 13.5 m² · tap to go back": "Beliches Flexíveis · 13,5 m² · toque para voltar",
+    "Forest · Flex Suite 4": "Forest · Suíte Flex 4",
+    "Lush forest-green tones, flex bunk beds, Atlantic Forest views through the glass door. Grounding, natural, calm.": "Tons de verde-mata, beliches flexíveis, vista para a Mata Atlântica pela porta de vidro. Aconchegante, natural, tranquila.",
+    "🌿 Forest View": "🌿 Vista da Mata",
+    "🌴 Suite Floresta": "🌴 Suíte Floresta",
+    "Flex Bunks · 13.6 m² · tap to go back": "Beliches Flexíveis · 13,6 m² · toque para voltar",
+    "The House": "A Casa",
+    "Every Detail,": "Cada Detalhe,",
+    "Considered.": "Pensado.",
+    "Private Pool": "Piscina Privativa",
+    "Starlink WiFi": "WiFi Starlink",
+    "Sonos System": "Sistema Sonos",
+    "Samsung Frame TVs": "TVs Samsung Frame",
+    "Full A/C · 7 Units": "Ar-Condicionado · 7 Unidades",
+    "Gourmet Kitchen": "Cozinha Gourmet",
+    "Beer Center & Wine Cellar": "Cervejeira & Adega",
+    "Smart Keyless Entry": "Fechadura Digital",
+    "Security Cameras": "Câmeras de Segurança",
+    "Private Parking": "Estacionamento Privativo",
+    "Landscaped Gardens": "Jardins Paisagísticos",
+    "Glass Balustrades": "Guarda-Corpos de Vidro",
+    "En-Suite Bathrooms": "Banheiros Privativos",
+    "Outdoor Decks & Pergolas": "Decks & Pérgolas",
+    "Hot Water Heating": "Aquecimento de Água",
+    "Eufy Security System": "Sistema de Segurança Eufy",
+    "Garopaba Bay View": "Vista da Baía de Garopaba",
+    "Game night & Movie Night": "Noite de Jogos & Cinema",
+    "Where We Are": "Onde Estamos",
+    "Garopaba &": "Garopaba &",
+    "A corner of Brazil that surfers, nature lovers, and explorers have kept to themselves — until now.": "Um canto do Brasil que surfistas, amantes da natureza e exploradores guardaram para si — até agora.",
+    "The Surf Capital": "A Capital do Surf",
+    "A small, authentic coastal town in Santa Catarina where world-class waves meet lush Atlantic Forest hillsides. Famed for humpback whale migrations, vibrant beach culture, and some of the freshest seafood in South Brazil.": "Uma cidade litorânea pequena e autêntica em Santa Catarina, onde ondas de nível mundial encontram encostas de Mata Atlântica. Famosa pela migração das baleias-jubarte, pela cultura de praia vibrante e por alguns dos frutos do mar mais frescos do Sul do Brasil.",
+    "World-class surf breaks for all levels": "Picos de surf de nível mundial para todos os níveis",
+    "Humpback whale migration corridor — June to November": "Corredor de migração das baleias-jubarte — de junho a novembro",
+    "Giant sand dunes — sandboarding paradise": "Dunas gigantes — paraíso do sandboard",
+    "Authentic local seafood restaurants & markets": "Restaurantes e mercados autênticos de frutos do mar",
+    "2 hours from Florianópolis International Airport": "A 2 horas do Aeroporto Internacional de Florianópolis",
+    "The Hidden Gem": "O Tesouro Escondido",
+    "Praia da Silveira sits atop a dramatic hill — one of the most sought-after surf beaches in Garopaba, known for consistent swells and raw natural beauty. The Gathering sits at the very top of the Morro, with ocean views in every direction.": "A Praia da Silveira fica no alto de um morro imponente — uma das praias de surf mais procuradas de Garopaba, conhecida pelas ondulações constantes e pela beleza natural bruta. O The Gathering fica bem no topo do Morro, com vista para o mar em todas as direções.",
+    "Premium surf beach — consistent year-round swells": "Praia de surf premium — ondulações o ano inteiro",
+    "Hilltop vantage with 360° ocean panoramas": "Mirante no alto do morro com panorama de 360° para o mar",
+    "Dense Atlantic Forest as your backdrop": "Mata Atlântica densa como cenário",
+    "Quiet, small community — peaceful & authentic": "Comunidade pequena e tranquila — pacífica e autêntica",
+    "Less than 10 min from Garopaba town center": "A menos de 10 min do centro de Garopaba",
+    "📍 Open in Google Maps": "📍 Abrir no Google Maps",
+    "Ready to Gather?": "Pronto para se Reunir?",
+    "\"Weeks here leave footprints that don't wash away.\"": "\"Semanas aqui deixam marcas que não se apagam.\"",
+    "Book on Airbnb": "Reservar no Airbnb",
+    "📐 Interior Plans": "📐 Plantas Baixas",
+    "✉️ Contact": "✉️ Contato",
+    "© 2025 The Gathering Silveira · All rights reserved": "© 2025 The Gathering Silveira · Todos os direitos reservados",
+    "Specialty pour-overs, single-origin beans, artisan pastries and the best WiFi in Garopaba. A sanctuary for slow mornings and focused remote work.": "Cafés coados especiais, grãos de origem única, panificação artesanal e o melhor WiFi de Garopaba. Um santuário para manhãs sem pressa e trabalho remoto concentrado.",
+    "Garopaba's most beloved smash burger house. Handcrafted patties, crispy fries, and a vibe that pulls locals back every single night.": "A hamburgueria smash mais querida de Garopaba. Carnes artesanais, fritas crocantes e um clima que traz os locais de volta toda noite.",
+    "Fresh South Atlantic catches transformed into precision Japanese craft. The sushi counter at H2O is Garopaba's best-kept dining secret — sit at the bar.": "Pescados frescos do Atlântico Sul transformados em técnica japonesa precisa. O balcão do H2O é o segredo gastronômico mais bem guardado de Garopaba — sente-se no bar.",
+    "Work from the coast without sacrificing focus. Garopaba's premier coworking space — fast fiber, private desks, and a community that actually inspires.": "Trabalhe no litoral sem abrir mão do foco. O principal espaço de coworking de Garopaba — fibra rápida, mesas privativas e uma comunidade que realmente inspira.",
+    "Hawaiian spirit meets Brazilian ingredients. Fresh tuna, local tropical fruits, and house sauces — bowls that have become the daily ritual of every serious beachgoer.": "O espírito havaiano encontra ingredientes brasileiros. Atum fresco, frutas tropicais locais e molhos da casa — bowls que viraram ritual diário de quem leva a praia a sério.",
+    "The soul of Garopaba's bar scene. Craft cocktails, live music, and a terrace that faces the sunset. When you want the definitive end to a perfect beach day.": "A alma da cena de bares de Garopaba. Coquetéis autorais, música ao vivo e um terraço voltado para o pôr do sol. Para encerrar em grande estilo um dia perfeito de praia.",
+    "Antônia's warm, bohemian atmosphere draws the town's creatives. Natural wines, small plates, conversations that run deep into the night.": "O clima boêmio e acolhedor do Antônia atrai os criativos da cidade. Vinhos naturais, pratos para dividir e conversas que avançam noite adentro.",
+    "Your base camp for Garopaba's legendary sand dunes. Rent a board, fuel up with a cold beer, and carve down some of Brazil's most thrilling sand mountains.": "Seu ponto de apoio para as lendárias dunas de Garopaba. Alugue uma prancha, reforce com uma cerveja gelada e desça algumas das montanhas de areia mais emocionantes do Brasil.",
+    "The finest cuts in Garopaba. Premium Angus beef, artisanal sausages, and a selection that transforms any churrasco into a proper occasion.": "Os melhores cortes de Garopaba. Angus premium, linguiças artesanais e uma seleção que transforma qualquer churrasco em ocasião especial.",
+    "Wood-fired, slow-fermented dough and toppings from the Santa Catarina highlands. Coming soon to TheGathering's curated deck — the search is on.": "Forno a lenha, massa de fermentação lenta e ingredientes da serra catarinense. Em breve no deck selecionado do TheGathering — a busca continua.",
+    "Scouting · Garopaba": "Em Prospecção · Garopaba",
+    "\"A morning here sets the tone for the whole day.\"": "\"Uma manhã aqui define o tom do dia inteiro.\"",
+    "\"One bite, and you understand why there's always a line.\"": "\"Uma mordida e você entende por que sempre tem fila.\"",
+    "\"Ocean-to-plate, the Garopaba way.\"": "\"Do mar ao prato, do jeito de Garopaba.\"",
+    "\"The future of work smells like salt air.\"": "\"O futuro do trabalho tem cheiro de maresia.\"",
+    "\"Paradise in a bowl.\"": "\"O paraíso em um bowl.\"",
+    "\"When the sun drops, Arca comes alive.\"": "\"Quando o sol se põe, o Arca ganha vida.\"",
+    "\"A place you discover by word of mouth.\"": "\"Um lugar que se descobre no boca a boca.\"",
+    "\"Adrenaline with an ocean view.\"": "\"Adrenalina com vista para o mar.\"",
+    "\"The perfect cut is still being scouted.\"": "\"O corte perfeito ainda está sendo garimpado.\"",
+    "\"The best pizza in Garopaba awaits discovery.\"": "\"A melhor pizza de Garopaba ainda espera ser descoberta.\""
+  };
+  const TG_EN = Object.fromEntries(Object.entries(TG_PT).map(([e,p]) => [p, e]));
+  const TG_ATTRS = ['placeholder','title','aria-label','alt'];
+  let TG_LANG = 'en', tgObserver = null;
+
+  function tgTranslateNode(root, map) {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(n) {
+        const t = n.parentNode && n.parentNode.nodeName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'NOSCRIPT') return NodeFilter.FILTER_REJECT;
+        return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    });
+    const nodes = []; let n;
+    while ((n = w.nextNode())) nodes.push(n);
+    nodes.forEach(node => {
+      const raw = node.nodeValue, key = raw.trim();
+      const hit = map[key];
+      if (hit) node.nodeValue = raw.replace(key, hit);
+    });
+    const els = root.nodeType === 1 ? [root, ...root.querySelectorAll('*')] : [...root.querySelectorAll('*')];
+    els.forEach(el => TG_ATTRS.forEach(a => {
+      const v = el.getAttribute && el.getAttribute(a);
+      if (v && map[v.trim()]) el.setAttribute(a, map[v.trim()]);
+    }));
+  }
+
+  function applyLang(lang) {
+    const map = lang === 'pt' ? TG_PT : TG_EN;
+    if (tgObserver) tgObserver.disconnect();          // don't retranslate our own edits
+    tgTranslateNode(document.body, map);
+    document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+    document.querySelectorAll('.lang-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.lang === lang));
+    if (tgObserver) tgObserver.observe(document.body, {childList:true, subtree:true});
+  }
+
+  function setLang(lang) {
+    if (lang === TG_LANG) return;
+    TG_LANG = lang;
+    try { localStorage.setItem('tg_lang', lang); } catch (e) {}
+    applyLang(lang);
+  }
+
+  (function initLang(){
+    let saved = null;
+    try { saved = localStorage.getItem('tg_lang'); } catch (e) {}
+    const guess = (navigator.language || '').toLowerCase().startsWith('pt') ? 'pt' : 'en';
+    TG_LANG = saved || guess;
+
+    // Anything rendered later (guide cards, gallery, modals) gets translated too.
+    tgObserver = new MutationObserver(muts => {
+      if (TG_LANG === 'en') return;
+      tgObserver.disconnect();
+      muts.forEach(m => m.addedNodes.forEach(n => {
+        if (n.nodeType === 1) tgTranslateNode(n, TG_PT);
+        else if (n.nodeType === 3 && TG_PT[n.nodeValue.trim()]) n.nodeValue = TG_PT[n.nodeValue.trim()];
+      }));
+      tgObserver.observe(document.body, {childList:true, subtree:true});
+    });
+
+    document.querySelectorAll('.lang-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.lang === TG_LANG));
+    if (TG_LANG === 'pt') applyLang('pt');
+    tgObserver.observe(document.body, {childList:true, subtree:true});
+  })();
+
   // Brand mark returns to the top from anywhere on the page
   function goHome(e) {
     e.preventDefault();
@@ -1847,10 +2166,17 @@
 
   // ── Cinema: house tour + drone view ───────────────────────
   const CINEMA = {
-    tour:  { src:'assets/house-tour.mp4', title:'The House Tour',
-             missing:'The house tour film is being finalised — check back shortly.' },
-    drone: { src:'assets/birds-eye.mp4',  title:'Drone View · Morro da Silveira',
-             missing:'The drone film is being finalised — check back shortly.' },
+    // The tour pair shares a tab bar; the experience clips play on their own.
+    tour:       { src:'assets/house-tour.mp4', title:'The House Tour', tabs:true,
+                  missing:'The house tour film is being finalised — check back shortly.' },
+    drone:      { src:'assets/birds-eye.mp4',  title:'Drone View · Morro da Silveira', tabs:true,
+                  missing:'The drone film is being finalised — check back shortly.' },
+    surfland:   { src:'assets/experiences/surfland.mp4',  title:'Surfland Day',
+                  missing:'This clip is still being cut — check back shortly.' },
+    movienight: { src:'assets/experiences/movienight.mp4', title:'Movie Night',
+                  missing:'This clip is still being cut — check back shortly.' },
+    reveillon:  { src:'assets/experiences/reveillon.mp4',  title:'Réveillon Party',
+                  missing:'This clip is still being cut — check back shortly.' },
   };
 
   function openCinema(which) {
@@ -1861,6 +2187,8 @@
 
     document.getElementById('cinema-title').textContent = cfg.title;
     document.getElementById('cinema-error-text').textContent = cfg.missing;
+    // Tabs belong to the house-tour pair; a one-off clip shows none.
+    document.querySelector('.cinema-bar').style.display = cfg.tabs ? '' : 'none';
     document.getElementById('cin-tab-tour').classList.toggle('active', which === 'tour');
     document.getElementById('cin-tab-drone').classList.toggle('active', which === 'drone');
 
