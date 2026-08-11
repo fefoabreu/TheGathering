@@ -85,6 +85,7 @@
       font-family:'Playfair Display',serif; font-weight:700;
       font-size:1.5rem; letter-spacing:.04em;
       color:var(--text-light);
+      text-decoration:none; cursor:pointer;
       text-shadow:0 2px 16px rgba(0,0,0,.35);
       transition:var(--ease); white-space:nowrap;
     }
@@ -674,6 +675,62 @@
     .card-detail-tags { display:flex; flex-wrap:wrap; gap:.35rem; justify-content:center; margin-top:.8rem; }
     .card-detail-tag { padding:.2rem .6rem; border-radius:12px; font-size:.65rem; background:rgba(212,163,64,.1); border:1px solid rgba(212,163,64,.22); color:rgba(212,163,64,.7); font-family:'Cinzel',serif; letter-spacing:.07em; }
 
+    /* ══ CINEMA (video tour modal) ═══════════════════════════════ */
+    .cinema-overlay {
+      position:fixed; inset:0; z-index:9600; display:none;
+      background:#05070B; align-items:center; justify-content:center;
+      flex-direction:column; padding:1.5rem;
+    }
+    .cinema-overlay.show { display:flex; animation:fade-in .25s ease; }
+    .cinema-stage {
+      position:relative; width:min(1280px,100%);
+      aspect-ratio:16/9; background:#000; border-radius:10px; overflow:hidden;
+      box-shadow:0 0 0 1px rgba(212,163,64,.22), 0 30px 90px rgba(0,0,0,.9),
+                 0 0 140px rgba(212,163,64,.09);
+    }
+    .cinema-stage video { width:100%; height:100%; object-fit:contain; background:#000; display:block; }
+    .cinema-spinner {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      color:rgba(249,244,236,.45); font-family:'Cinzel',serif; font-size:.72rem;
+      letter-spacing:.18em; text-transform:uppercase; pointer-events:none;
+    }
+    .cinema-stage.ready .cinema-spinner { display:none; }
+    .cinema-error {
+      position:absolute; inset:0; display:none; flex-direction:column; gap:.6rem;
+      align-items:center; justify-content:center; text-align:center; padding:2rem;
+      color:rgba(249,244,236,.7); font-size:.9rem;
+    }
+    .cinema-stage.errored .cinema-error   { display:flex; }
+    .cinema-stage.errored .cinema-spinner { display:none; }
+    .cinema-stage.errored video           { visibility:hidden; }
+
+    .cinema-bar {
+      display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;
+      justify-content:center; margin-top:1.1rem;
+    }
+    .cin-tab {
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:.5rem 1.15rem; border-radius:24px; cursor:pointer;
+      background:rgba(255,255,255,.05); border:1px solid rgba(212,163,64,.25);
+      color:rgba(249,244,236,.62); font-family:'Cinzel',serif;
+      font-size:.72rem; letter-spacing:.12em; transition:all .3s;
+    }
+    .cin-tab:hover  { border-color:rgba(212,163,64,.55); color:rgba(249,244,236,.9); }
+    .cin-tab.active { background:rgba(212,163,64,.14); border-color:var(--gold); color:var(--gold); }
+    .cinema-close {
+      position:absolute; top:1rem; right:1.25rem; z-index:2;
+      width:42px; height:42px; border-radius:50%; cursor:pointer;
+      background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.18);
+      color:#fff; font-size:1.15rem; line-height:1;
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter:blur(6px); transition:all .3s;
+    }
+    .cinema-close:hover { background:rgba(212,163,64,.85); color:#060402; border-color:transparent; }
+    .cinema-title {
+      font-family:'Cinzel',serif; font-size:.66rem; letter-spacing:.24em;
+      text-transform:uppercase; color:rgba(212,163,64,.6); margin-bottom:.9rem;
+    }
+
     /* ══════════════════════════════════════════════════════════
        PHONE / TABLET
        ══════════════════════════════════════════════════════════ */
@@ -698,7 +755,8 @@
 
       .hero { min-height:88vh; }
       .hero-cta { flex-direction:column; align-items:stretch; gap:.7rem; padding:0 1.5rem; }
-      .hero-cta a { width:100%; text-align:center; }
+      .hero-cta a, .hero-cta button { width:100%; text-align:center; justify-content:center; }
+      .scroll-line { margin-top:1.4rem; }   /* three stacked CTAs crowd it otherwise */
 
       /* Flip tiles: taller target, and tap (not hover) drives the flip */
       .tile-wrap { height:270px; }
@@ -719,6 +777,14 @@
       /* Reveal overlay has to fit a phone screen, buttons included */
       .reveal-card-wrap { transform:scale(.86); }
       .done-title { letter-spacing:.08em; }
+
+      /* Cinema: edge-to-edge stage, tabs stacked under it */
+      .cinema-overlay { padding:.6rem; justify-content:center; }
+      .cinema-title { font-size:.58rem; letter-spacing:.18em; margin-bottom:.6rem; }
+      .cinema-stage { border-radius:8px; }
+      .cinema-close { top:.5rem; right:.6rem; width:38px; height:38px; }
+      .cinema-bar { margin-top:.85rem; gap:.45rem; }
+      .cin-tab { padding:.55rem .9rem; font-size:.66rem; min-height:42px; }
     }
 
     @media(max-width:400px){
@@ -738,7 +804,7 @@
 
 <!-- NAV -->
 <nav id="nav">
-  <div class="nav-brand-text">The Gathering</div>
+  <a href="#home" class="nav-brand-text" onclick="goHome(event)" aria-label="Back to top">The Gathering</a>
   <div class="nav-links">
     <a href="#experiences">Experiences</a>
     <a href="#suites">Suites</a>
@@ -778,158 +844,10 @@
   <div class="hero-cta">
     <a href="https://www.airbnb.com/rooms/1608023407293236428" class="btn btn-primary" target="_blank" rel="noopener">Book Your Stay</a>
     <a href="#rooms" class="btn btn-outline-light">Explore the House</a>
+    <button class="btn btn-outline-light" onclick="openCinema('tour')">▶ Take a Tour</button>
   </div>
   <div class="scroll-line">Discover</div>
 </section>
-
-<!-- ROOMS / EXPLORE THE HOUSE -->
-<div class="rooms-bg" id="rooms">
-  <div class="wrap">
-    <div class="sh fu">
-      <p class="eyebrow">Explore the House</p>
-      <h2>Inside The <em>Gathering</em></h2>
-      <p>Tap each space to step inside — every room designed with intention, crafted to feel like nowhere else.</p>
-    </div>
-    <div class="tile-grid">
-
-      <!-- Living Room -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Living Room">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_living.jpg')">
-            <div class="fc"><span class="ico">🛋️</span><div class="name">Living Room</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">🛋️</div>
-            <div class="b-title">Living Room</div>
-            <p class="b-desc">The heart of the house — a soaring social space anchored by the stone fireplace wall, 75″ Frame TV, Sonos sound, and a curated bar. Where the whole gathering gathers.</p>
-            <span class="b-tag">75″ Frame TV · Sonos · Wine Bar · Fireplace</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Kitchen & Dining -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Kitchen and Dining">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_kitchen.jpg')">
-            <div class="fc"><span class="ico">🍽️</span><div class="name">Kitchen & Dining</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">🍽️</div>
-            <div class="b-title">Kitchen & Dining</div>
-            <p class="b-desc">A chef's kitchen meets a 10-seat dining table under hand-woven pendant lights. Marble counters, DeBacco appliances, a generous island — built for long meals and good stories.</p>
-            <span class="b-tag">Gourmet Kitchen · Island Bar · Seats 10+</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Deck -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Deck">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_deck.jpg')">
-            <div class="fc"><span class="ico">🌅</span><div class="name">The Deck</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">🌅</div>
-            <div class="b-title">The Deck</div>
-            <p class="b-desc">Floor-to-ceiling glass opens onto the outdoor pergola deck with unobstructed ocean and hillside panoramas. The best happy hour seat in Garopaba — every single evening.</p>
-            <span class="b-tag">Panoramic Views · Glass Balustrades · Outdoor Dining</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Library / Lower Level -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Library">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_library_b.jpg')">
-            <div class="fc"><span class="ico">📚</span><div class="name">The Library</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">📚</div>
-            <div class="b-title">The Library</div>
-            <p class="b-desc">The lower level opens to a light-filled reading nook tucked beneath the floating staircase — surrounded by bookshelves, lush garden views, and deep green cushions. The quietest corner in the house.</p>
-            <span class="b-tag">Built-in Library · Staircase Feature · Garden Views</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Laundry Room -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Laundry Room">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_laundry.jpg')">
-            <div class="fc"><span class="ico">👗</span><div class="name">Laundry Room</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">👗</div>
-            <div class="b-title">Laundry Room</div>
-            <p class="b-desc">A beautifully finished utility space — rich wood cabinetry, washer and dryer, built-in hang rail, and stone countertop. Even the laundry room is worth a look.</p>
-            <span class="b-tag">Washer & Dryer · Wood Cabinetry · Full Utility</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Suite Planície -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Planície">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_suite1.jpg')">
-            <div class="fc"><span class="ico">🔆</span><div class="name">Suite Planície</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">🔆</div>
-            <div class="b-title">Suite Planície · Plains</div>
-            <p class="b-desc">The premium suite — warm timber, slatted wood partitions, and plains-inspired art. King bed with custom closet. The grandest rest in the house at nearly 20 m².</p>
-            <span class="b-tag">King Bed · 19.9 m² · Premium Mezzanine</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Suite Ilha -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Ilha">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_suite2.jpg')">
-            <div class="fc"><span class="ico">💧</span><div class="name">Suite Ilha</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">💧</div>
-            <div class="b-title">Suite Ilha · Island</div>
-            <p class="b-desc">Cool, dark, and deeply restful — this Island suite features a King bed with ocean-wave art, moody dark headboard, and the focused calm of deep blue water.</p>
-            <span class="b-tag">King Bed · 13.5 m² · Ocean Mood</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Suite Montanha -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Montanha">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_suite3.jpg')">
-            <div class="fc"><span class="ico">🌄</span><div class="name">Suite Montanha</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">🌄</div>
-            <div class="b-title">Suite Montanha · Mountain</div>
-            <p class="b-desc">Bold red accents, bunk-style flex beds, and a full glass door opening to the Garopaba panorama. A breathtaking view of the ocean and city stretches beyond the deck.</p>
-            <span class="b-tag">Flex Bunk Beds · 13.5 m² · Panoramic Balcony</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Suite Floresta -->
-      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Floresta">
-        <div class="tile">
-          <div class="tile-face tile-front" style="background-image:url('assets/rooms/room_suite4.jpg')">
-            <div class="fc"><span class="ico">🌴</span><div class="name">Suite Floresta</div><div class="hint">tap to explore</div></div>
-          </div>
-          <div class="tile-face tile-back room-back">
-            <div class="b-ico">🌴</div>
-            <div class="b-title">Suite Floresta · Forest</div>
-            <p class="b-desc">Lush forest-green tones, flex bunk beds, and a glass door framing the hillside Atlantic Forest beyond. Grounding, natural, and perfectly calm.</p>
-            <span class="b-tag">Flex Bunk Beds · 13.6 m² · Forest Panorama</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 <!-- EXPERIENCES -->
 <div class="exp-bg" id="experiences">
@@ -1081,6 +999,248 @@
 </div>
 
 <!-- ══ GAROPABA GUIDE ══════════════════════════════════════ -->
+<!-- CINEMA — video tour modal ──────────────────────────────── -->
+<div class="cinema-overlay" id="cinema" onclick="if(event.target===this)closeCinema()">
+  <button class="cinema-close" onclick="closeCinema()" aria-label="Close">✕</button>
+  <p class="cinema-title" id="cinema-title">The House Tour</p>
+  <div class="cinema-stage" id="cinema-stage">
+    <video id="cinema-video" controls playsinline preload="metadata"></video>
+    <div class="cinema-spinner">Loading…</div>
+    <div class="cinema-error">
+      <div style="font-size:1.6rem">🎬</div>
+      <div id="cinema-error-text">This film isn't available yet.</div>
+    </div>
+  </div>
+  <div class="cinema-bar">
+    <button class="cin-tab active" id="cin-tab-tour"  onclick="openCinema('tour')">🏡 House Tour</button>
+    <button class="cin-tab"        id="cin-tab-drone" onclick="openCinema('drone')">🚁 Drone View</button>
+  </div>
+</div>
+
+<!-- ROOMS / EXPLORE THE HOUSE -->
+<div class="rooms-bg" id="rooms">
+  <div class="wrap">
+    <div class="sh fu">
+      <p class="eyebrow">Explore the House</p>
+      <h2>Inside The <em>Gathering</em></h2>
+      <p>Tap each space to step inside — every room designed with intention, crafted to feel like nowhere else.</p>
+    </div>
+    <div class="tile-grid">
+
+      <!-- Living Room -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Living Room">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/living.jpg')">
+            <div class="fc"><span class="ico">🛋️</span><div class="name">Living Room</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🛋️</div>
+            <div class="b-title">Living Room · The Ranch</div>
+            <p class="b-desc">The heart of the house — a soaring pavilion under exposed timber trusses, anchored by the stone fireplace wall, 75″ Frame TV, Sonos sound and a curated wine bar. Where the whole gathering gathers.</p>
+            <span class="b-tag">75″ Frame TV · Sonos · Wine Bar · Fireplace</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The Kitchen -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Kitchen">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/kitchen.jpg')">
+            <div class="fc"><span class="ico">🍽️</span><div class="name">The Kitchen</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🍽️</div>
+            <div class="b-title">The Kitchen · Chef's Kitchen</div>
+            <p class="b-desc">A full chef's kitchen with a stone island, gas cooktop and DeBacco appliances — wrapped in glass so whoever is cooking still gets the best view in the house.</p>
+            <span class="b-tag">Gourmet Kitchen · Stone Island · Ocean Outlook</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dining Room -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Dining Room">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/dining.jpg')">
+            <div class="fc"><span class="ico">🕯️</span><div class="name">Dining Room</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🕯️</div>
+            <div class="b-title">Dining Room · Sala de Jantar</div>
+            <p class="b-desc">A ten-seat table under hand-woven pendant lights, framed by a warm timber wall. Built for long lunches that turn into longer dinners.</p>
+            <span class="b-tag">Seats 10+ · Pendant Lighting · Open to Kitchen</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The Deck -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Deck">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/deck.jpg')">
+            <div class="fc"><span class="ico">🌅</span><div class="name">The Deck</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🌅</div>
+            <div class="b-title">The Deck · Sunset Deck</div>
+            <p class="b-desc">Hardwood decking runs the length of the glass façade, edged in frameless glass balustrades. The best happy-hour seat in Garopaba — every single evening.</p>
+            <span class="b-tag">Full-Length Deck · Glass Balustrades · Outdoor Dining</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The Pool -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Pool">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/pool.jpg')">
+            <div class="fc"><span class="ico">🏊</span><div class="name">The Pool</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🏊</div>
+            <div class="b-title">The Pool · Infinity Pool</div>
+            <p class="b-desc">A heated infinity pool set into the hillside deck, spilling toward the Atlantic Forest and the bay beyond. Sun all afternoon, silence all morning.</p>
+            <span class="b-tag">Infinity Edge · Hillside Setting · All-Day Sun</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The View -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The View">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/view.jpg')">
+            <div class="fc"><span class="ico">🌊</span><div class="name">The View</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🌊</div>
+            <div class="b-title">The View · Garopaba Bay</div>
+            <p class="b-desc">From the top of Morro da Silveira the whole bay opens up — town, coastline and open ocean in one uninterrupted sweep. On clear evenings you can watch the lights come on across the water.</p>
+            <span class="b-tag">Panoramic Bay · Sunrise & Sunset · Whale Season</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The Library -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Library">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/library.jpg')">
+            <div class="fc"><span class="ico">📚</span><div class="name">The Library</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">📚</div>
+            <div class="b-title">The Library · Reading Nook</div>
+            <p class="b-desc">Tucked beneath the floating timber staircase — books, board games and deep seating against a wall of glass. A full afternoon can disappear here.</p>
+            <span class="b-tag">Reading Nook · Board Games · Floating Stair</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The Arrival -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Arrival">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/arrival.jpg')">
+            <div class="fc"><span class="ico">🚪</span><div class="name">The Arrival</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🚪</div>
+            <div class="b-title">The Arrival · Entrada Principal</div>
+            <p class="b-desc">A stepped stone approach rises to the main entrance under a broad timber canopy. The moment the hill opens up and the house reveals itself.</p>
+            <span class="b-tag">Private Entrance · Covered Canopy · Stone Approach</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The Lawn -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="The Lawn">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/lawn.jpg')">
+            <div class="fc"><span class="ico">🌿</span><div class="name">The Lawn</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🌿</div>
+            <div class="b-title">The Lawn · Open Grounds</div>
+            <p class="b-desc">Level lawn wrapping the pavilion — room for football, yoga at sunrise, or simply lying in the grass while the hill does the rest.</p>
+            <span class="b-tag">Level Lawn · Garden Grounds · Pet Friendly</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Laundry -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Laundry">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/laundry.jpg')">
+            <div class="fc"><span class="ico">🧺</span><div class="name">Laundry</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🧺</div>
+            <div class="b-title">Laundry · Utility Room</div>
+            <p class="b-desc">A full laundry with washer, dryer and drying rack — the unglamorous detail that makes a two-week stay feel effortless.</p>
+            <span class="b-tag">Washer · Dryer · Long-Stay Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suite Planície -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Planície">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/suite_planicie.jpg')">
+            <div class="fc"><span class="ico">🌾</span><div class="name">Suite Planície</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🌾</div>
+            <div class="b-title">Suite Planície · Plains</div>
+            <p class="b-desc">Warm neutral tones behind a slatted timber screen, with a private glass door opening to the valley. The quietest corner of the house.</p>
+            <span class="b-tag">Queen Bed · 14 m² · Valley Outlook</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suite Ilha -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Ilha">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/suite_ilha.jpg')">
+            <div class="fc"><span class="ico">🏝️</span><div class="name">Suite Ilha</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🏝️</div>
+            <div class="b-title">Suite Ilha · Island</div>
+            <p class="b-desc">Deep ocean-blue accents and a full glass wall framing the hillside and the water beyond. Wake up to the bay.</p>
+            <span class="b-tag">Queen Bed · 14 m² · Ocean Outlook</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suite Floresta -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Floresta">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/suite_floresta.jpg')">
+            <div class="fc"><span class="ico">🌴</span><div class="name">Suite Floresta</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🌴</div>
+            <div class="b-title">Suite Floresta · Forest</div>
+            <p class="b-desc">Lush forest-green tones and flex bunk beds, with glass opening to the Atlantic Forest on the hillside. Grounding, natural and perfectly calm.</p>
+            <span class="b-tag">Flex Bunk Beds · 13.6 m² · Forest Panorama</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suite Montanha -->
+      <div class="tile-wrap" onclick="this.classList.toggle('flipped')" tabindex="0" role="button" aria-label="Suite Montanha">
+        <div class="tile">
+          <div class="tile-face tile-front" style="background-image:url('assets/house/suite_montanha.jpg')">
+            <div class="fc"><span class="ico">🌄</span><div class="name">Suite Montanha</div><div class="hint">tap to explore</div></div>
+          </div>
+          <div class="tile-face tile-back room-back">
+            <div class="b-ico">🌄</div>
+            <div class="b-title">Suite Montanha · Mountain</div>
+            <p class="b-desc">Bold red accents, bunk-style flex beds and a full glass door onto the Garopaba panorama — ocean and city stretching beyond the deck.</p>
+            <span class="b-tag">Flex Bunk Beds · 13.5 m² · Panoramic Balcony</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <div class="guide-bg" id="guide">
   <div class="wrap">
     <div class="sh fu">
@@ -1433,6 +1593,66 @@
   const nav = document.getElementById('nav');
   addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 60));
 
+  // Brand mark returns to the top from anywhere on the page
+  function goHome(e) {
+    e.preventDefault();
+    closeMenu();
+    scrollTo({ top: 0, behavior: 'smooth' });
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+
+  // ── Cinema: house tour + drone view ───────────────────────
+  const CINEMA = {
+    tour:  { src:'assets/house-tour.mp4', title:'The House Tour',
+             missing:'The house tour film is being finalised — check back shortly.' },
+    drone: { src:'assets/birds-eye.mov',  title:'Drone View · Morro da Silveira',
+             missing:'The drone film is being finalised — check back shortly.' },
+  };
+
+  function openCinema(which) {
+    const cfg = CINEMA[which]; if (!cfg) return;
+    const overlay = document.getElementById('cinema');
+    const stage   = document.getElementById('cinema-stage');
+    const video   = document.getElementById('cinema-video');
+
+    document.getElementById('cinema-title').textContent = cfg.title;
+    document.getElementById('cinema-error-text').textContent = cfg.missing;
+    document.getElementById('cin-tab-tour').classList.toggle('active', which === 'tour');
+    document.getElementById('cin-tab-drone').classList.toggle('active', which === 'drone');
+
+    stage.classList.remove('ready', 'errored');
+    video.src = cfg.src;
+    video.currentTime = 0;
+    video.load();
+    video.play().catch(() => {});   // some browsers block autoplay with sound; controls still work
+
+    if (!overlay.classList.contains('show')) {
+      overlay.classList.add('show');
+      document.body.style.overflow = 'hidden';
+      document.querySelector('.hero-video')?.pause();   // don't decode two videos at once
+    }
+  }
+
+  function closeCinema() {
+    const overlay = document.getElementById('cinema');
+    const video   = document.getElementById('cinema-video');
+    if (!overlay.classList.contains('show')) return;
+    overlay.classList.remove('show');
+    video.pause();
+    video.removeAttribute('src');   // stop the download
+    video.load();
+    document.body.style.overflow = '';
+    document.querySelector('.hero-video')?.play().catch(() => {});
+  }
+
+  (function wireCinema(){
+    const stage = document.getElementById('cinema-stage');
+    const video = document.getElementById('cinema-video');
+    video.addEventListener('loadeddata', () => stage.classList.add('ready'));
+    // A missing or invalid file lands here — show the placeholder, not a dead player.
+    video.addEventListener('error', () => { if (video.getAttribute('src')) stage.classList.add('errored'); });
+  })();
+
   // Mobile menu — body scroll is locked while the drawer is open
   function toggleMenu() {
     const open = document.body.classList.toggle('menu-open');
@@ -1444,7 +1664,7 @@
     toggleMenu();
   }
   // Escape closes it; so does growing past the mobile breakpoint mid-session
-  addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape') { closeCinema(); closeMenu(); } });
   matchMedia('(min-width:651px)').addEventListener('change', e => { if (e.matches) closeMenu(); });
 
   // Scroll-reveal
