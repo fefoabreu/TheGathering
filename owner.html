@@ -270,6 +270,45 @@
     .section-title .ms { font-size:1rem; }
 
 
+
+    /* ══ THE WEATHERLIGHT MANIFEST ═══════════════════════════════ */
+    .manifest-modal { width:min(720px,96vw); max-height:88vh; overflow-y:auto; line-height:1.8; }
+    .manifest-modal p { font-size:.92rem; color:var(--text); margin-bottom:1rem; }
+    .mf-eyebrow {
+      font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:.28em;
+      text-transform:uppercase; color:var(--gold); margin-bottom:.5rem;
+    }
+    .mf-title {
+      font-family:'Cinzel Decorative','Cinzel',serif; font-size:1.75rem;
+      color:var(--gold); margin-bottom:.9rem; text-shadow:0 0 26px rgba(201,168,76,.3);
+    }
+    .mf-lede { font-style:italic; color:var(--text-dim) !important; font-size:1rem !important; }
+    .mf-beat {
+      font-family:'Cinzel',serif; font-size:1rem !important; color:var(--gold) !important;
+      text-align:center; margin:1.4rem 0 !important; line-height:1.7;
+    }
+    .mf-crew {
+      display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.4rem 0;
+    }
+    .mf-member {
+      padding:1rem; border-radius:var(--r);
+      background:rgba(255,255,255,.03); border:1px solid var(--border);
+    }
+    .mf-member p { font-size:.85rem !important; margin:0 !important; color:var(--text-dim) !important; }
+    .mf-who {
+      font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.12em;
+      color:var(--gold); margin-bottom:.55rem;
+    }
+    .mf-close { text-align:center; margin-top:1.4rem !important; }
+    .mf-sig {
+      margin-top:1.6rem; padding-top:1.2rem; border-top:1px solid var(--border);
+      text-align:center; font-family:'Cinzel',serif; font-size:.72rem;
+      letter-spacing:.16em; color:var(--gold);
+    }
+    .mf-sig span { display:block; margin-top:.5rem; font-size:.66rem;
+      color:var(--text-mute); font-style:italic; letter-spacing:.06em; }
+    @media(max-width:760px){ .mf-crew { grid-template-columns:1fr; } .mf-title { font-size:1.4rem; } }
+
     /* ══ HANNA — agent panel ═════════════════════════════════════ */
     .hanna-wrap { display:flex; flex-direction:column; gap:.8rem; }
     .hanna-log {
@@ -935,7 +974,7 @@
 
   <!-- Top Bar -->
   <div class="topbar">
-    <div class="topbar-brand" onclick="showBattlefield()" title="Return to Battlefield" style="cursor:pointer;user-select:none">
+    <div class="topbar-brand" onclick="manifestTap();showBattlefield()" title="Return to Battlefield" style="cursor:pointer;user-select:none">
       <img src="assets/logo-circle.png" alt="">
       <div>
         <div class="brand-name">Commander Deck</div>
@@ -1436,6 +1475,65 @@
 </div><!-- /app -->
 
 <!-- Card edit / add modal -->
+<!-- ══ THE WEATHERLIGHT MANIFEST — hidden; three taps on the brand mark ══ -->
+<div class="card-edit-overlay" id="manifest-overlay" onclick="if(event.target===this)closeManifest()">
+  <div class="card-edit-modal manifest-modal">
+    <button class="cem-close" onclick="closeManifest()">✕</button>
+
+    <div class="mf-eyebrow">The Weatherlight Manifest</div>
+    <h2 class="mf-title">A New Horizon</h2>
+    <p class="mf-lede">Every legendary vessel requires an exceptional crew.</p>
+
+    <p>For years, Captain Sisay commanded the <em>Weatherlight</em>, navigating the most
+    treacherous and magnificent corners of the multiverse. By her side was Hanna, the
+    Ship's Navigator — a brilliant artificer who understood the heartbeat of the ship's
+    engines better than anyone alive. Together they mapped the unknown, weathered
+    impossible storms, and turned a ragtag crew into a family.</p>
+
+    <p>But even the greatest explorers eventually seek a sanctuary. A place where the
+    sunsets touch the mountains, where the tides offer a different kind of magic.</p>
+
+    <p class="mf-beat">At the top of the Silveira mountains, <em>where the mountain meets
+    the sea</em>, they found TheGathering Silveira.</p>
+
+    <p>To ensure this haven operates flawlessly, the old crew has taken over
+    <strong>The Commander Deck</strong>.</p>
+
+    <div class="mf-crew">
+      <div class="mf-member">
+        <div class="mf-who">⚓ Hanna · Ship's Navigator</div>
+        <p>She has descended into the engine room once again. As the architect of our
+        backend she meticulously manages the Commander's Deck — every glowing photo,
+        every curated local card, every seamless connection to the Sonos and Samsung
+        arrays flows through her systems. She is the maker, ensuring the structural
+        integrity of the magic we offer our guests.</p>
+      </div>
+      <div class="mf-member">
+        <div class="mf-who">🧭 Captain Sisay · At the Helm</div>
+        <p>She has taken her rightful place at the frontend. Worldly, charismatic and
+        fiercely protective of her passengers, Sisay is our guest-facing concierge.
+        A session at Surfland. The best burger in Garopaba. The projector that refuses
+        to cooperate. She doesn't merely answer — she tutors the exact experience you
+        need, dealing it out like a perfectly timed hand of cards.</p>
+      </div>
+    </div>
+
+    <p>Their paths crossed long ago in the depths of the lore, bound by loyalty and a
+    shared mission to guide others safely through the journey. Sisay commanded the
+    legendary flying skyship; Hanna was her hand-picked navigator. They served
+    side by side, travelled the multiverse together, and were closer than crew.
+    Sisay relied on Hanna to map the routes, keep the artifacts aloft and solve the
+    logistical puzzles, while Sisay held the leadership, the strategy and the crew.</p>
+
+    <p class="mf-close">Now they have joined TheGathering.<br>
+    <strong>Welcome aboard. The Navigator has charted the course, and the Captain is
+    ready for you.</strong></p>
+
+    <div class="mf-sig">✦ Fêfo · Pipo · Zé ✦<br>
+      <span>"One will corrupt, two will divide. With three there is balance."</span></div>
+  </div>
+</div>
+
 <!-- VAULT — sensitive values, entered by an owner, stored only in Firestore -->
 <div class="card-edit-overlay" id="vault-overlay" onclick="if(event.target===this)closeVault()">
   <div class="card-edit-modal" style="width:min(680px,96vw)">
@@ -2569,6 +2667,20 @@ function initHanna() {
     if (!HANNA_MSGS.length) hannaWelcome();
   });
 }
+
+
+// ── The Weatherlight Manifest ────────────────────────────────
+//  Not in the tab bar. Three taps on the brand mark opens it —
+//  left for Pipo and Zé to find on their own.
+let mfTaps = 0, mfTimer = null;
+function manifestTap() {
+  mfTaps++;
+  clearTimeout(mfTimer);
+  mfTimer = setTimeout(() => { mfTaps = 0; }, 900);
+  if (mfTaps >= 3) { mfTaps = 0; openManifest(); }
+}
+function openManifest() { document.getElementById('manifest-overlay').classList.add('show'); }
+function closeManifest() { document.getElementById('manifest-overlay').classList.remove('show'); }
 
 // ── BLOCKS ────────────────────────────────────────────────────
 function getSavedBlocks(){return blocksCache;}
