@@ -435,6 +435,42 @@
     .vendor-phone { font-size:.85rem; color:var(--text-dim); margin-top:.4rem; }
     .vendor-cost  { font-size:.78rem; color:var(--success); margin-top:.25rem; }
 
+
+    /* ══ CALENDAR NAV ════════════════════════════════════════════ */
+    .cal-nav { display:flex; align-items:center; gap:.6rem; margin-bottom:1rem; }
+    .cal-nav-title {
+      font-family:'Cinzel',serif; font-size:1rem; color:var(--gold);
+      letter-spacing:.1em; min-width:11rem; text-align:center;
+    }
+    .cal-arrow {
+      width:34px; height:34px; border-radius:8px; cursor:pointer; flex-shrink:0;
+      background:rgba(255,255,255,.05); border:1px solid var(--border);
+      color:var(--text); font-size:1.1rem; line-height:1; transition:all .25s;
+    }
+    .cal-arrow:hover { border-color:rgba(201,168,76,.5); color:var(--gold); }
+    .cal-today-btn { margin-left:auto; flex-shrink:0; }
+    .cal-day.has-event { box-shadow:inset 0 -2px 0 rgba(91,170,212,.55); }
+    .gcal-tag {
+      margin-top:.2rem; font-size:.58rem; line-height:1.3; border-radius:4px;
+      padding:.12rem .25rem; background:rgba(91,170,212,.18);
+      color:#9CCDE4; border:1px solid rgba(91,170,212,.3);
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .cal-legend {
+      display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem;
+      font-size:.72rem; color:var(--text-dim);
+    }
+    .cal-legend span { display:flex; align-items:center; gap:.4rem; }
+    .lg { width:11px; height:11px; border-radius:3px; display:inline-block; }
+    .lg-booked { background:rgba(74,140,180,.5); border:1px solid rgba(74,140,180,.7); }
+    .lg-owner  { background:rgba(201,168,76,.4); border:1px solid rgba(201,168,76,.7); }
+    .lg-event  { background:rgba(91,170,212,.3); border:1px solid rgba(91,170,212,.6); }
+    .lg-avail  { background:rgba(91,170,114,.25); border:1px solid rgba(91,170,114,.5); }
+    @media(max-width:760px){
+      .cal-nav-title { font-size:.85rem; min-width:8rem; }
+      .gcal-tag { font-size:.5rem; }
+    }
+
     /* ══ CALENDAR ════════════════════════════════════════════════ */
     .cal-wrap { overflow-x:auto; }
     .cal-month { margin-bottom:2.5rem; }
@@ -1905,27 +1941,85 @@ function getBookingForDate(iso){for(const r of BOOKED_RANGES)if(dateInRange(iso,
 function getOwnerForDate(iso){for(const b of getSavedBlocks())if(dateInRange(iso,b.from,b.to))return b;for(const r of OWNER_RANGES)if(dateInRange(iso,r.from,r.to))return r;return null;}
 function isAvailable(iso){return dateInRange(iso,'2026-06-28','2026-07-05')||dateInRange(iso,'2026-07-26','2026-08-02')||dateInRange(iso,'2026-08-16','2026-09-07');}
 function isoDate(y,m,d){return`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+// Month cursor. The old version hardcoded May–Sep 2026 and rendered five
+// grids at once, so it went stale the moment the season moved on and buried
+// the page. One month, navigable, opening on today.
+let calCursor = new Date();
+
+function calShift(n) {
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() + n, 1);
+  renderCalendar();
+}
+function calToday() { calCursor = new Date(); renderCalendar(); }
+
+/** Property-calendar events covering a given ISO date. */
+function getGcalForDate(iso) {
+  return (TG_GCAL || []).filter(e => iso >= e.from && iso <= e.to);
+}
+
 function renderCalendar() {
-  const root = document.getElementById('cal-root'); root.innerHTML='';
-  for (let m=4; m<=8; m++) {
-    const wrap = document.createElement('div'); wrap.className='cal-month';
-    wrap.innerHTML = `<div class="cal-month-title">${MONTHS[m]} 2026</div>`;
-    const grid = document.createElement('div'); grid.className='cal-grid';
-    DAYS.forEach(d=>{const h=document.createElement('div');h.className='cal-day-hdr';h.textContent=d;grid.appendChild(h);});
-    const first=new Date(2026,m,1).getDay(), days=new Date(2026,m+1,0).getDate();
-    for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
-    for(let d=1;d<=days;d++){
-      const iso=isoDate(2026,m+1,d), cell=document.createElement('div'); cell.className='cal-day';
-      const bk=getBookingForDate(iso), ow=getOwnerForDate(iso), av=isAvailable(iso);
-      if(ow)cell.classList.add('owner-block'); else if(bk)cell.classList.add('booked'); else if(av)cell.classList.add('available');
-      if(iso===todayISO)cell.classList.add('today');
-      cell.innerHTML=`<div class="dn">${d}</div>`;
-      if(bk&&(d===1||new Date(2026,m,d).getDay()===0||iso===bk.from)){const t=document.createElement('div');t.className='booking-tag';t.textContent=bk.label;cell.appendChild(t);}
-      if(ow&&(d===1||new Date(2026,m,d).getDay()===0||iso===ow.from)){const t=document.createElement('div');t.className='owner-tag';t.textContent=ow.label;cell.appendChild(t);}
-      grid.appendChild(cell);
+  const root = document.getElementById('cal-root');
+  if (!root) return;
+  root.innerHTML = '';
+
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+
+  const bar = document.createElement('div');
+  bar.className = 'cal-nav';
+  bar.innerHTML = `
+    <button class="cal-arrow" onclick="calShift(-1)" aria-label="Previous month">‹</button>
+    <div class="cal-nav-title">${MONTHS[m]} ${y}</div>
+    <button class="cal-arrow" onclick="calShift(1)" aria-label="Next month">›</button>
+    <button class="btn-sm btn-ghost cal-today-btn" onclick="calToday()">Today</button>`;
+  root.appendChild(bar);
+
+  const wrap = document.createElement('div'); wrap.className = 'cal-month';
+  const grid = document.createElement('div'); grid.className = 'cal-grid';
+  DAYS.forEach(d => { const h = document.createElement('div'); h.className = 'cal-day-hdr'; h.textContent = d; grid.appendChild(h); });
+
+  const first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
+  for (let i = 0; i < first; i++) { const e = document.createElement('div'); e.className = 'cal-day empty'; grid.appendChild(e); }
+
+  for (let d = 1; d <= days; d++) {
+    const iso = isoDate(y, m + 1, d), cell = document.createElement('div');
+    cell.className = 'cal-day';
+    const bk = getBookingForDate(iso), ow = getOwnerForDate(iso), av = isAvailable(iso);
+    const ev = getGcalForDate(iso);
+
+    if (ow) cell.classList.add('owner-block');
+    else if (bk) cell.classList.add('booked');
+    else if (av) cell.classList.add('available');
+    if (ev.length) cell.classList.add('has-event');
+    if (iso === todayISO) cell.classList.add('today');
+
+    cell.innerHTML = `<div class="dn">${d}</div>`;
+    const startOfRun = d === 1 || new Date(y, m, d).getDay() === 0;
+    if (bk && (startOfRun || iso === bk.from)) {
+      const t = document.createElement('div'); t.className = 'booking-tag'; t.textContent = bk.label; cell.appendChild(t);
     }
-    wrap.appendChild(grid); root.appendChild(wrap);
+    if (ow && (startOfRun || iso === ow.from)) {
+      const t = document.createElement('div'); t.className = 'owner-tag'; t.textContent = ow.label; cell.appendChild(t);
+    }
+    // Property-calendar events, on the day they begin or at the start of a week
+    ev.forEach(e => {
+      if (!(startOfRun || iso === e.from)) return;
+      const t = document.createElement('div'); t.className = 'gcal-tag';
+      t.textContent = e.title; t.title = e.title + '  (' + e.from + (e.to !== e.from ? ' → ' + e.to : '') + ')';
+      cell.appendChild(t);
+    });
+    grid.appendChild(cell);
   }
+
+  wrap.appendChild(grid); root.appendChild(wrap);
+
+  const legend = document.createElement('div');
+  legend.className = 'cal-legend';
+  legend.innerHTML = `
+    <span><i class="lg lg-booked"></i>Booked</span>
+    <span><i class="lg lg-owner"></i>Owner block</span>
+    <span><i class="lg lg-event"></i>Property calendar</span>
+    <span><i class="lg lg-avail"></i>Available</span>`;
+  root.appendChild(legend);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2718,6 +2812,7 @@ async function loadGcal(force) {
     gcalState = 'error: ' + (e.message || e);
   }
   renderGcal();
+  renderCalendar();   // events belong on the grid too
   return TG_GCAL;
 }
 
