@@ -14,6 +14,11 @@ workers_dev = false
 pattern = "hanna.fefoabreu.me"
 custom_domain = true
 
+# Caches the Google Calendar feed so we are not refetching it per page view.
+[[kv_namespaces]]
+binding = "HANNA_CACHE"
+id = "78d83d4847bd4b02b9fb235db1b0be48"
+
 [vars]
 MODEL = "claude-sonnet-5"
 

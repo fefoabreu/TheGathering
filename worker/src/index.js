@@ -81,6 +81,104 @@ async function verifyFirebaseToken(token, apiKey) {
   return { ok: true, uid: user.localId };
 }
 
+
+/**
+ * Google Calendar sync (read-only).
+ *
+ * The property's shared Google Calendar — thegatheringsilveira@gmail.com — is
+ * where the three owners actually work, so it is the source of truth for what
+ * is happening at the house. We read its secret iCal address server-side; the
+ * URL is a bearer credential and never reaches the browser.
+ *
+ * Read-only and additive by design. Synced events are returned separately from
+ * the portal's own owner blocks and never overwrite them: losing a block a
+ * human typed is exactly the failure that turns into an owner-fault
+ * cancellation under clause 6.4.
+ */
+
+function icsUnfold(text) {
+  // RFC 5545 folds long lines with CRLF + a single space or tab.
+  return text.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '');
+}
+
+function icsUnescape(v) {
+  return (v || '').replace(/\\n/gi, '\n').replace(/\\,/g, ',')
+                  .replace(/\;/g, ';').replace(/\\\\/g, '\\');
+}
+
+/** DTSTART;VALUE=DATE:20260910  or  DTSTART:20260910T130000Z → YYYY-MM-DD */
+function icsDate(raw) {
+  if (!raw) return null;
+  const m = raw.match(/(\d{4})(\d{2})(\d{2})/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+function parseIcs(text) {
+  const out = [];
+  const body = icsUnfold(text);
+  const blocks = body.split(/BEGIN:VEVENT/).slice(1);
+
+  for (const b of blocks) {
+    const chunk = b.split(/END:VEVENT/)[0];
+    const field = name => {
+      const m = chunk.match(new RegExp('^' + name + '[^:\\r\\n]*:(.*)$', 'mi'));
+      return m ? m[1].trim() : '';
+    };
+    const status = field('STATUS').toUpperCase();
+    if (status === 'CANCELLED') continue;
+
+    const from = icsDate(field('DTSTART'));
+    let to     = icsDate(field('DTEND'));
+    if (!from) continue;
+
+    // All-day DTEND is exclusive in iCal; show the last occupied night.
+    const allDay = /VALUE=DATE(?!-TIME)/i.test(chunk.match(/^DTSTART[^:\r\n]*/mi)?.[0] || '');
+    if (allDay && to) {
+      const d = new Date(to + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() - 1);
+      to = d.toISOString().slice(0, 10);
+    }
+
+    out.push({
+      uid:      field('UID'),
+      title:    icsUnescape(field('SUMMARY')) || '(untitled)',
+      from,
+      to:       to || from,
+      where:    icsUnescape(field('LOCATION')),
+      notes:    icsUnescape(field('DESCRIPTION')).slice(0, 500),
+      source:   'google',
+      recurring: /^RRULE/mi.test(chunk),
+    });
+  }
+  out.sort((a, b) => a.from.localeCompare(b.from));
+  return out;
+}
+
+async function handleCalendar(env, origin) {
+  const url = env.GCAL_ICS_URL;
+  if (!url) {
+    return json({ error: 'calendar_not_configured',
+                  message: 'The Google Calendar feed is not connected yet.' }, 503, origin);
+  }
+
+  const kv = env.HANNA_CACHE;
+  if (kv) {
+    const hit = await kv.get('gcal', 'json');
+    if (hit) return json({ ...hit, cached: true }, 200, origin);
+  }
+
+  let res;
+  try { res = await fetch(url, { headers: { 'User-Agent': 'TheGathering/1.0' } }); }
+  catch { return json({ error: 'fetch_failed' }, 502, origin); }
+  if (!res.ok) return json({ error: 'fetch_failed', status: res.status }, 502, origin);
+
+  const events = parseIcs(await res.text());
+  const payload = { events, count: events.length, fetchedAt: new Date().toISOString() };
+  // Ten minutes is fresh enough for three people and kind to Google.
+  if (kv) await kv.put('gcal', JSON.stringify(payload), { expirationTtl: 600 });
+  return json(payload, 200, origin);
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -109,6 +207,10 @@ export default {
     let payload;
     try { payload = await request.json(); }
     catch { return json({ error: 'Body must be JSON' }, 400, origin); }
+
+    // Calendar sync shares the proxy's auth rather than standing up a second
+    // authenticated surface.
+    if (payload.action === 'calendar') return handleCalendar(env, origin);
 
     const body = {
       model:      payload.model  || env.MODEL || DEFAULT_MODEL,
