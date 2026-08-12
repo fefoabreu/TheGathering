@@ -857,7 +857,7 @@
     <span class="corner-tl">✦</span>
     <label class="gate-label">Access Code</label>
     <input type="password" id="pwd" class="gate-input" placeholder="Enter your password" autocomplete="current-password">
-    <button class="gate-btn" onclick="tryLogin()">Enter the Battlefield</button>
+    <button class="gate-btn" id="gate-submit" onclick="tryLogin()">Enter the Battlefield</button>
     <div id="gate-err">❌ Incorrect password. Try again.</div>
     <hr class="gate-divider">
     <p class="gate-quote">
@@ -1125,11 +1125,11 @@
           <div class="mtg-card">
             <p style="font-size:.87rem;color:var(--text-dim);margin-bottom:1rem">Sync the calendar via iCal with external booking platforms.</p>
             <div style="background:rgba(6,10,18,.9);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;font-size:.72rem;color:var(--gold);word-break:break-all;font-family:monospace;margin-bottom:1rem;line-height:1.5">
-              https://www.airbnb.com/calendar/ical/1608023407293236428.ics?t=6d82fb3056d34c7dbf06fb04bf33fce9
+              <span id="ical-url" style="color:var(--text-mute);font-style:italic">Loading feed URL…</span>
             </div>
             <div style="display:flex;gap:.7rem;flex-wrap:wrap">
               <a href="https://www.airbnb.com/hosting/listings" class="btn-sm btn-gold" target="_blank" rel="noopener" style="text-decoration:none">Open Airbnb Host</a>
-              <button class="btn-sm btn-ghost" onclick="navigator.clipboard.writeText('https://www.airbnb.com/calendar/ical/1608023407293236428.ics?t=6d82fb3056d34c7dbf06fb04bf33fce9');this.textContent='✓ Copied'">Copy iCal Link</button>
+              <button class="btn-sm btn-ghost" id="ical-copy" onclick="copyIcal(this)">Copy iCal Link</button>
             </div>
           </div>
         </div>
@@ -1189,29 +1189,18 @@
     <div class="tab-panel" id="tab-housekeeping">
       <div class="section-title"><i class="ms ms-r ms-cost"></i> Recurring Services</div>
       <div class="sched-grid" style="margin-bottom:2.5rem">
-        <div class="sched-card"><div class="sched-type">🧹 House Cleaning</div><div class="sched-name">Dona Maria</div><div class="sched-detail">📞 +55 48 99802-8728</div><div class="sched-cost">R$450/visit · Pix: +55 48 99802 8728</div><div class="sched-next">🗓 Schedule before each check-in</div></div>
+        <div class="sched-card"><div class="sched-type">🧹 House Cleaning</div><div class="sched-name">Dona Maria</div><div class="sched-detail">📞 +55 48 99802-8728</div><div class="sched-cost">R$450/visit · <span class="pay" data-vendor="cleaning">Pix hidden</span></div><div class="sched-next">🗓 Schedule before each check-in</div></div>
         <div class="sched-card"><div class="sched-type">🧹 Cleaning (Alt)</div><div class="sched-name">Rosana</div><div class="sched-detail">📞 +55 51 99680-9433</div><div class="sched-cost">R$700/visit (with assistant)</div><div class="sched-next">🗓 Backup / heavy-clean option</div></div>
         <div class="sched-card"><div class="sched-type">🏊 Pool Maintenance</div><div class="sched-name">Edison "Édi" Silveira</div><div class="sched-detail">📞 +55 48 99120-6784</div><div class="sched-cost">R$700/mês (monthly)</div><div class="sched-next">🗓 Monthly recurring service</div></div>
-        <div class="sched-card"><div class="sched-type">🌿 Grass & Garden</div><div class="sched-name">Du</div><div class="sched-detail">📞 +55 48 99634-8646</div><div class="sched-cost">R$350/visit · Pix: 035.790.929-10</div><div class="sched-next">🗓 Every 3–4 weeks</div></div>
+        <div class="sched-card"><div class="sched-type">🌿 Grass & Garden</div><div class="sched-name">Du</div><div class="sched-detail">📞 +55 48 99634-8646</div><div class="sched-cost">R$350/visit · <span class="pay" data-vendor="garden">Pix hidden</span></div><div class="sched-next">🗓 Every 3–4 weeks</div></div>
         <div class="sched-card"><div class="sched-type">🪟 Window Cleaning</div><div class="sched-name">TBD</div><div class="sched-detail" style="color:var(--warn)">⚠️ Vendor not yet assigned</div><div class="sched-next">🗓 Schedule before each season</div></div>
         <div class="sched-card"><div class="sched-type">🔧 Hydraulic / Plumbing</div><div class="sched-name">Emerson Alves</div><div class="sched-detail">📞 +55 48 99655-7266</div><div class="sched-cost">Rate TBD / call-out</div><div class="sched-next">🗓 On-call as needed</div></div>
       </div>
-      <div class="section-title"><i class="ms ms-r ms-cost"></i> Keyless Entry Codes</div>
+      <div class="section-title" style="align-items:center"><i class="ms ms-r ms-cost"></i> Keyless Entry Codes<button class="btn-sm btn-gold" style="margin-left:auto;flex-shrink:0" onclick="openVault()">🔐 Vault</button></div>
       <div class="mtg-card" style="overflow-x:auto">
         <table>
           <thead><tr><th>Door / Slot</th><th>Person</th><th>Code</th></tr></thead>
-          <tbody>
-            <tr><td>🚨 Alarm</td><td style="color:var(--text-dim)">—</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
-            <tr><td>🔑 Master</td><td style="color:var(--text-dim)">All doors</td><td><code>202543</code></td></tr>
-            <tr><td>🔑 001–003</td><td style="color:var(--text-dim)">TAG access</td><td style="color:var(--text-mute)">NFC Tag</td></tr>
-            <tr><td>🔑 004 Pipo</td><td style="color:var(--text-dim)">Pipo</td><td><code>270483</code></td></tr>
-            <tr><td>🔑 005 Fêfo</td><td style="color:var(--text-dim)">Fêfo</td><td><code>200983</code></td></tr>
-            <tr><td>🔑 006 Zé</td><td style="color:var(--text-dim)">Zé</td><td><code>220983</code></td></tr>
-            <tr><td>🔑 Manutenção</td><td style="color:var(--text-dim)">Ricardo</td><td><code>88490</code></td></tr>
-            <tr><td>🔑 Manutenção</td><td style="color:var(--text-dim)">Renan</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
-            <tr><td>🔑 Cleaner</td><td style="color:var(--text-dim)">D. Maria / Fulana</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
-            <tr><td>🔒 Owners Lock</td><td style="color:var(--text-dim)">Owners</td><td><span style="color:var(--warn)">XXXX (update)</span></td></tr>
-          </tbody>
+          <tbody id="lock-codes-body"><tr><td colspan="3" style="color:var(--text-mute);font-style:italic">Loading codes…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1228,9 +1217,9 @@
         <div class="vendor-card"><div class="vendor-role">🔧 Hidráulico</div><div class="vendor-name">Emerson Alves</div><div class="vendor-phone">📞 +55 48 99655-7266</div></div>
         <div class="vendor-card"><div class="vendor-role">🏊 Manutenção Piscina</div><div class="vendor-name">Edison "Édi" Silveira</div><div class="vendor-phone">📞 +55 48 99120-6784</div><div class="vendor-cost">R$700/mês</div></div>
         <div class="vendor-card"><div class="vendor-role">🪟 Guarda-Corpo</div><div class="vendor-name">Cléverson</div><div class="vendor-phone">📞 +55 48 99655-7266</div></div>
-        <div class="vendor-card"><div class="vendor-role">🧹 Diarista</div><div class="vendor-name">Dona Maria</div><div class="vendor-phone">📞 +55 48 99802-8728</div><div class="vendor-cost">R$450/visita · Pix: +55 48 99802 8728</div></div>
+        <div class="vendor-card"><div class="vendor-role">🧹 Diarista</div><div class="vendor-name">Dona Maria</div><div class="vendor-phone">📞 +55 48 99802-8728</div><div class="vendor-cost">R$450/visita · <span class="pay" data-vendor="cleaning">Pix oculto</span></div></div>
         <div class="vendor-card"><div class="vendor-role">🧹 Diarista (Alt)</div><div class="vendor-name">Rosana</div><div class="vendor-phone">📞 +55 51 99680-9433</div><div class="vendor-cost">R$700/visita</div></div>
-        <div class="vendor-card"><div class="vendor-role">🌿 Jardinagem &amp; Grama</div><div class="vendor-name">Du</div><div class="vendor-phone">📞 +55 48 99634-8646</div><div class="vendor-cost">R$350/visita · Pix: 035.790.929-10</div></div>
+        <div class="vendor-card"><div class="vendor-role">🌿 Jardinagem &amp; Grama</div><div class="vendor-name">Du</div><div class="vendor-phone">📞 +55 48 99634-8646</div><div class="vendor-cost">R$350/visita · <span class="pay" data-vendor="garden">Pix oculto</span></div></div>
         <div class="vendor-card"><div class="vendor-role">📞 Property Manager</div><div class="vendor-name">Anfitriões de Aluguel</div><div class="vendor-phone"><a href="https://anfitrioesdealuguel.com.br" target="_blank" rel="noopener" style="color:var(--mu)">anfitrioesdealuguel.com.br</a></div></div>
         <div class="vendor-card"><div class="vendor-role">📞 Property Manager (Alt)</div><div class="vendor-name">Seazone</div><div class="vendor-phone"><a href="https://seazone.com.br" target="_blank" rel="noopener" style="color:var(--mu)">seazone.com.br</a></div></div>
       </div>
@@ -1320,8 +1309,7 @@
       </div>
       <div class="section-title"><i class="ms ms-w ms-cost"></i> WiFi Credentials</div>
       <div class="grid-2">
-        <div class="mtg-card"><div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Guest WiFi</div><div style="font-size:1rem;font-weight:600">The Gathering Silveira</div><div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code>welcome</code></div></div>
-        <div class="mtg-card"><div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">Owner WiFi</div><div style="font-size:1rem;font-weight:600">TheGathering</div><div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code>@tgsilveira</code></div></div>
+        <div id="wifi-cards" style="display:contents"><div class="mtg-card"><div style="font-size:.85rem;color:var(--text-mute);font-style:italic">Loading network details…</div></div></div>
       </div>
     </div>
 
@@ -1329,6 +1317,45 @@
 </div><!-- /app -->
 
 <!-- Card edit / add modal -->
+<!-- VAULT — sensitive values, entered by an owner, stored only in Firestore -->
+<div class="card-edit-overlay" id="vault-overlay" onclick="if(event.target===this)closeVault()">
+  <div class="card-edit-modal" style="width:min(680px,96vw)">
+    <button class="cem-close" onclick="closeVault()">✕</button>
+    <div class="cem-title"><i class="ms ms-r ms-cost"></i> The Vault</div>
+    <p style="font-size:.82rem;color:var(--text-dim);margin:-.4rem 0 1rem;line-height:1.6">
+      These values live only in Firestore, readable after sign-in. They are never
+      written to the repo. Rotate anything that was previously public before saving.
+    </p>
+
+    <div class="cem-field full">
+      <label class="cem-label">Lock codes — [{ slot, person, code }]</label>
+      <textarea class="cem-input" id="vault-codes" rows="7" spellcheck="false"
+        placeholder='[{"slot":"Master","person":"All doors","code":"……"}]'></textarea>
+    </div>
+    <div class="cem-field full">
+      <label class="cem-label">WiFi — [{ label, ssid, password }]</label>
+      <textarea class="cem-input" id="vault-wifi" rows="5" spellcheck="false"
+        placeholder='[{"label":"Guest WiFi","ssid":"…","password":"…"}]'></textarea>
+    </div>
+    <div class="cem-field full">
+      <label class="cem-label">Airbnb iCal feed URL</label>
+      <input type="text" class="cem-input" id="vault-ical" spellcheck="false"
+        placeholder="https://www.airbnb.com/calendar/ical/….ics?t=…">
+    </div>
+    <div class="cem-field full">
+      <label class="cem-label">Vendor payment — { cleaning: "…", garden: "…" }</label>
+      <textarea class="cem-input" id="vault-pay" rows="4" spellcheck="false"
+        placeholder='{"cleaning":"…","garden":"…"}'></textarea>
+    </div>
+
+    <div class="cem-actions">
+      <span id="vault-status" style="margin-right:auto;font-size:.8rem;color:var(--text-dim)"></span>
+      <button class="btn-sm btn-ghost" onclick="closeVault()">Cancel</button>
+      <button class="btn-sm btn-gold" onclick="saveVault()">Save to Vault</button>
+    </div>
+  </div>
+</div>
+
 <div class="card-edit-overlay" id="card-edit-overlay" onclick="closeCemOutside(event)">
   <div class="card-edit-modal" id="card-edit-modal">
     <button class="cem-close" onclick="closeCem()">✕</button>
@@ -1434,22 +1461,94 @@ const BOOKED_RANGES = [
 const OWNER_RANGES = [{from:'2026-07-05',to:'2026-07-12',label:'Owners'}];
 
 // ── AUTH ──────────────────────────────────────────────────────
-function tryLogin() {
-  if (document.getElementById('pwd').value === '@tgs') {
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('app').style.display  = 'block';
-    init();
-  } else {
-    document.getElementById('gate-err').style.display = 'block';
-    document.getElementById('pwd').value = '';
+// ═══════════════════════════════════════════════════════════
+//  AUTH — real Firebase sign-in behind a single password field
+// ═══════════════════════════════════════════════════════════
+//  The gate used to compare a string in this file, which meant the
+//  portal's data was already in the page before anyone "logged in".
+//  Now the password is exchanged for a Firebase session, and every
+//  byte of owner data arrives afterwards, over an authorised read.
+// ═══════════════════════════════════════════════════════════
+
+let tgAuth = null, tgAppStarted = false;
+
+function gateError(msg) {
+  const el = document.getElementById('gate-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('pwd').value = '';
+}
+
+function gateBusy(busy) {
+  const b = document.getElementById('gate-submit');
+  if (!b) return;
+  b.disabled = busy;
+  b.textContent = busy ? 'Entering…' : 'Enter the Battlefield';
+}
+
+async function tryLogin() {
+  const pwd = document.getElementById('pwd').value;
+  if (!pwd) return;
+  document.getElementById('gate-err').style.display = 'none';
+
+  if (!tgAuth) {
+    gateError('⚠ Sign-in is unavailable — Firebase Auth is not enabled yet.');
+    return;
+  }
+  gateBusy(true);
+  try {
+    await tgAuth.signInWithEmailAndPassword(TG_OWNER_EMAIL, pwd);
+    // onAuthStateChanged opens the portal.
+  } catch (e) {
+    const known = {
+      'auth/wrong-password':        '❌ Incorrect password. Try again.',
+      'auth/invalid-credential':    '❌ Incorrect password. Try again.',
+      'auth/invalid-login-credentials': '❌ Incorrect password. Try again.',
+      'auth/user-not-found':        '⚠ The owner account has not been created yet.',
+      'auth/too-many-requests':     '⚠ Too many attempts. Wait a minute and retry.',
+      'auth/network-request-failed':'⚠ Network unavailable. Check your connection.',
+      'auth/configuration-not-found':'⚠ Firebase Auth is not enabled on the project yet.',
+      'auth/operation-not-allowed': '⚠ Email/password sign-in is not enabled yet.',
+    };
+    gateError(known[e.code] || ('⚠ ' + (e.message || 'Sign-in failed.')));
+  } finally {
+    gateBusy(false);
   }
 }
-function logout() {
+
+function openPortal() {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display  = 'block';
+  if (!tgAppStarted) { tgAppStarted = true; init(); loadSecrets(); }
+}
+
+function closePortal() {
   document.getElementById('app').style.display  = 'none';
   document.getElementById('gate').style.display = 'flex';
   document.getElementById('pwd').value = '';
   document.body.classList.remove('battlefield-active');
 }
+
+function logout() {
+  if (tgAuth) tgAuth.signOut().catch(() => {});
+  closePortal();
+}
+
+(function initAuth(){
+  const ready = typeof TG_FIREBASE_ENABLED !== 'undefined' && TG_FIREBASE_ENABLED
+                && typeof firebase !== 'undefined';
+  if (!ready) { gateError('⚠ Firebase is not configured.'); return; }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(TG_FIREBASE_CONFIG);
+    tgAuth = firebase.auth();
+  } catch (e) {
+    gateError('⚠ Firebase init failed: ' + e.message);
+    return;
+  }
+  // Survives a refresh, and drives the gate in both directions.
+  tgAuth.onAuthStateChanged(user => user ? openPortal() : closePortal());
+})();
+
 document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
 
 // ── BATTLEFIELD NAVIGATION ────────────────────────────────────
@@ -1683,6 +1782,130 @@ function tgAdopt(key, items) {
     tgSyncStatus('ok', 'All owners see this copy.');
   });
 })();
+
+
+// ═══════════════════════════════════════════════════════════
+//  THE VAULT — sensitive data, held in Firestore only
+// ═══════════════════════════════════════════════════════════
+//  Door codes, WiFi, the Airbnb feed URL and vendor payment
+//  details used to ship inside this file, which meant they were
+//  public. They now arrive over an authorised read, after
+//  sign-in, and are entered by an owner through the editor below
+//  so they never pass through the repo.
+// ═══════════════════════════════════════════════════════════
+
+let TG_SECRETS = null;
+
+function loadSecrets() {
+  if (!tgDbRef('secrets')) { renderSecrets(null); return; }
+  tgDbRef('secrets').onSnapshot(
+    snap => { TG_SECRETS = snap.exists ? snap.data() : null; renderSecrets(TG_SECRETS); },
+    err  => { renderSecrets(null, err.message); }
+  );
+}
+
+function tgDbRef(which) {
+  if (typeof firebase === 'undefined' || !firebase.apps.length) return null;
+  const p = which === 'secrets' ? TG_SECRETS_PATH : null;
+  if (!p) return null;
+  try { return firebase.firestore().collection(p.collection).doc(p.doc); }
+  catch (e) { return null; }
+}
+
+function renderSecrets(sec, err) {
+  const empty = txt => `<span style="color:var(--text-mute);font-style:italic">${txt}</span>`;
+  const note  = err ? 'Unavailable — ' + err
+                    : 'Not set yet — open the Vault editor to add them.';
+
+  // Lock codes
+  const body = document.getElementById('lock-codes-body');
+  if (body) {
+    const codes = (sec && Array.isArray(sec.lockCodes)) ? sec.lockCodes : [];
+    body.innerHTML = codes.length
+      ? codes.map(c => `<tr><td>🔑 ${esc(c.slot||'')}</td>`
+          + `<td style="color:var(--text-dim)">${esc(c.person||'')}</td>`
+          + `<td><code>${esc(c.code||'')}</code></td></tr>`).join('')
+      : `<tr><td colspan="3">${empty(note)}</td></tr>`;
+  }
+
+  // WiFi
+  const wifi = document.getElementById('wifi-cards');
+  if (wifi) {
+    const nets = (sec && Array.isArray(sec.wifi)) ? sec.wifi : [];
+    wifi.innerHTML = nets.length
+      ? nets.map(n => `<div class="mtg-card">`
+          + `<div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem">${esc(n.label||'')}</div>`
+          + `<div style="font-size:1rem;font-weight:600">${esc(n.ssid||'')}</div>`
+          + `<div style="font-size:.9rem;color:var(--text-dim);margin-top:.3rem">Password: <code>${esc(n.password||'')}</code></div>`
+          + `</div>`).join('')
+      : `<div class="mtg-card"><div style="font-size:.85rem">${empty(note)}</div></div>`;
+  }
+
+  // Airbnb iCal
+  const ical = document.getElementById('ical-url');
+  if (ical) {
+    const url = sec && sec.airbnbIcal;
+    ical.textContent = url || '';
+    if (!url) ical.innerHTML = empty(note);
+    const btn = document.getElementById('ical-copy');
+    if (btn) btn.disabled = !url;
+  }
+
+  // Vendor payment details
+  document.querySelectorAll('.pay[data-vendor]').forEach(el => {
+    const v = sec && sec.vendorPay && sec.vendorPay[el.dataset.vendor];
+    el.textContent = v ? ('Pix: ' + v) : (el.textContent.includes('oculto') ? 'Pix oculto' : 'Pix hidden');
+    el.style.fontStyle = v ? 'normal' : 'italic';
+    el.style.color = v ? '' : 'var(--text-mute)';
+  });
+}
+
+function esc(v) {
+  return String(v).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function copyIcal(btn) {
+  const url = TG_SECRETS && TG_SECRETS.airbnbIcal;
+  if (!url) return;
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = 'Copy iCal Link'; }, 2500);
+  });
+}
+
+// ── Vault editor ─────────────────────────────────────────────
+function openVault() {
+  const s = TG_SECRETS || {};
+  const val = o => JSON.stringify(o == null ? [] : o, null, 2);
+  document.getElementById('vault-codes').value  = val(s.lockCodes);
+  document.getElementById('vault-wifi').value   = val(s.wifi);
+  document.getElementById('vault-ical').value   = s.airbnbIcal || '';
+  document.getElementById('vault-pay').value    = JSON.stringify(s.vendorPay || {}, null, 2);
+  document.getElementById('vault-status').textContent = '';
+  document.getElementById('vault-overlay').classList.add('show');
+}
+function closeVault(){ document.getElementById('vault-overlay').classList.remove('show'); }
+
+async function saveVault() {
+  const st = document.getElementById('vault-status');
+  const ref = tgDbRef('secrets');
+  if (!ref) { st.textContent = '✕ Not connected to Firestore.'; return; }
+  let payload;
+  try {
+    payload = {
+      lockCodes:  JSON.parse(document.getElementById('vault-codes').value || '[]'),
+      wifi:       JSON.parse(document.getElementById('vault-wifi').value || '[]'),
+      airbnbIcal: document.getElementById('vault-ical').value.trim(),
+      vendorPay:  JSON.parse(document.getElementById('vault-pay').value || '{}'),
+      updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+    };
+  } catch (e) { st.textContent = '✕ Invalid JSON: ' + e.message; return; }
+  st.textContent = '⟳ Saving…';
+  try { await ref.set(payload); st.textContent = '✓ Saved to the Vault.'; setTimeout(closeVault, 900); }
+  catch (e) { st.textContent = '✕ ' + (e.code === 'permission-denied'
+      ? 'Permission denied — this account is not on the owner allowlist.' : e.message); }
+}
 
 // ── BLOCKS ────────────────────────────────────────────────────
 function getSavedBlocks(){return blocksCache;}

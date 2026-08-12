@@ -3,25 +3,42 @@ rules_version = '2';
 // ──────────────────────────────────────────────────────────────
 //  TheGathering · Firestore Security Rules
 // ──────────────────────────────────────────────────────────────
-//  Model: the guest site reads the published Garopaba Guide
-//  without signing in. Everything the owners rely on requires an
-//  authenticated session (the owner portal signs in anonymously
-//  on load), so the data cannot be read or wiped by an
-//  unauthenticated REST call against the public web API key.
+//  The guest site reads the published Garopaba Guide without signing
+//  in. Everything else — bookings, projects, door codes, vendor
+//  payment details — requires an owner session.
+//
+//  "Owner" is not `request.auth != null`. Email/password sign-up is
+//  open by default, so anyone could mint an account and read the
+//  house codes. Authorisation is an explicit allowlist held in
+//  config/access, which no client can read or write; only the
+//  Firebase console (which bypasses rules) can edit it.
+//
+//  Adding owners two and three later is therefore a data change,
+//  not a rules deploy: append their UIDs to that array.
 // ──────────────────────────────────────────────────────────────
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /gathering/{doc} {
+    function isOwner() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/config/access)
+        && request.auth.uid in get(/databases/$(database)/documents/config/access).data.uids;
+    }
 
+    match /gathering/{doc} {
       // The published guide is what the guest booster pack renders.
-      // Anyone may read it; only a signed-in session may publish.
       allow read: if doc == 'guide';
 
-      // Owner-only records (calendar blocks, house projects) and
-      // every write anywhere require a signed-in session.
-      allow read, write: if request.auth != null;
+      // Everything else, and every write anywhere, is owners-only.
+      allow read, write: if isOwner();
+    }
+
+    // The allowlist itself is console-only. Never readable by a client:
+    // rules `get()` runs server-side and is not subject to these rules,
+    // so isOwner() still works.
+    match /config/{doc} {
+      allow read, write: if false;
     }
 
     // Nothing else in the database is reachable from the client.
