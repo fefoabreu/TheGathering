@@ -1,0 +1,21 @@
+name = "tgs-hanna"
+main = "src/index.js"
+compatibility_date = "2026-08-12"
+
+# The Anthropic API key is NOT here. It is an encrypted Worker secret:
+#   wrangler secret put ANTHROPIC_API_KEY
+# Nothing in this file is sensitive, which is why it is safe to commit.
+
+# Served on a subdomain of the site's own zone rather than workers.dev —
+# one less hostname, and it keeps the agent under the project's domain.
+workers_dev = false
+
+[[routes]]
+pattern = "hanna.fefoabreu.me"
+custom_domain = true
+
+[vars]
+MODEL = "claude-sonnet-5"
+
+[observability]
+enabled = true
