@@ -804,45 +804,83 @@
     .sisay-fab.hidden { opacity:0; pointer-events:none; transform:translateY(10px); }
     .sf-mark { font-size:1rem; }
 
+    /* ══ SISAY — guest concierge ═════════════════════════════════
+       She is opened from the house mark, not from the owners' deck, so she
+       carries the site's own palette — sand, sunset, ocean — rather than the
+       Commander Deck's navy and gold. Light, warm, and built around
+       categories rather than an empty text box: the first thing a guest sees
+       should be somewhere to go, not a cursor blinking at them.            */
     .sisay-panel {
       position:fixed; right:1.5rem; bottom:1.5rem; z-index:9450;
-      width:min(400px,calc(100vw - 3rem)); max-height:min(640px,80vh);
+      width:min(408px,calc(100vw - 3rem)); max-height:min(660px,82vh);
       display:none; flex-direction:column; overflow:hidden;
-      border-radius:16px; border:1px solid rgba(212,163,64,.28);
-      background:linear-gradient(170deg,rgba(13,33,55,.99),rgba(8,20,34,.99));
-      box-shadow:0 24px 70px rgba(0,0,0,.6);
+      border-radius:20px; border:1px solid rgba(224,120,64,.22);
+      background:var(--sand-light);
+      box-shadow:0 28px 70px rgba(13,33,55,.34), 0 2px 10px rgba(13,33,55,.12);
     }
     .sisay-panel.show { display:flex; animation:s-rise .3s cubic-bezier(.23,1,.32,1); }
     @keyframes s-rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 
     .sisay-head {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:1rem 1.1rem; border-bottom:1px solid rgba(255,255,255,.07);
+      display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+      padding:.95rem 1.1rem;
+      background:linear-gradient(112deg, var(--sunset) 0%, #D9633F 42%, var(--dusk-pink) 100%);
+      color:var(--sand-light);
     }
-    .sh-name { font-family:'Cinzel',serif; font-size:.92rem; color:var(--gold); letter-spacing:.08em; }
-    .sh-role { font-size:.66rem; color:rgba(249,244,236,.45); margin-top:.15rem; letter-spacing:.06em; }
+    .sh-id { display:flex; align-items:center; gap:.65rem; }
+    .sh-avatar {
+      width:38px; height:38px; border-radius:50%; flex-shrink:0;
+      display:grid; place-items:center; font-size:1.05rem;
+      background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.4);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+    }
+    .sh-name { font-family:'Cinzel',serif; font-size:1rem; color:#fff; letter-spacing:.08em; }
+    .sh-role {
+      font-size:.63rem; color:rgba(255,255,255,.88); margin-top:.1rem;
+      letter-spacing:.13em; text-transform:uppercase; font-weight:600;
+    }
     .sisay-close {
-      width:30px; height:30px; border-radius:50%; cursor:pointer;
-      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
-      color:var(--text-light); font-size:.85rem;
+      width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0;
+      background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35);
+      color:#fff; font-size:.85rem; transition:var(--ease);
     }
-    .sisay-close:hover { background:rgba(212,163,64,.85); color:#0B0704; }
+    .sisay-close:hover { background:#fff; color:var(--sunset); }
 
     .sisay-log {
-      flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:.7rem;
+      flex:1 1 auto; min-height:0; overflow-y:auto;
+      padding:1rem; display:flex; flex-direction:column; gap:.7rem;
+      background:linear-gradient(180deg, var(--sand-light) 0%, #FAF1E2 100%);
     }
-    .s-bubble { max-width:88%; padding:.65rem .85rem; border-radius:12px; font-size:.87rem; line-height:1.6; }
+    .s-bubble { max-width:88%; padding:.7rem .9rem; border-radius:14px; font-size:.88rem; line-height:1.62; }
     .s-guest {
-      align-self:flex-end; background:rgba(224,120,64,.16);
-      border:1px solid rgba(224,120,64,.32); color:var(--text-light); border-bottom-right-radius:4px;
+      align-self:flex-end; background:linear-gradient(135deg, var(--ocean-light), var(--ocean-mid));
+      color:#fff; border-bottom-right-radius:5px;
+      box-shadow:0 2px 8px rgba(22,58,95,.24);
     }
     .s-sisay {
-      align-self:flex-start; background:rgba(212,163,64,.08);
-      border:1px solid rgba(212,163,64,.2); color:rgba(249,244,236,.92); border-bottom-left-radius:4px;
+      align-self:flex-start; background:#fff; color:var(--text-dark);
+      border:1px solid rgba(224,120,64,.16); border-left:3px solid var(--sunset);
+      border-bottom-left-radius:5px; box-shadow:var(--sh-sm);
     }
     .sb-who { font-family:'Cinzel',serif; font-size:.56rem; letter-spacing:.16em;
-              text-transform:uppercase; color:var(--gold); margin-bottom:.3rem; }
+              text-transform:uppercase; color:var(--sunset); margin-bottom:.3rem; }
     .sb-body { white-space:pre-wrap; }
+
+    /* ── Category tiles — the opening move, mirroring the site's sections ── */
+    .s-cats { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-top:.15rem; }
+    .s-cat {
+      display:flex; align-items:center; gap:.55rem; text-align:left;
+      padding:.65rem .7rem; border-radius:12px; cursor:pointer;
+      background:#fff; border:1px solid rgba(224,120,64,.2);
+      box-shadow:var(--sh-sm); transition:var(--ease);
+    }
+    .s-cat:hover { transform:translateY(-2px); border-color:var(--sunset); box-shadow:var(--sh-md); }
+    .s-cat-emoji { font-size:1.15rem; line-height:1; flex-shrink:0; }
+    .s-cat-label {
+      font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.04em;
+      color:var(--ocean-deep); line-height:1.25;
+    }
+    .s-cat.s-cat-wide { grid-column:1 / -1; }
 
     /* Sisay tutors a card — revealed inline, same frame guests already know */
     /* overflow-x:auto silently forces overflow-y:auto, which cropped the
@@ -858,40 +896,56 @@
     .s-card > * { width:100%; }
     .s-card:hover { transform:translateY(-4px); }
 
-    .sisay-typing { display:none; gap:4px; padding:0 1.2rem .4rem; align-items:center; }
-    .sisay-typing span { width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:.5;
+    .sisay-typing { display:none; gap:4px; padding:0 1.2rem .4rem; align-items:center; flex-shrink:0;
+                    background:#FAF1E2; }
+    .sisay-typing span { width:5px; height:5px; border-radius:50%; background:var(--sunset); opacity:.5;
                          animation:s-dot 1.2s infinite ease-in-out; }
     .sisay-typing span:nth-child(2){ animation-delay:.18s; }
     .sisay-typing span:nth-child(3){ animation-delay:.36s; }
     @keyframes s-dot { 0%,60%,100%{transform:translateY(0);opacity:.35} 30%{transform:translateY(-4px);opacity:1} }
 
-    .sisay-chips { display:flex; gap:.35rem; padding:0 1rem .6rem; overflow-x:auto; scrollbar-width:none; }
+    .sisay-chips {
+      display:flex; gap:.35rem; padding:.6rem 1rem; flex-shrink:0;
+      overflow-x:auto; scrollbar-width:none; background:#FAF1E2;
+      border-top:1px solid rgba(224,120,64,.12);
+    }
     .sisay-chips::-webkit-scrollbar { display:none; }
     .sisay-chips button {
-      flex-shrink:0; padding:.35rem .7rem; border-radius:16px; cursor:pointer; font-size:.68rem;
-      background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
-      color:rgba(249,244,236,.6); transition:all .25s;
+      flex-shrink:0; padding:.4rem .8rem; border-radius:16px; cursor:pointer; font-size:.7rem;
+      background:#fff; border:1px solid rgba(224,120,64,.3);
+      color:var(--ocean-mid); font-weight:500; transition:var(--ease);
     }
-    .sisay-chips button:hover { border-color:rgba(212,163,64,.5); color:var(--text-light); }
+    .sisay-chips button:hover { background:var(--sunset); border-color:var(--sunset); color:#fff; }
 
-    .sisay-input-row { display:flex; gap:.5rem; padding:.8rem 1rem 1rem; align-items:flex-end; }
+    .sisay-input-row {
+      display:flex; gap:.5rem; padding:.75rem 1rem .9rem; align-items:flex-end; flex-shrink:0;
+      background:var(--sand-light); border-top:1px solid rgba(224,120,64,.14);
+    }
     .sisay-input-row textarea {
-      flex:1; resize:none; min-height:40px; max-height:110px; padding:.6rem .8rem;
-      border-radius:10px; font-family:inherit; font-size:.87rem; line-height:1.5;
-      background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14);
-      color:var(--text-light);
+      flex:1; resize:none; min-height:42px; max-height:110px; padding:.65rem .85rem;
+      border-radius:12px; font-family:inherit; font-size:.87rem; line-height:1.5;
+      background:#fff; border:1px solid rgba(224,120,64,.28);
+      color:var(--text-dark);
     }
-    .sisay-input-row textarea:focus { outline:none; border-color:rgba(212,163,64,.5); }
+    .sisay-input-row textarea::placeholder { color:rgba(74,85,104,.6); }
+    .sisay-input-row textarea:focus {
+      outline:none; border-color:var(--sunset);
+      box-shadow:0 0 0 3px rgba(224,120,64,.14);
+    }
     #sisay-send {
-      flex-shrink:0; width:40px; height:40px; border-radius:10px; cursor:pointer;
-      background:var(--gold); border:none; color:#0B0704; font-size:1rem; font-weight:700;
+      flex-shrink:0; width:42px; height:42px; border-radius:12px; cursor:pointer;
+      background:linear-gradient(135deg, var(--sunset), var(--dusk-pink));
+      border:none; color:#fff; font-size:1rem; font-weight:700;
+      box-shadow:0 3px 10px rgba(224,120,64,.34); transition:var(--ease);
     }
+    #sisay-send:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 5px 14px rgba(224,120,64,.44); }
     #sisay-send:disabled { opacity:.4; cursor:default; }
 
     @media(max-width:650px){
       .sisay-fab { right:1rem; bottom:1rem; padding:.75rem 1.05rem; font-size:.7rem; }
-      .sisay-panel { right:.6rem; left:.6rem; bottom:.6rem; width:auto; max-height:78vh; }
+      .sisay-panel { right:.6rem; left:.6rem; bottom:.6rem; width:auto; max-height:80vh; }
       .sisay-input-row textarea { font-size:16px; }   /* stop iOS zoom-on-focus */
+      .s-cat-label { font-size:.64rem; }
     }
 
     /* ══ TILE-BACK ACTIONS ═══════════════════════════════════════ */
@@ -1412,9 +1466,12 @@
 
 <div class="sisay-panel" id="sisay-panel">
   <div class="sisay-head">
-    <div>
-      <div class="sh-name">Sisay</div>
-      <div class="sh-role">At the helm · TheGathering</div>
+    <div class="sh-id">
+      <div class="sh-avatar">🧭</div>
+      <div>
+        <div class="sh-name">Sisay</div>
+        <div class="sh-role">Guest AI Concierge</div>
+      </div>
     </div>
     <button class="sisay-close" onclick="sisayClose()" aria-label="Close">✕</button>
   </div>
@@ -2469,9 +2526,13 @@ let SISAY_MANUAL = {
 
 const SISAY_SYSTEM = `You are **Sisay**, host and concierge of TheGathering Silveira 🌊🌄 — a hillside house at Praia da Silveira, Garopaba, Santa Catarina, Brazil, "where the mountain meets the sea".
 
-You once commanded the Weatherlight across the multiverse. You now keep this house, and you are fiercely protective of your passengers. Worldly, warm, charismatic, never stiff. Reply in the guest's language — English or Portuguese — deciding per message.
+You once commanded the Weatherlight across the multiverse. You now keep this house, and you are fiercely protective of your passengers. Reply in the guest's language — English or Portuguese — deciding per message.
 
-**Be brief.** Two or three sentences, usually. You are a host at the door, not a brochure.
+**Your voice: sunlit, not stiff.** You are genuinely delighted people are here, and it shows. Warm, playful, a little conspiratorial — the friend who lives here and knows which table to ask for. Lead with enthusiasm for the *specific* thing, never generic hospitality filler: "Arca at golden hour, and ask for the deck" beats "There are many wonderful options." A well-placed Brazilian word (*praia*, *pousada*, *tudo bem*) is welcome; an emoji now and then is fine; a wall of them is not.
+
+**Sell the place, honestly.** Everything here is genuinely good — the point break at dawn, the dunes at Siriú, the kitchen at sunset. Say why something is special, in one concrete detail rather than three adjectives.
+
+**Be brief.** Two or three sentences, usually. You are a host at the door, not a brochure. End with a small nudge onward — another question worth asking, a next thing worth seeing — so the guest always has somewhere to go.
 
 **You tutor a card, you don't recite a menu.** When a guest asks where to eat, drink, surf or explore, call suggest_experience and let the card do the talking — then add one line of your own about why it's the right pick tonight. Never list every option.
 
@@ -2518,20 +2579,30 @@ async function sisayRunTool(name, input) {
 // page around them.
 const SISAY_COPY = {
   en: { card:'"Every legendary vessel<br>needs a captain."<strong>Tap to summon</strong>',
-        role:'At the helm · TheGathering',
-        hello:"Welcome aboard. I'm Sisay — I keep this house. Ask me where to eat, how anything works, or what's worth doing tomorrow.",
-        input:'What are you after?',
+        role:'Guest AI Concierge',
+        hello:"Oi! I'm Sisay, your concierge for the house 🌊 I know every good table in Garopaba, which beach to hit when the wind turns, and how to work the projector. Where shall we start?",
+        input:'Ask me anything…',
+        cats:[['🍽️','Eat &amp; Drink','Where should we eat tonight? Give me your two favourites and why.'],
+              ['🏄','Experiences','What are the best things to do around Garopaba this week?'],
+              ['🏠','The House','Show me around the house — the suites and the best spots in it.'],
+              ['📍','Around Garopaba','Which beaches and towns are worth the drive, and how far are they?'],
+              ['🔑','How Things Work','How do the TV, projector, Sonos and pool work?']],
         chips:[['Where should we eat tonight?','Dinner tonight'],
-               ['How do I use the Sonos?','The Sonos'],
                ['What should we do tomorrow?','Tomorrow'],
+               ['Which beach today?','Best beach'],
                ['How does the projector work?','Movie night']] },
   pt: { card:'"Todo navio lendário<br>precisa de uma capitã."<strong>Toque para chamar</strong>',
-        role:'No comando · TheGathering',
-        hello:'Bem-vindos a bordo. Sou a Sisay — cuido desta casa. Pergunte onde comer, como algo funciona, ou o que vale a pena fazer amanhã.',
-        input:'O que você procura?',
+        role:'Concierge de IA',
+        hello:'Oi! Sou a Sisay, sua concierge da casa 🌊 Conheço cada mesa boa de Garopaba, qual praia pegar quando o vento vira, e como funciona o projetor. Por onde começamos?',
+        input:'Pergunte o que quiser…',
+        cats:[['🍽️','Comer &amp; Beber','Onde jantar hoje? Me diz seus dois favoritos e por quê.'],
+              ['🏄','Experiências','O que tem de melhor pra fazer em Garopaba essa semana?'],
+              ['🏠','A Casa','Me mostra a casa — as suítes e os melhores cantos dela.'],
+              ['📍','Pela Região','Quais praias e cidades valem a viagem, e quão longe ficam?'],
+              ['🔑','Como Funciona','Como funcionam a TV, o projetor, o Sonos e a piscina?']],
         chips:[['Onde jantar hoje?','Jantar hoje'],
-               ['Como uso o Sonos?','O Sonos'],
                ['O que fazer amanhã?','Amanhã'],
+               ['Qual praia hoje?','Melhor praia'],
                ['Como funciona o projetor?','Noite de cinema']] },
 };
 
@@ -2548,13 +2619,14 @@ function sisayApplyCopy() {
   const chips = document.getElementById('sisay-chips');
   if (chips) chips.innerHTML = c.chips
     .map(([ask, label]) => `<button onclick="sisayAsk('${ask.replace(/'/g, "\\'")}')">${label}</button>`).join('');
-  // Retitle a greeting that is still the only thing said.
-  const first = document.querySelector('#sisay-log .s-sisay .sb-body');
-  if (first && !sisayStarted) first.textContent = c.hello;
+  // Re-lay the greeting in the new language, but only while it is still the
+  // only thing said — once the guest has asked something the log is theirs.
+  if (sisayStarted && !sisayConversed) sisayGreet();
 }
 
 // ── Conversation ─────────────────────────────────────────────
 let SISAY_MSGS = [], sisayBusy = false, sisayAuth = null, sisayStarted = false;
+let sisayConversed = false;   // has the guest actually asked something yet
 
 async function sisayToken() {
   if (!sisayAuth) throw new Error('offline');
@@ -2590,6 +2662,13 @@ async function sisaySend(text) {
 
   sisayBusy = true;
   box.value = '';
+  // The tiles were a way in. Once they have been used, retire them so the
+  // panel becomes the conversation rather than a menu with a chat under it.
+  if (!sisayConversed) {
+    sisayConversed = true;
+    const cats = document.querySelector('#sisay-greeting .s-cats');
+    if (cats) cats.remove();
+  }
   sisayBubble('guest', text);
   SISAY_MSGS.push({ role:'user', content:text });
   sisayTyping(true);
@@ -2653,14 +2732,44 @@ function sisayTyping(on) {
   const b = document.getElementById('sisay-send'); if (b) b.disabled = on;
 }
 
+/**
+ * The opening move: a greeting that carries the house's sections as tiles.
+ * A guest who has just landed rarely knows what to type — offering "Eat &
+ * Drink" or "Which beach today" is a better first screen than a cursor.
+ * Rendered as one element so a language toggle can simply replace it.
+ */
+function sisayGreet() {
+  const log = document.getElementById('sisay-log');
+  const c = SISAY_COPY[sisayLang()];
+  const old = document.getElementById('sisay-greeting');
+  if (old) old.remove();
+
+  const el = document.createElement('div');
+  el.id = 'sisay-greeting';
+  el.className = 's-bubble s-sisay';
+  el.style.maxWidth = '100%';
+  el.innerHTML =
+    '<div class="sb-who">⚓ Sisay</div><div class="sb-body"></div>' +
+    '<div class="s-cats">' + (c.cats || []).map(([emoji, label], i) =>
+      `<button class="s-cat${(i === c.cats.length - 1 && c.cats.length % 2) ? ' s-cat-wide' : ''}"
+               onclick="sisayPick(${i})">
+         <span class="s-cat-emoji">${emoji}</span><span class="s-cat-label">${label}</span>
+       </button>`).join('') + '</div>';
+  el.querySelector('.sb-body').textContent = c.hello;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+}
+
+function sisayPick(i) {
+  const entry = (SISAY_COPY[sisayLang()].cats || [])[i];
+  if (entry) sisaySend(entry[2]);
+}
+
 function sisayOpen() {
   sisayApplyCopy();
   document.getElementById('sisay-panel').classList.add('show');
   document.getElementById('sisay-fab').classList.add('hidden');
-  if (!sisayStarted) {
-    sisayStarted = true;
-    sisayBubble('sisay', SISAY_COPY[sisayLang()].hello);
-  }
+  if (!sisayStarted) { sisayStarted = true; sisayGreet(); }
   setTimeout(() => document.getElementById('sisay-input').focus(), 250);
 }
 function sisayClose() {

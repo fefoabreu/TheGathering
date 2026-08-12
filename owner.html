@@ -330,13 +330,13 @@
         her own card instead — a sighting arm, a degree ring, a horizon. */
     .hanna-astrolabe {
       position:fixed; right:1.6rem; bottom:1.6rem; z-index:9400;
-      width:86px; height:86px; padding:0; border:0; background:none; cursor:pointer;
+      width:112px; height:112px; padding:0; border:0; background:none; cursor:pointer;
       display:flex; flex-direction:column; align-items:center; gap:.3rem;
       filter:drop-shadow(0 8px 22px rgba(0,0,0,.6));
       transition:transform .5s cubic-bezier(.34,1.56,.64,1), filter .4s ease, opacity .3s ease;
       -webkit-tap-highlight-color:transparent;
     }
-    .hanna-astrolabe svg { width:86px; height:86px; display:block; }
+    .hanna-astrolabe svg { width:112px; height:112px; display:block; }
     .hanna-astrolabe:hover {
       transform:translateY(-5px) scale(1.06);
       filter:drop-shadow(0 14px 30px rgba(0,0,0,.7)) drop-shadow(0 0 18px rgba(91,170,212,.55));
@@ -360,8 +360,8 @@
       .ha-ring, .ha-arm { animation:none; }
     }
     @media(max-width:650px){
-      .hanna-astrolabe { right:1rem; bottom:1rem; width:70px; }
-      .hanna-astrolabe svg { width:70px; height:70px; }
+      .hanna-astrolabe { right:1rem; bottom:1rem; width:88px; }
+      .hanna-astrolabe svg { width:88px; height:88px; }
     }
 
     /* ══ AGENT CARD LAUNCHER ═════════════════════════════════════ */
@@ -430,7 +430,7 @@
     @keyframes h-rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
     .hanna-head {
       display:flex; align-items:center; justify-content:space-between;
-      padding:.9rem 1rem; border-bottom:1px solid var(--border);
+      padding:.9rem 1rem; border-bottom:1px solid var(--border); flex-shrink:0;
     }
     .hh-name { font-family:'Cinzel',serif; font-size:.92rem; color:var(--mu); letter-spacing:.08em; }
     .hh-role { font-size:.63rem; color:var(--text-mute); margin-top:.12rem; letter-spacing:.05em; }
@@ -440,7 +440,6 @@
       color:var(--text-dim); font-size:.8rem;
     }
     .hanna-icon:hover { background:rgba(91,170,212,.7); color:#04121C; border-color:transparent; }
-    .hanna-log { flex:1; min-height:220px; }
     .hanna-input-row textarea {
       background:rgba(255,255,255,.05); border:1px solid var(--border); color:var(--text);
     }
@@ -451,13 +450,18 @@
     }
 
     /* ══ HANNA — agent panel ═════════════════════════════════════ */
-    .hanna-wrap { display:flex; flex-direction:column; gap:.8rem; }
+    /*  The log used to carry its own border, background, padding and a
+        340px min-height — styling from back when Hanna was an embedded tab
+        panel rather than a floating one. Inside a panel that is itself a
+        bordered box with a hard max-height, that meant a frame inside a
+        frame and a log that refused to shrink, so the chips and the input
+        row got squeezed into each other. It is a plain scroll region now:
+        the panel is the box, and `min-height:0` lets the log actually give
+        way. Same distribution Sisay already uses. */
     .hanna-log {
-      min-height:340px; max-height:min(58vh,560px); overflow-y:auto;
+      flex:1 1 auto; min-height:0; overflow-y:auto;
       display:flex; flex-direction:column; gap:.85rem;
-      padding:1.1rem; border-radius:var(--r);
-      background:linear-gradient(160deg,rgba(16,22,36,.92),rgba(10,14,24,.92));
-      border:1px solid var(--border);
+      padding:1rem 1.1rem;
     }
     .h-bubble { max-width:82%; padding:.75rem .95rem; border-radius:12px; line-height:1.65; font-size:.9rem; }
     .h-user {
@@ -480,7 +484,7 @@
       padding:.18rem .45rem; border-radius:10px; color:var(--text-dim);
       background:rgba(255,255,255,.05); border:1px solid var(--border);
     }
-    .hanna-typing { display:none; gap:5px; padding:0 .3rem; align-items:center; height:16px; }
+    .hanna-typing { display:none; gap:5px; padding:0 1.2rem .4rem; align-items:center; height:16px; flex-shrink:0; }
     .hanna-typing span {
       width:6px; height:6px; border-radius:50%; background:var(--gold); opacity:.5;
       animation:h-dot 1.2s infinite ease-in-out;
@@ -489,7 +493,14 @@
     .hanna-typing span:nth-child(3){ animation-delay:.36s; }
     @keyframes h-dot { 0%,60%,100%{transform:translateY(0);opacity:.35} 30%{transform:translateY(-5px);opacity:1} }
 
-    .hanna-suggest { display:flex; flex-wrap:wrap; gap:.4rem; }
+    /* One scrolling row, not a wrapping block. Wrapped chips grow downward
+       and take the room the log needs. */
+    .hanna-suggest {
+      display:flex; flex-wrap:nowrap; gap:.4rem; flex-shrink:0;
+      padding:0 1.1rem .65rem; overflow-x:auto; scrollbar-width:none;
+    }
+    .hanna-suggest::-webkit-scrollbar { display:none; }
+    .hanna-suggest .h-chip { flex-shrink:0; }
     .h-chip {
       padding:.4rem .75rem; border-radius:18px; cursor:pointer; font-size:.72rem;
       background:rgba(255,255,255,.04); border:1px solid var(--border);
@@ -497,7 +508,11 @@
     }
     .h-chip:hover { border-color:rgba(201,168,76,.45); color:var(--text); }
 
-    .hanna-input-row { display:flex; gap:.6rem; align-items:flex-end; }
+    .hanna-input-row {
+      display:flex; gap:.6rem; align-items:flex-end; flex-shrink:0;
+      padding:.2rem 1.1rem 1.1rem; border-top:1px solid rgba(255,255,255,.05);
+      padding-top:.85rem;
+    }
     .hanna-input-row textarea {
       flex:1; resize:none; min-height:44px; max-height:140px; padding:.7rem .9rem;
       border-radius:10px; font-family:inherit; font-size:.9rem; line-height:1.5;
@@ -506,10 +521,11 @@
 
     @media(max-width:760px){
       .h-bubble { max-width:92%; }
-      .hanna-log { min-height:300px; max-height:52vh; padding:.8rem; }
-      .hanna-suggest { overflow-x:auto; flex-wrap:nowrap; scrollbar-width:none; }
-      .hanna-suggest::-webkit-scrollbar { display:none; }
+      /* Deliberately no min-height here. It was what forced the log to hold
+         300px on a phone and shove the input row off the panel. */
+      .hanna-log { padding:.85rem; }
       .h-chip { flex-shrink:0; }
+      .hanna-input-row textarea { font-size:16px; }  /* stop iOS zoom-on-focus */
     }
 
     /* ══ CLOUD SYNC PILL ═════════════════════════════════════════ */
@@ -706,14 +722,20 @@
     /* ── SILVEIRA BACKDROP ──────────────────────────────────────── */
     .bf-photo-wrap { position:absolute; inset:0; z-index:0; overflow:hidden; }
 
-    /* Silveira sign photo — perspective-tilted so the scene reads as overhead */
+    /* A blurred `cover` copy sits underneath so the contained photo above
+       never shows bare letterbox bars on wide or short screens. */
+    .bf-photo-fill {
+      position:absolute; inset:-4%;
+      background:url('assets/silveira_backdrop.jpg') center center / cover no-repeat;
+      filter:blur(42px) brightness(.26) saturate(1.1);
+    }
+    /* The photo, whole. It used to be cropped twice over — `cover` threw away
+       the edges, and a perspective tilt pushed more of it out of frame. Both
+       are gone; `contain` shows the entire 16:9 image. */
     .bf-photo-silveira {
-      position:absolute;
-      inset:-20% -8%;
-      background:url('assets/silveira_backdrop.jpg') center 58% / cover no-repeat;
-      transform:perspective(880px) rotateX(26deg) scale(1.09);
-      transform-origin:50% 54%;
-      filter:brightness(.48) saturate(1.18) contrast(1.08);
+      position:absolute; inset:0;
+      background:url('assets/silveira_backdrop.jpg') center center / contain no-repeat;
+      filter:brightness(.55) saturate(1.16) contrast(1.05);
     }
 
     /* Atmospheric overlay — edge vignette, top/bottom gradient like the Battlefield sample */
@@ -721,10 +743,12 @@
       position:absolute; inset:0; z-index:1; pointer-events:none;
       background:
         /* Deep edge vignette (mimics the dark room corners in the sample) */
-        radial-gradient(ellipse 68% 56% at 50% 52%, transparent 0%, rgba(0,0,0,.60) 100%),
+        /* Lighter than before: the photo is no longer tilted away into the
+           dark, so the vignette only has to seat the cards, not hide a crop. */
+        radial-gradient(ellipse 74% 64% at 50% 52%, transparent 0%, rgba(0,0,0,.44) 100%),
         linear-gradient(to bottom,
-          rgba(0,0,0,.78) 0%, rgba(0,0,0,.10) 22%,
-          rgba(0,0,0,.06) 62%, rgba(0,0,0,.80) 100%
+          rgba(0,0,0,.72) 0%, rgba(0,0,0,.06) 20%,
+          rgba(0,0,0,.04) 66%, rgba(0,0,0,.74) 100%
         ),
         linear-gradient(to right,
           rgba(0,0,0,.62) 0%, transparent 18%, transparent 82%, rgba(0,0,0,.62) 100%
@@ -792,7 +816,7 @@
     /* Cards wrapper — floats directly on the room, no mat */
     .cards-rows-wrap {
       position:relative; z-index:9;
-      width:100%; max-width:1160px;
+      width:100%; max-width:1340px;
       padding:0 2rem;
     }
 
@@ -814,7 +838,7 @@
 
     /* Card row containers */
     .cards-row {
-      display:flex; gap:52px;
+      display:flex; gap:46px;
       justify-content:center; align-items:flex-end;
     }
     /* Back row — slightly smaller and dimmer to suggest depth */
@@ -826,12 +850,17 @@
       z-index:50;
     }
     /* Back row card width slightly smaller for perspective */
-    .cards-back-row .battle-card { width:156px; }
-    .cards-back-row .bc-art { height:88px; }
+    .cards-back-row .battle-card { width:214px; font-size:1.22rem; }
+    .cards-back-row .bc-art { height:5.5em; }
 
     /* ── BATTLE CARD ── */
+    /*  Type inside the card is sized in `em` against the card's own
+        font-size, so widening the card scales its text with it. The
+        landing is otherwise empty — small cards wasted the room and the
+        rules text was unreadable. */
     .battle-card {
-      width:172px; position:relative; cursor:pointer;
+      width:236px; font-size:1.34rem;
+      position:relative; cursor:pointer;
       transform-origin:50% 96%;
       transition:transform .48s cubic-bezier(.34,1.56,.64,1), filter .48s ease;
       z-index:1;
@@ -844,52 +873,68 @@
     }
     /* MTG card frame */
     .bc-frame {
-      border-radius:9px; overflow:hidden; border-width:3px; border-style:solid;
+      border-radius:.56em; overflow:hidden; border-width:.19em; border-style:solid;
       box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.6);
     }
     .bc-title {
       display:flex; justify-content:space-between; align-items:center;
-      padding:4px 6px 3px; font-family:'Cinzel',serif;
-      font-size:.56rem; font-weight:700; color:#180E02; letter-spacing:.02em;
+      padding:.25em .38em .19em; font-family:'Cinzel',serif;
+      font-size:.58em; font-weight:700; color:#180E02; letter-spacing:.02em;
     }
     .bc-art {
-      width:100%; height:96px;
+      width:100%; height:6em;
       background-size:cover; background-position:center;
       border-top:1.5px solid rgba(0,0,0,.35);
       border-bottom:1.5px solid rgba(0,0,0,.35);
     }
     .bc-typeline {
-      font-family:'Cinzel',serif; font-size:.46rem; font-weight:600;
-      color:#180E02; padding:3px 6px; letter-spacing:.02em;
+      font-family:'Cinzel',serif; font-size:.48em; font-weight:600;
+      color:#180E02; padding:.19em .38em; letter-spacing:.02em;
     }
     .bc-text {
-      padding:5px 6px 18px; min-height:66px; position:relative;
+      padding:.31em .4em 1.15em; min-height:4.3em; position:relative;
     }
     .bc-rules {
-      font-family:'Inter',sans-serif; font-size:.5rem; line-height:1.45; color:#1A100A;
+      font-family:'Inter',sans-serif; font-size:.52em; line-height:1.45; color:#1A100A;
     }
     .bc-flavor {
-      font-family:'Inter',sans-serif; font-size:.45rem; line-height:1.3;
+      font-family:'Inter',sans-serif; font-size:.47em; line-height:1.3;
       color:#3A2818; font-style:italic;
-      border-top:1px solid rgba(0,0,0,.12); padding-top:3px; margin-top:4px;
+      border-top:1px solid rgba(0,0,0,.12); padding-top:.19em; margin-top:.25em;
     }
     .bc-pt {
-      position:absolute; bottom:3px; right:5px;
-      font-family:'Cinzel',serif; font-size:.52rem; font-weight:700; color:#180E02;
+      position:absolute; bottom:.19em; right:.31em;
+      font-family:'Cinzel',serif; font-size:.54em; font-weight:700; color:#180E02;
       background:rgba(255,255,255,.55); border:1px solid rgba(0,0,0,.22);
-      border-radius:3px; padding:1px 4px;
+      border-radius:3px; padding:.06em .25em;
     }
     .bc-mana { display:flex; gap:2px; align-items:center; flex-shrink:0; }
-    .bc-mana .ms { font-size:.68rem; }
+    .bc-mana .ms { font-size:.7em; }
     /* "tap to enter" hint that appears on hover */
     .bc-enter-hint {
-      position:absolute; bottom:-28px; left:50%; transform:translateX(-50%);
-      font-family:'Cinzel',serif; font-size:.54rem; letter-spacing:.1em;
+      position:absolute; bottom:-1.7em; left:50%; transform:translateX(-50%);
+      font-family:'Cinzel',serif; font-size:.54em; letter-spacing:.1em;
       color:var(--cb, var(--gold)); white-space:nowrap;
       opacity:0; transition:opacity .3s;
       text-shadow:0 0 8px var(--cg,rgba(201,168,76,.5));
     }
     .battle-card:hover .bc-enter-hint { opacity:1; }
+
+    /* Two rows of the larger card need roughly 740px of viewport. Below that
+       the em anchor comes down rather than letting the deck clip — the
+       landing is `overflow:hidden`, so an overrun is invisible, not scrollable. */
+    @media (min-width:651px) and (max-height:800px) {
+      .battle-card                   { width:200px; font-size:1.14rem; }
+      .cards-back-row .battle-card   { width:182px; font-size:1.04rem; }
+      .cards-row                     { gap:36px; }
+      .mat-divider                   { margin:1.1rem 0; }
+      .battlefield-landing           { padding-top:3.5rem; }
+    }
+    @media (min-width:651px) and (max-height:680px) {
+      .battle-card                   { width:172px; font-size:1rem; }
+      .cards-back-row .battle-card   { width:156px; font-size:.92rem; }
+      .cards-row                     { gap:28px; }
+    }
 
     /* ══ SCROLLBAR ════════════════════════════════════════════════ */
     ::-webkit-scrollbar { width:5px; height:5px; }
@@ -1064,8 +1109,11 @@
          wrap it to two cards per line so none get clipped. */
       .cards-rows-wrap { padding:0 1rem; }
       .cards-row { flex-wrap:wrap; gap:14px; align-items:flex-start; }
+      /* Two-up on a phone, so the card can only be about half the viewport.
+         The em anchor has to come back down with the width or the rules text
+         overruns the frame. */
       .battle-card,
-      .cards-back-row .battle-card { width:calc(50% - 7px); max-width:172px; }
+      .cards-back-row .battle-card { width:calc(50% - 7px); max-width:200px; font-size:1rem; }
       .mat-divider { margin:1rem 0; }
 
       .content { padding:1.1rem .9rem 3rem; }
@@ -1201,6 +1249,7 @@
 
         <!-- Silveira backdrop -->
         <div class="bf-photo-wrap">
+          <div class="bf-photo-fill"></div>
           <div class="bf-photo-silveira"></div>
           <div class="bf-photo-overlay"></div>
         </div>
