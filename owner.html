@@ -119,6 +119,8 @@
         radial-gradient(ellipse  600px 400px at 30% 20%, rgba(200,60,60,.04)  0%, transparent 50%),
         linear-gradient(180deg, #03050A 0%, #06090F 100%);
     }
+    .gate-logo { cursor:pointer; transition:transform .3s ease, filter .3s ease; }
+    .gate-logo:hover { transform:scale(1.04); filter:brightness(1.12); }
     .gate-logo {
       width:100px; height:100px; border-radius:50%; object-fit:cover; object-position:center;
       margin-bottom:1.6rem; position:relative; z-index:2;
@@ -308,6 +310,93 @@
     .mf-sig span { display:block; margin-top:.5rem; font-size:.66rem;
       color:var(--text-mute); font-style:italic; letter-spacing:.06em; }
     @media(max-width:760px){ .mf-crew { grid-template-columns:1fr; } .mf-title { font-size:1.4rem; } }
+
+
+    /* ══ AGENT CARD LAUNCHER ═════════════════════════════════════ */
+    /*  Not a chat bubble. A card you tap to summon a member of the
+        crew — same visual grammar as the guide deck.               */
+    .agent-card {
+      position:fixed; right:1.5rem; bottom:1.5rem; z-index:9400;
+      width:126px; padding:0; border:0; background:none; cursor:pointer;
+      filter:drop-shadow(0 12px 30px rgba(0,0,0,.55));
+      transition:transform .45s cubic-bezier(.34,1.56,.64,1), filter .45s ease, opacity .3s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .agent-card:hover  { transform:translateY(-8px) rotate(-1.5deg) scale(1.05);
+                         filter:drop-shadow(0 20px 40px rgba(0,0,0,.7)) drop-shadow(0 0 20px var(--ac-glow,rgba(212,163,64,.5))); }
+    .agent-card:active { transform:translateY(-2px) scale(.99); }
+    .agent-card.hidden { opacity:0; pointer-events:none; transform:translateY(12px) scale(.94); }
+
+    .ac-frame {
+      border-radius:8px; overflow:hidden; padding:3px;
+      background:linear-gradient(160deg, var(--ac-a), var(--ac-b));
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.5);
+    }
+    .ac-titlebar {
+      display:flex; align-items:center; justify-content:space-between; gap:.25rem;
+      padding:.2rem .34rem; border-radius:4px 4px 0 0;
+      background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(0,0,0,.16));
+    }
+    .ac-name {
+      font-family:'Cinzel',serif; font-size:.56rem; font-weight:700;
+      letter-spacing:.04em; color:#140E06; white-space:nowrap;
+    }
+    .ac-cost { display:flex; gap:1px; font-size:.5rem; }
+    .ac-art {
+      height:74px; background-size:cover; background-position:center top;
+      background-color:#0B1220; border:1px solid rgba(0,0,0,.4); margin:.16rem 0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.5rem; color:rgba(255,255,255,.5);
+    }
+    .ac-type {
+      padding:.16rem .34rem; font-family:'Cinzel',serif; font-size:.42rem;
+      letter-spacing:.03em; color:#140E06;
+      background:linear-gradient(180deg, rgba(255,255,255,.2), rgba(0,0,0,.14));
+    }
+    .ac-text {
+      padding:.3rem .34rem .34rem; border-radius:0 0 4px 4px;
+      background:rgba(252,247,235,.94); color:#241A0E;
+      font-size:.45rem; line-height:1.35; font-style:italic; text-align:center;
+    }
+    .ac-text strong { display:block; font-style:normal; font-family:'Cinzel',serif;
+                      font-size:.48rem; letter-spacing:.06em; margin-top:.12rem; }
+
+    @media(max-width:650px){
+      .agent-card { right:.9rem; bottom:.9rem; width:104px; }
+      .ac-art { height:60px; }
+    }
+
+    .hanna-panel {
+      position:fixed; right:1.5rem; bottom:1.5rem; z-index:9450;
+      width:min(430px,calc(100vw - 3rem)); max-height:min(660px,82vh);
+      display:none; flex-direction:column; overflow:hidden;
+      border-radius:16px; border:1px solid rgba(91,170,212,.28);
+      background:linear-gradient(170deg,rgba(16,22,36,.99),rgba(9,13,22,.99));
+      box-shadow:0 26px 70px rgba(0,0,0,.72);
+    }
+    .hanna-panel.show { display:flex; animation:h-rise .3s cubic-bezier(.23,1,.32,1); }
+    @keyframes h-rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .hanna-head {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:.9rem 1rem; border-bottom:1px solid var(--border);
+    }
+    .hh-name { font-family:'Cinzel',serif; font-size:.92rem; color:var(--mu); letter-spacing:.08em; }
+    .hh-role { font-size:.63rem; color:var(--text-mute); margin-top:.12rem; letter-spacing:.05em; }
+    .hanna-icon {
+      width:28px; height:28px; border-radius:50%; cursor:pointer;
+      background:rgba(255,255,255,.05); border:1px solid var(--border);
+      color:var(--text-dim); font-size:.8rem;
+    }
+    .hanna-icon:hover { background:rgba(91,170,212,.7); color:#04121C; border-color:transparent; }
+    .hanna-log { flex:1; min-height:220px; }
+    .hanna-input-row textarea {
+      background:rgba(255,255,255,.05); border:1px solid var(--border); color:var(--text);
+    }
+    .hanna-input-row textarea:focus { outline:none; border-color:rgba(91,170,212,.5); }
+    #hanna-send { width:42px; }
+    @media(max-width:650px){
+      .hanna-panel { right:.6rem; left:.6rem; bottom:.6rem; width:auto; max-height:80vh; }
+    }
 
     /* ══ HANNA — agent panel ═════════════════════════════════════ */
     .hanna-wrap { display:flex; flex-direction:column; gap:.8rem; }
@@ -996,7 +1085,7 @@
     <div class="aring aring-4"></div>
   </div>
 
-  <img src="assets/logo.png" alt="The Gathering" class="gate-logo">
+  <a href="https://fefoabreu.me/TheGathering/" title="Back to the guest site" style="display:inline-block;text-decoration:none"><img src="assets/logo.png" alt="The Gathering — back to the guest site" class="gate-logo"></a>
   <div class="gate-title">The Gathering</div>
   <div class="gate-sub">Owner Portal &nbsp;·&nbsp; Private Access</div>
 
@@ -1042,7 +1131,6 @@
   <!-- Arena Tab Nav -->
   <div class="tabs-nav">
     <button class="tab-btn active" data-tab="overview">    <i class="ms ms-tap"></i> Command</button>
-    <button class="tab-btn" data-tab="hanna">           <i class="ms ms-u ms-cost"></i> Hanna</button>
     <button class="tab-btn" data-tab="calendar">           <i class="ms ms-u ms-cost"></i> Scry</button>
     <button class="tab-btn" data-tab="guests">             <i class="ms ms-g ms-cost"></i> Creatures</button>
     <button class="tab-btn" data-tab="housekeeping">       <i class="ms ms-r ms-cost"></i> Upkeep</button>
@@ -1403,30 +1491,42 @@
 
 
 
-    <!-- ══ HANNA — Ship's Navigator ══ -->
-    <div class="tab-panel" id="tab-hanna">
-      <div class="section-title" style="align-items:center">
-        <i class="ms ms-u ms-cost"></i> Hanna · Ship's Navigator
-        <button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="hannaNewSession()">✦ New chart</button>
-      </div>
-
-      <div class="hanna-wrap">
-        <div class="hanna-log" id="hanna-log"></div>
-        <div class="hanna-typing" id="hanna-typing"><span></span><span></span><span></span></div>
-
-        <div class="hanna-suggest">
-          <button class="h-chip" onclick="hannaAsk('What is booked in July?')">What's booked in July?</button>
-          <button class="h-chip" onclick="hannaAsk('Quem é o vendor da piscina?')">Quem é o vendor da piscina?</button>
-          <button class="h-chip" onclick="hannaAsk('Add a task to fix the escada')">Add a task to fix the escada</button>
-          <button class="h-chip" onclick="hannaAsk('What are the open projects?')">Open projects</button>
-        </div>
-
-        <div class="hanna-input-row">
-          <textarea id="hanna-input" rows="1" placeholder="Ask Hanna…" onkeydown="hannaKey(event)"></textarea>
-          <button class="btn-sm btn-gold" id="hanna-send" onclick="hannaSend()">Send</button>
-        </div>
-      </div>
+<!-- HANNA — Ship's Navigator ───────────────────────────────── -->
+<button class="agent-card agent-hanna" id="hanna-fab" onclick="hannaOpen()"
+        aria-label="Summon Hanna" style="--ac-a:#C9D8E8;--ac-b:#8FA8C4;--ac-glow:rgba(91,170,212,.55)">
+  <div class="ac-frame">
+    <div class="ac-titlebar">
+      <span class="ac-name">Hanna</span>
+      <span class="ac-cost"><i class="ms ms-1 ms-cost"></i><i class="ms ms-w ms-cost"></i><i class="ms ms-u ms-cost"></i></span>
     </div>
+    <div class="ac-art" style="background-image:url('assets/hanna.jpg')">⚙</div>
+    <div class="ac-type">Legendary — Artificer</div>
+    <div class="ac-text">"I'm a maker,<br>not a destroyer."<strong>Tap to summon</strong></div>
+  </div>
+</button>
+
+<div class="hanna-panel" id="hanna-panel">
+  <div class="hanna-head">
+    <div>
+      <div class="hh-name">Hanna</div>
+      <div class="hh-role">Ship's Navigator · Commander Deck</div>
+    </div>
+    <div style="display:flex;gap:.35rem">
+      <button class="hanna-icon" onclick="hannaNewSession()" title="New chart">✦</button>
+      <button class="hanna-icon" onclick="hannaClose()" aria-label="Close">✕</button>
+    </div>
+  </div>
+
+  <div class="hanna-log" id="hanna-log"></div>
+  <div class="hanna-typing" id="hanna-typing"><span></span><span></span><span></span></div>
+
+  <div class="hanna-suggest" id="hanna-chips"></div>
+
+  <div class="hanna-input-row">
+    <textarea id="hanna-input" rows="1" placeholder="" onkeydown="hannaKey(event)"></textarea>
+    <button class="btn-sm btn-gold" id="hanna-send" onclick="hannaSend()">→</button>
+  </div>
+</div>
 
     <!-- ══ THE CHRONICLE (decisions) ══ -->
     <div class="tab-panel" id="tab-chronicle">
@@ -1853,7 +1953,6 @@ function enterSection(tab) {
   if (tab === 'environment') renderDeckBuilder();
   if (tab === 'chronicle')   renderDecisions();
   if (tab === 'calendar')    loadGcal();
-  if (tab === 'hanna')       initHanna();
 }
 
 // ── TABS ──────────────────────────────────────────────────────
@@ -2763,7 +2862,7 @@ function hannaScroll() {
 
 function hannaWelcome() {
   hannaPaint('assistant',
-    'Course plotted. I have the bookings, the calendar, vendors, projects and the Chronicle in front of me — ask away, in English or português.');
+    'Course plotted. Bookings, both calendars, vendors, projects and the Chronicle are in front of me. Where do you want to start?');
 }
 
 function hannaKey(e) {
@@ -2771,6 +2870,32 @@ function hannaKey(e) {
 }
 
 function hannaAsk(q) { document.getElementById('hanna-input').value = q; hannaSend(); }
+
+
+const HANNA_CHIPS = [
+  ['What needs my attention today?', 'Today'],
+  ['Any conflicts between the calendars?', 'Calendar conflicts'],
+  ['What is still open on the house projects?', 'Open projects'],
+  ['Summarise the season so far', 'Season so far'],
+];
+
+function hannaOpen() {
+  document.getElementById('hanna-panel').classList.add('show');
+  document.getElementById('hanna-fab').classList.add('hidden');
+  const chips = document.getElementById('hanna-chips');
+  if (chips && !chips.children.length) {
+    chips.innerHTML = HANNA_CHIPS.map(([ask, label]) =>
+      `<button class="h-chip" onclick="hannaAsk('${ask.replace(/'/g, "\\'")}')">${label}</button>`).join('');
+  }
+  const box = document.getElementById('hanna-input');
+  if (box) box.placeholder = 'What do you need?';
+  initHanna();
+  setTimeout(() => box && box.focus(), 250);
+}
+function hannaClose() {
+  document.getElementById('hanna-panel').classList.remove('show');
+  document.getElementById('hanna-fab').classList.remove('hidden');
+}
 
 let hannaStarted = false;
 function initHanna() {
