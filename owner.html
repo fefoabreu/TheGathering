@@ -1491,29 +1491,24 @@ async function tryLogin() {
   if (!pwd) return;
   document.getElementById('gate-err').style.display = 'none';
 
-  if (!tgAuth) {
-    gateError('⚠ Sign-in is unavailable — Firebase Auth is not enabled yet.');
+  if (pwd !== TG_GATE_PASSWORD) {
+    gateError('❌ Incorrect password. Try again.');
     return;
   }
+
+  // Password accepted. Open an anonymous Firebase session so Firestore reads
+  // and writes work — the portal needs one, but no owner sees a second login.
   gateBusy(true);
   try {
-    await tgAuth.signInWithEmailAndPassword(TG_OWNER_EMAIL, pwd);
-    // onAuthStateChanged opens the portal.
+    if (tgAuth && !tgAuth.currentUser) await tgAuth.signInAnonymously();
   } catch (e) {
-    const known = {
-      'auth/wrong-password':        '❌ Incorrect password. Try again.',
-      'auth/invalid-credential':    '❌ Incorrect password. Try again.',
-      'auth/invalid-login-credentials': '❌ Incorrect password. Try again.',
-      'auth/user-not-found':        '⚠ The owner account has not been created yet.',
-      'auth/too-many-requests':     '⚠ Too many attempts. Wait a minute and retry.',
-      'auth/network-request-failed':'⚠ Network unavailable. Check your connection.',
-      'auth/configuration-not-found':'⚠ Firebase Auth is not enabled on the project yet.',
-      'auth/operation-not-allowed': '⚠ Email/password sign-in is not enabled yet.',
-    };
-    gateError(known[e.code] || ('⚠ ' + (e.message || 'Sign-in failed.')));
+    // Degraded persistence beats locking an owner out of the portal.
+    console.warn('Anonymous sign-in failed:', e.code || e.message);
   } finally {
     gateBusy(false);
   }
+  sessionStorage.setItem('tg_gate', '1');
+  openPortal();
 }
 
 function openPortal() {
@@ -1530,7 +1525,7 @@ function closePortal() {
 }
 
 function logout() {
-  if (tgAuth) tgAuth.signOut().catch(() => {});
+  sessionStorage.removeItem('tg_gate');
   closePortal();
 }
 
@@ -1546,7 +1541,11 @@ function logout() {
     return;
   }
   // Survives a refresh, and drives the gate in both directions.
-  tgAuth.onAuthStateChanged(user => user ? openPortal() : closePortal());
+  // A Firebase session is not permission to enter — the gate password is.
+  tgAuth.signInAnonymously().catch(e => console.warn('anon sign-in:', e.code));
+  tgAuth.onAuthStateChanged(() => {
+    if (sessionStorage.getItem('tg_gate') === '1') openPortal();
+  });
 })();
 
 document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });

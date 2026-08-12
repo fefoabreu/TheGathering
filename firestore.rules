@@ -7,23 +7,26 @@ rules_version = '2';
 //  in. Everything else — bookings, projects, door codes, vendor
 //  payment details — requires an owner session.
 //
-//  "Owner" is not `request.auth != null`. Email/password sign-up is
-//  open by default, so anyone could mint an account and read the
-//  house codes. Authorisation is an explicit allowlist held in
-//  config/access, which no client can read or write; only the
-//  Firebase console (which bypasses rules) can edit it.
-//
-//  Adding owners two and three later is therefore a data change,
-//  not a rules deploy: append their UIDs to that array.
+//  Access control is deliberately light at this stage — see the
+//  signedIn() note below. config/access stays reserved and locked
+//  so tightening to a UID allowlist later is a data change, not a
+//  rules rewrite.
 // ──────────────────────────────────────────────────────────────
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isOwner() {
-      return request.auth != null
-        && exists(/databases/$(database)/documents/config/access)
-        && request.auth.uid in get(/databases/$(database)/documents/config/access).data.uids;
+    // Owner decision (Aug 12): the @tgs gate is the only access control for
+    // now — inside the portal everyone sees everything, as they always did in
+    // the shared Google Doc. The portal signs in anonymously so Firestore has
+    // a session; that keeps the data out of reach of unauthenticated REST
+    // calls (no drive-by reads or wipes) without adding any login friction.
+    //
+    // To tighten later, swap this for the UID allowlist — config/access is
+    // already reserved below and rules can read it without a redeploy:
+    //   request.auth.uid in get(/databases/$(database)/documents/config/access).data.uids
+    function signedIn() {
+      return request.auth != null;
     }
 
     match /gathering/{doc} {
@@ -31,7 +34,7 @@ service cloud.firestore {
       allow read: if doc == 'guide';
 
       // Everything else, and every write anywhere, is owners-only.
-      allow read, write: if isOwner();
+      allow read, write: if signedIn();
     }
 
     // The allowlist itself is console-only. Never readable by a client:

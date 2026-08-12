@@ -45,4 +45,7 @@ const TG_SECRETS_PATH  = { collection: "gathering", doc: "secrets" };
 //  and the rules pick it up with no redeploy.
 // ──────────────────────────────────────────────────────────────
 
-const TG_OWNER_EMAIL = "owners@thegatheringsilveira.com";
+// The portal gate. Owner decision (Aug 12): this is the only access control
+// for now — inside, all three owners see everything, as in the shared Google
+// Doc. It is a shared team password, not a per-person credential.
+const TG_GATE_PASSWORD = "@tgs";
