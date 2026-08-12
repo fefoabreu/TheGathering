@@ -1260,6 +1260,9 @@
 
     <!-- ══ SCRY (Calendar) ══ -->
     <div class="tab-panel" id="tab-calendar">
+      <div class="section-title" style="align-items:center"><i class="ms ms-u ms-cost"></i> Property Calendar <span style="font-family:Inter,sans-serif;font-size:.7rem;letter-spacing:0;text-transform:none;color:var(--text-mute);margin-left:.6rem">thegatheringsilveira@gmail.com · read-only</span><button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="loadGcal(true)">↻ Refresh</button></div>
+      <div class="mtg-card" style="margin-bottom:1.6rem"><div id="gcal-list"><div class="empty-state">Reading the property calendar…</div></div></div>
+
       <div class="section-title"><i class="ms ms-u ms-cost"></i> 2026 Season Calendar</div>
       <div class="mtg-card" style="margin-bottom:1.5rem">
         <div class="cal-wrap" id="cal-root"></div>
@@ -1804,6 +1807,7 @@ function enterSection(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
   if (tab === 'environment') renderDeckBuilder();
   if (tab === 'chronicle')   renderDecisions();
+  if (tab === 'calendar')    loadGcal();
   if (tab === 'hanna')       initHanna();
 }
 
@@ -2401,8 +2405,12 @@ async function hannaRunTool(name, input) {
       }
       return rows.length ? rows : 'No bookings recorded.';
     }
-    case 'get_calendar':
-      return { ownerBlocks: getSavedBlocks(), bookedRanges: BOOKED_RANGES, seasonBlocks: OWNER_RANGES };
+    case 'get_calendar': {
+      const gcal = await loadGcal();
+      return { propertyCalendar: gcal,          // Google, the source of truth
+               ownerBlocks: getSavedBlocks(),   // portal-side only
+               bookedRanges: BOOKED_RANGES, seasonBlocks: OWNER_RANGES };
+    }
     case 'add_owner_block': {
       if (!input.from || !input.to || input.from >= input.to) return 'Invalid range — need from < to, as YYYY-MM-DD.';
       const blocks = getSavedBlocks();
@@ -2681,6 +2689,57 @@ function manifestTap() {
 }
 function openManifest() { document.getElementById('manifest-overlay').classList.add('show'); }
 function closeManifest() { document.getElementById('manifest-overlay').classList.remove('show'); }
+
+
+// ── Google Calendar (property account) ───────────────────────
+//  Read-only mirror of thegatheringsilveira@gmail.com, fetched through
+//  Hanna's Worker (which holds the feed URL). Kept separate from the
+//  portal's own owner blocks so a sync can never overwrite one.
+let TG_GCAL = [], gcalState = 'idle';
+
+async function loadGcal(force) {
+  if (gcalState === 'loading') return TG_GCAL;
+  if (TG_GCAL.length && !force) return TG_GCAL;
+  gcalState = 'loading'; renderGcal();
+  try {
+    const u = firebase.auth().currentUser;
+    if (!u) throw new Error('no session');
+    const res = await fetch(HANNA_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json',
+                 'Authorization': 'Bearer ' + await u.getIdToken() },
+      body: JSON.stringify({ action: 'calendar' }),
+    });
+    const d = await res.json();
+    if (d.error) throw new Error(d.message || d.error);
+    TG_GCAL = d.events || [];
+    gcalState = 'ok';
+  } catch (e) {
+    gcalState = 'error: ' + (e.message || e);
+  }
+  renderGcal();
+  return TG_GCAL;
+}
+
+function renderGcal() {
+  const el = document.getElementById('gcal-list');
+  if (!el) return;
+  if (gcalState === 'loading') { el.innerHTML = '<div class="empty-state">Reading the property calendar…</div>'; return; }
+  if (gcalState.startsWith('error')) {
+    el.innerHTML = `<div class="empty-state">Calendar unavailable — ${esc(gcalState.slice(7))}</div>`; return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  const upcoming = TG_GCAL.filter(e => e.to >= today);
+  if (!upcoming.length) { el.innerHTML = '<div class="empty-state">Nothing upcoming on the property calendar.</div>'; return; }
+  el.innerHTML = upcoming.slice(0, 40).map(e => `
+    <div style="display:flex;gap:.8rem;align-items:baseline;padding:.6rem .9rem;margin-bottom:.35rem;
+                background:rgba(91,170,212,.05);border:1px solid rgba(91,170,212,.16);border-radius:8px">
+      <span style="font-size:.74rem;color:var(--mu);white-space:nowrap;font-variant-numeric:tabular-nums">
+        ${esc(e.from)}${e.to !== e.from ? ' → ' + esc(e.to) : ''}</span>
+      <span style="font-size:.86rem;flex:1">${esc(e.title)}</span>
+      ${e.recurring ? '<span class="badge badge-mute" style="font-size:.58rem">repeats</span>' : ''}
+    </div>`).join('');
+}
 
 // ── BLOCKS ────────────────────────────────────────────────────
 function getSavedBlocks(){return blocksCache;}
