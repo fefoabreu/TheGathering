@@ -154,28 +154,43 @@ function parseIcs(text) {
   return out;
 }
 
+async function fetchIcs(url, source) {
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'TheGathering/1.0' } });
+    if (!res.ok) return { source, error: 'HTTP ' + res.status, events: [] };
+    const events = parseIcs(await res.text()).map(e => ({ ...e, source }));
+    return { source, events };
+  } catch (e) {
+    return { source, error: 'unreachable', events: [] };
+  }
+}
+
 async function handleCalendar(env, origin) {
-  const url = env.GCAL_ICS_URL;
-  if (!url) {
+  const feeds = [];
+  if (env.GCAL_ICS_URL)   feeds.push({ url: env.GCAL_ICS_URL,   source: 'google' });
+  if (env.AIRBNB_ICS_URL) feeds.push({ url: env.AIRBNB_ICS_URL, source: 'airbnb' });
+
+  if (!feeds.length) {
     return json({ error: 'calendar_not_configured',
-                  message: 'The Google Calendar feed is not connected yet.' }, 503, origin);
+                  message: 'No calendar feeds are connected yet.' }, 503, origin);
   }
 
   const kv = env.HANNA_CACHE;
   if (kv) {
-    const hit = await kv.get('gcal', 'json');
+    const hit = await kv.get('cal:v2', 'json');
     if (hit) return json({ ...hit, cached: true }, 200, origin);
   }
 
-  let res;
-  try { res = await fetch(url, { headers: { 'User-Agent': 'TheGathering/1.0' } }); }
-  catch { return json({ error: 'fetch_failed' }, 502, origin); }
-  if (!res.ok) return json({ error: 'fetch_failed', status: res.status }, 502, origin);
+  // Both feeds in parallel; one failing must not take the other down.
+  const results = await Promise.all(feeds.map(f => fetchIcs(f.url, f.source)));
 
-  const events = parseIcs(await res.text());
-  const payload = { events, count: events.length, fetchedAt: new Date().toISOString() };
-  // Ten minutes is fresh enough for three people and kind to Google.
-  if (kv) await kv.put('gcal', JSON.stringify(payload), { expirationTtl: 600 });
+  const events = results.flatMap(r => r.events)
+                        .sort((a, b) => a.from.localeCompare(b.from));
+  const sources = {};
+  results.forEach(r => { sources[r.source] = r.error ? { error: r.error } : { count: r.events.length }; });
+
+  const payload = { events, count: events.length, sources, fetchedAt: new Date().toISOString() };
+  if (kv) await kv.put('cal:v2', JSON.stringify(payload), { expirationTtl: 600 });
   return json(payload, 200, origin);
 }
 

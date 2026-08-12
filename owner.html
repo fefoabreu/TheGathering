@@ -456,6 +456,14 @@
       color:#9CCDE4; border:1px solid rgba(91,170,212,.3);
       overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
+
+    .src-tag {
+      font-family:'Cinzel',serif; font-size:.54rem; letter-spacing:.1em;
+      padding:.14rem .4rem; border-radius:9px; white-space:nowrap; flex-shrink:0;
+    }
+    .src-google { color:#9CCDE4; background:rgba(91,170,212,.14); border:1px solid rgba(91,170,212,.3); }
+    .src-airbnb { color:#F09A6A; background:rgba(224,120,64,.14); border:1px solid rgba(224,120,64,.32); }
+    .gcal-airbnb { background:rgba(224,120,64,.16); color:#F09A6A; border-color:rgba(224,120,64,.3); }
     .cal-legend {
       display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem;
       font-size:.72rem; color:var(--text-dim);
@@ -465,6 +473,7 @@
     .lg-booked { background:rgba(74,140,180,.5); border:1px solid rgba(74,140,180,.7); }
     .lg-owner  { background:rgba(201,168,76,.4); border:1px solid rgba(201,168,76,.7); }
     .lg-event  { background:rgba(91,170,212,.3); border:1px solid rgba(91,170,212,.6); }
+    .lg-airbnb { background:rgba(224,120,64,.3); border:1px solid rgba(224,120,64,.6); }
     .lg-avail  { background:rgba(91,170,114,.25); border:1px solid rgba(91,170,114,.5); }
     @media(max-width:760px){
       .cal-nav-title { font-size:.85rem; min-width:8rem; }
@@ -2003,7 +2012,8 @@ function renderCalendar() {
     // Property-calendar events, on the day they begin or at the start of a week
     ev.forEach(e => {
       if (!(startOfRun || iso === e.from)) return;
-      const t = document.createElement('div'); t.className = 'gcal-tag';
+      const t = document.createElement('div');
+      t.className = 'gcal-tag gcal-' + (e.source || 'google');
       t.textContent = e.title; t.title = e.title + '  (' + e.from + (e.to !== e.from ? ' → ' + e.to : '') + ')';
       cell.appendChild(t);
     });
@@ -2017,7 +2027,8 @@ function renderCalendar() {
   legend.innerHTML = `
     <span><i class="lg lg-booked"></i>Booked</span>
     <span><i class="lg lg-owner"></i>Owner block</span>
-    <span><i class="lg lg-event"></i>Property calendar</span>
+    <span><i class="lg lg-event"></i>Google</span>
+    <span><i class="lg lg-airbnb"></i>Airbnb</span>
     <span><i class="lg lg-avail"></i>Available</span>`;
   root.appendChild(legend);
 }
@@ -2832,6 +2843,7 @@ function renderGcal() {
       <span style="font-size:.74rem;color:var(--mu);white-space:nowrap;font-variant-numeric:tabular-nums">
         ${esc(e.from)}${e.to !== e.from ? ' → ' + esc(e.to) : ''}</span>
       <span style="font-size:.86rem;flex:1">${esc(e.title)}</span>
+      <span class="src-tag src-${esc(e.source||'google')}">${e.source === 'airbnb' ? 'Airbnb' : 'Google'}</span>
       ${e.recurring ? '<span class="badge badge-mute" style="font-size:.58rem">repeats</span>' : ''}
     </div>`).join('');
 }
