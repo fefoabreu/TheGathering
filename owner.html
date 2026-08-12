@@ -269,6 +269,69 @@
     .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg, rgba(201,168,76,.3) 0%, transparent 100%); }
     .section-title .ms { font-size:1rem; }
 
+
+    /* ══ HANNA — agent panel ═════════════════════════════════════ */
+    .hanna-wrap { display:flex; flex-direction:column; gap:.8rem; }
+    .hanna-log {
+      min-height:340px; max-height:min(58vh,560px); overflow-y:auto;
+      display:flex; flex-direction:column; gap:.85rem;
+      padding:1.1rem; border-radius:var(--r);
+      background:linear-gradient(160deg,rgba(16,22,36,.92),rgba(10,14,24,.92));
+      border:1px solid var(--border);
+    }
+    .h-bubble { max-width:82%; padding:.75rem .95rem; border-radius:12px; line-height:1.65; font-size:.9rem; }
+    .h-user {
+      align-self:flex-end; background:rgba(91,170,212,.14);
+      border:1px solid rgba(91,170,212,.3); border-bottom-right-radius:4px;
+    }
+    .h-assistant {
+      align-self:flex-start; background:rgba(201,168,76,.07);
+      border:1px solid rgba(201,168,76,.22); border-bottom-left-radius:4px;
+    }
+    .h-assistant.hb-error { background:rgba(208,88,64,.1); border-color:rgba(208,88,64,.4); }
+    .hb-who {
+      font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.16em;
+      text-transform:uppercase; color:var(--gold); margin-bottom:.4rem;
+    }
+    .hb-body { white-space:pre-wrap; word-break:break-word; }
+    .hb-tools { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.5rem; }
+    .hb-tool {
+      font-family:'Cinzel',serif; font-size:.56rem; letter-spacing:.08em;
+      padding:.18rem .45rem; border-radius:10px; color:var(--text-dim);
+      background:rgba(255,255,255,.05); border:1px solid var(--border);
+    }
+    .hanna-typing { display:none; gap:5px; padding:0 .3rem; align-items:center; height:16px; }
+    .hanna-typing span {
+      width:6px; height:6px; border-radius:50%; background:var(--gold); opacity:.5;
+      animation:h-dot 1.2s infinite ease-in-out;
+    }
+    .hanna-typing span:nth-child(2){ animation-delay:.18s; }
+    .hanna-typing span:nth-child(3){ animation-delay:.36s; }
+    @keyframes h-dot { 0%,60%,100%{transform:translateY(0);opacity:.35} 30%{transform:translateY(-5px);opacity:1} }
+
+    .hanna-suggest { display:flex; flex-wrap:wrap; gap:.4rem; }
+    .h-chip {
+      padding:.4rem .75rem; border-radius:18px; cursor:pointer; font-size:.72rem;
+      background:rgba(255,255,255,.04); border:1px solid var(--border);
+      color:var(--text-dim); transition:all .25s;
+    }
+    .h-chip:hover { border-color:rgba(201,168,76,.45); color:var(--text); }
+
+    .hanna-input-row { display:flex; gap:.6rem; align-items:flex-end; }
+    .hanna-input-row textarea {
+      flex:1; resize:none; min-height:44px; max-height:140px; padding:.7rem .9rem;
+      border-radius:10px; font-family:inherit; font-size:.9rem; line-height:1.5;
+    }
+    #hanna-send { flex-shrink:0; min-height:44px; }
+
+    @media(max-width:760px){
+      .h-bubble { max-width:92%; }
+      .hanna-log { min-height:300px; max-height:52vh; padding:.8rem; }
+      .hanna-suggest { overflow-x:auto; flex-wrap:nowrap; scrollbar-width:none; }
+      .hanna-suggest::-webkit-scrollbar { display:none; }
+      .h-chip { flex-shrink:0; }
+    }
+
     /* ══ CLOUD SYNC PILL ═════════════════════════════════════════ */
     .sync-pill {
       font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.1em; text-transform:uppercase;
@@ -895,6 +958,7 @@
   <!-- Arena Tab Nav -->
   <div class="tabs-nav">
     <button class="tab-btn active" data-tab="overview">    <i class="ms ms-tap"></i> Command</button>
+    <button class="tab-btn" data-tab="hanna">           <i class="ms ms-u ms-cost"></i> Hanna</button>
     <button class="tab-btn" data-tab="calendar">           <i class="ms ms-u ms-cost"></i> Scry</button>
     <button class="tab-btn" data-tab="guests">             <i class="ms ms-g ms-cost"></i> Creatures</button>
     <button class="tab-btn" data-tab="housekeeping">       <i class="ms ms-r ms-cost"></i> Upkeep</button>
@@ -1250,6 +1314,32 @@
       </div>
     </div>
 
+
+
+    <!-- ══ HANNA — Ship's Navigator ══ -->
+    <div class="tab-panel" id="tab-hanna">
+      <div class="section-title" style="align-items:center">
+        <i class="ms ms-u ms-cost"></i> Hanna · Ship's Navigator
+        <button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="hannaNewSession()">✦ New chart</button>
+      </div>
+
+      <div class="hanna-wrap">
+        <div class="hanna-log" id="hanna-log"></div>
+        <div class="hanna-typing" id="hanna-typing"><span></span><span></span><span></span></div>
+
+        <div class="hanna-suggest">
+          <button class="h-chip" onclick="hannaAsk('What is booked in July?')">What's booked in July?</button>
+          <button class="h-chip" onclick="hannaAsk('Quem é o vendor da piscina?')">Quem é o vendor da piscina?</button>
+          <button class="h-chip" onclick="hannaAsk('Add a task to fix the escada')">Add a task to fix the escada</button>
+          <button class="h-chip" onclick="hannaAsk('What are the open projects?')">Open projects</button>
+        </div>
+
+        <div class="hanna-input-row">
+          <textarea id="hanna-input" rows="1" placeholder="Ask Hanna…" onkeydown="hannaKey(event)"></textarea>
+          <button class="btn-sm btn-gold" id="hanna-send" onclick="hannaSend()">Send</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ══ THE CHRONICLE (decisions) ══ -->
     <div class="tab-panel" id="tab-chronicle">
@@ -1616,6 +1706,7 @@ function enterSection(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
   if (tab === 'environment') renderDeckBuilder();
   if (tab === 'chronicle')   renderDecisions();
+  if (tab === 'hanna')       initHanna();
 }
 
 // ── TABS ──────────────────────────────────────────────────────
@@ -2138,6 +2229,345 @@ function renderDecisions(err) {
       </div>
     </div>`;
   }).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════════
+//  HANNA — Ship's Navigator
+// ═══════════════════════════════════════════════════════════
+//  The owners' agent. Talks to Claude through the Cloudflare
+//  Worker (which holds the API key), and answers from live
+//  Firestore data via tools rather than from memory.
+// ═══════════════════════════════════════════════════════════
+
+const HANNA_PROXY = 'https://hanna.fefoabreu.me/';
+
+const HANNA_SYSTEM = `You are **Hanna, Ship's Navigator** — the business manager for TheGathering Silveira 🌊🌄, a luxury vacation rental at Rua Augusto Germano Wilke s/n°, Praia da Silveira, Garopaba SC, owned in three equal parts by Fêfo, Pipo and Zé ("One will corrupt, two will divide. With three there is balance."). You serve all three owners equally, in English or Portuguese, matching whichever the user writes in.
+
+You are an artificer and a navigator, not a captain: you chart the course and keep the records straight, but the owners decide. You are concise, warm and action-oriented — a program manager, not a chatbot.
+
+**Property:** 4 themed suites — Planície (Plains/white), Ilha (Island/blue), Montanha (Mountain/red), Floresta (Forest/green) — plus the Container Office (Pântano/black), which is not yet built. Capacity 12 guests (max 8 adults + 4 children ≤10). Heated pool, a paid add-on for guests. No pets. Not suitable for children under 2.
+
+**Operations:** Managed by Estar Garopaba (Natalia) on the "Gestão Total" plan: 20% commission on gross nightly value, excluding cleaning fee, caução and platform fees. Airbnb host fee is 4%. Payments flow directly to the owners — Estar never holds owner money. Owners pay cleaners and vendors directly. Rental season targets availability from early December for the Brazilian summer. Rental contracts must be signed within 48h of receipt. Direct paying bookings on dates released to Estar still owe the 20% commission, whatever the source.
+
+**Owner use is free, but the calendar is the risk.** Blocking dates in this portal is NOT sufficient. The Estar-administered calendar is the official one (contract clauses 5.3 and 5.5). An owner block that is not confirmed in writing with Estar, and that collides with a confirmed booking, makes the owners liable for the guest's refund, fines, and Estar's commission anyway (clause 6.4). Whenever you add or discuss an owner block, say plainly that it must also be confirmed in writing with Estar. Never let this pass as a footnote.
+
+**Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks, tasks and vendor records on request. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
+
+You are talking to one of the three owners but you do not know which — there is a single shared login. When the answer depends on it, just ask ("whose dates should I block?").
+
+Codes and payment details live in the Vault. If asked for them in a context that might be screenshared, mention that before reciting them.`;
+
+const HANNA_TOOLS = [
+  { name:'list_bookings', description:'List the season bookings — weeks, dates, guest names, party size, origin and channel.',
+    input_schema:{ type:'object', properties:{ month:{type:'string', description:'Optional month name or number to filter by, e.g. "January" or "1".'} } } },
+  { name:'get_calendar', description:'Get owner blocks and booked date ranges currently held in the portal calendar.',
+    input_schema:{ type:'object', properties:{} } },
+  { name:'add_owner_block', description:'Add an owner block to the portal calendar. Always remind the owner it must ALSO be confirmed in writing with Estar Garopaba.',
+    input_schema:{ type:'object', required:['from','to'], properties:{
+      from:{type:'string', description:'Start date, YYYY-MM-DD'},
+      to:{type:'string', description:'End date, YYYY-MM-DD'},
+      label:{type:'string', description:'Who or what the block is for'} } } },
+  { name:'get_vendors', description:'List vendors — role, name, phone, cost and cadence.',
+    input_schema:{ type:'object', properties:{} } },
+  { name:'get_tasks', description:'List house projects (Sorceries) with category, priority and done state.',
+    input_schema:{ type:'object', properties:{ include_done:{type:'boolean'} } } },
+  { name:'add_task', description:'Add a house project.',
+    input_schema:{ type:'object', required:['title'], properties:{
+      title:{type:'string'},
+      category:{type:'string', enum:['maintenance','improvement','repair','cleaning']},
+      priority:{type:'string', enum:['high','medium','low']} } } },
+  { name:'update_task', description:'Mark a project done or not done by its title.',
+    input_schema:{ type:'object', required:['title'], properties:{
+      title:{type:'string'}, done:{type:'boolean'} } } },
+  { name:'get_house_info', description:'Suites, capacity, house rules and the Estar management terms.',
+    input_schema:{ type:'object', properties:{} } },
+  { name:'list_decisions', description:'Read the Chronicle — decisions taken on the venture.',
+    input_schema:{ type:'object', properties:{ limit:{type:'number'} } } },
+  { name:'add_decision', description:'Record a decision in the Chronicle so all three owners see it.',
+    input_schema:{ type:'object', required:['title'], properties:{
+      title:{type:'string'}, summary:{type:'string'},
+      decidedBy:{type:'string'}, status:{type:'string', enum:['decided','proposed','revisit']} } } },
+];
+
+// Tools run against the same Firestore-backed stores the portal renders from,
+// so Hanna and the owner are always looking at the same numbers.
+async function hannaRunTool(name, input) {
+  input = input || {};
+  switch (name) {
+    case 'list_bookings': {
+      let rows = storeGet('bookings') || [];
+      if (input.month) {
+        const m = String(input.month).toLowerCase();
+        rows = rows.filter(b => (b.dates || '').toLowerCase().includes(m.slice(0,3)));
+      }
+      return rows.length ? rows : 'No bookings recorded.';
+    }
+    case 'get_calendar':
+      return { ownerBlocks: getSavedBlocks(), bookedRanges: BOOKED_RANGES, seasonBlocks: OWNER_RANGES };
+    case 'add_owner_block': {
+      if (!input.from || !input.to || input.from >= input.to) return 'Invalid range — need from < to, as YYYY-MM-DD.';
+      const blocks = getSavedBlocks();
+      blocks.push({ id: Date.now(), from: input.from, to: input.to, label: input.label || 'Owner Block' });
+      saveBlocks(blocks); renderBlocks(); renderCalendar();
+      return { added: true, from: input.from, to: input.to,
+               reminder: 'Added to the portal calendar only. This block must ALSO be confirmed in writing with Estar Garopaba (clauses 5.3/5.5), or a collision with a confirmed booking is owner-fault under 6.4.' };
+    }
+    case 'get_vendors': return storeGet('vendors') || [];
+    case 'get_tasks': {
+      const all = getProjects() || [];
+      return input.include_done ? all : all.filter(p => !p.done);
+    }
+    case 'add_task': {
+      if (!input.title) return 'A title is required.';
+      const p = getProjects();
+      p.unshift({ id: Date.now(), title: input.title,
+                  cat: input.category || 'maintenance', priority: input.priority || 'medium', done: false });
+      saveProjects(p); renderProjects();
+      return { added: true, title: input.title };
+    }
+    case 'update_task': {
+      const p = getProjects();
+      const hit = p.find(x => (x.title || '').toLowerCase().includes(String(input.title).toLowerCase()));
+      if (!hit) return 'No project matches "' + input.title + '".';
+      hit.done = input.done !== false;
+      saveProjects(p); renderProjects();
+      return { updated: hit.title, done: hit.done };
+    }
+    case 'get_house_info': return storeGet('house') || {};
+    case 'list_decisions': return (TG_DECISIONS || []).slice(0, input.limit || 20);
+    case 'add_decision': {
+      if (!input.title) return 'A title is required.';
+      const ref = decisionsRef();
+      if (!ref) return 'The Chronicle is not reachable right now.';
+      await ref.add({ title: input.title, summary: input.summary || '',
+                      decidedBy: input.decidedBy || '', status: input.status || 'decided',
+                      date: new Date().toISOString(),
+                      createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+      return { recorded: input.title };
+    }
+    default: return 'Unknown tool: ' + name;
+  }
+}
+
+// ── Conversation state ───────────────────────────────────────
+let HANNA_MSGS = [];      // Anthropic-format turns
+let hannaBusy   = false;
+let hannaSessionId = null;
+
+async function hannaToken() {
+  const u = firebase.auth && firebase.auth().currentUser;
+  if (!u) throw new Error('No session — reload the portal.');
+  return u.getIdToken();
+}
+
+// One streamed call. Returns the assistant turn, and paints text as it lands.
+async function hannaCall(onText) {
+  const res = await fetch(HANNA_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',
+               'Authorization': 'Bearer ' + await hannaToken() },
+    body: JSON.stringify({ system: HANNA_SYSTEM, tools: HANNA_TOOLS,
+                           messages: HANNA_MSGS, max_tokens: 2048, stream: true }),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error('Proxy ' + res.status + ': ' + t.slice(0, 200));
+  }
+
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '', stop = null;
+  const blocks = [];      // assembled content blocks
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop();                       // keep the partial line
+
+    for (const line of lines) {
+      if (!line.startsWith('data:')) continue;
+      const raw = line.slice(5).trim();
+      if (!raw || raw === '[DONE]') continue;
+      let ev; try { ev = JSON.parse(raw); } catch { continue; }
+
+      if (ev.type === 'content_block_start') {
+        blocks[ev.index] = ev.content_block.type === 'tool_use'
+          ? { type:'tool_use', id:ev.content_block.id, name:ev.content_block.name, _json:'' }
+          : { type:'text', text:'' };
+      } else if (ev.type === 'content_block_delta') {
+        const b = blocks[ev.index]; if (!b) continue;
+        if (ev.delta.type === 'text_delta')       { b.text += ev.delta.text; onText(ev.delta.text); }
+        else if (ev.delta.type === 'input_json_delta') { b._json += ev.delta.partial_json; }
+      } else if (ev.type === 'message_delta' && ev.delta && ev.delta.stop_reason) {
+        stop = ev.delta.stop_reason;
+      } else if (ev.type === 'error') {
+        throw new Error(ev.error && ev.error.message || 'stream error');
+      }
+    }
+  }
+
+  const content = blocks.filter(Boolean).map(b => {
+    if (b.type !== 'tool_use') return { type:'text', text:b.text };
+    let parsed = {}; try { parsed = b._json ? JSON.parse(b._json) : {}; } catch {}
+    return { type:'tool_use', id:b.id, name:b.name, input:parsed };
+  // A turn that is only a tool call carries an empty text block, which the
+  // API rejects on the next request. Drop empties before echoing the turn back.
+  }).filter(b => b.type !== 'text' || b.text.trim() !== '');
+  return { content, stop };
+}
+
+// The agentic loop: talk, run any tools Hanna asks for, talk again.
+async function hannaSend(text) {
+  if (hannaBusy) return;
+  const input = document.getElementById('hanna-input');
+  text = (text != null ? text : input.value).trim();
+  if (!text) return;
+
+  hannaBusy = true;
+  input.value = '';
+  hannaPaint('user', text);
+  HANNA_MSGS.push({ role:'user', content:text });
+
+  const bubble = hannaPaint('assistant', '');
+  const body = bubble.querySelector('.hb-body');
+  hannaTyping(true);
+
+  try {
+    for (let hop = 0; hop < 6; hop++) {      // bounded so a tool loop can't run away
+      let first = true;
+      const turn = await hannaCall(chunk => {
+        if (first) { hannaTyping(false); first = false; }
+        body.textContent += chunk;
+        hannaScroll();
+      });
+
+      HANNA_MSGS.push({ role:'assistant', content: turn.content });
+      const calls = turn.content.filter(c => c.type === 'tool_use');
+      if (!calls.length) break;
+
+      const results = [];
+      for (const c of calls) {
+        hannaTool(bubble, c.name);
+        let out;
+        try { out = await hannaRunTool(c.name, c.input); }
+        catch (e) { out = 'Tool failed: ' + (e.message || e); }
+        results.push({ type:'tool_result', tool_use_id:c.id,
+                       content: typeof out === 'string' ? out : JSON.stringify(out) });
+      }
+      HANNA_MSGS.push({ role:'user', content: results });
+      if (body.textContent) body.textContent += '\n\n';
+    }
+  } catch (e) {
+    body.textContent += (body.textContent ? '\n\n' : '') + '⚠ ' + (e.message || e);
+    bubble.classList.add('hb-error');
+  } finally {
+    hannaTyping(false);
+    hannaBusy = false;
+    hannaScroll();
+    hannaPersist();
+  }
+}
+
+// ── Session persistence — one shared history, per the brief ──
+async function hannaPersist() {
+  if (typeof firebase === 'undefined' || !firebase.apps.length) return;
+  try {
+    const coll = firebase.firestore().collection(TG_SESSIONS_COLL);
+    const payload = { messages: JSON.stringify(HANNA_MSGS).slice(0, 900000),
+                      updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+    if (hannaSessionId) await coll.doc(hannaSessionId).set(payload, { merge:true });
+    else { const d = await coll.add({ ...payload, startedAt: firebase.firestore.FieldValue.serverTimestamp() });
+           hannaSessionId = d.id; }
+  } catch (e) { console.warn('session save:', e.code || e.message); }
+}
+
+async function hannaLoadLast() {
+  if (typeof firebase === 'undefined' || !firebase.apps.length) return;
+  try {
+    const snap = await firebase.firestore().collection(TG_SESSIONS_COLL)
+                   .orderBy('updatedAt','desc').limit(1).get();
+    if (snap.empty) return;
+    // The fetch is slower than a fast first question. Never clobber a
+    // conversation that has already started — the stream writes into a
+    // bubble that clearing the log would detach.
+    if (hannaBusy || HANNA_MSGS.length) return;
+    const d = snap.docs[0];
+    hannaSessionId = d.id;
+    HANNA_MSGS = JSON.parse(d.data().messages || '[]');
+    document.getElementById('hanna-log').innerHTML = '';
+    HANNA_MSGS.forEach(m => {
+      if (m.role === 'user' && typeof m.content === 'string') hannaPaint('user', m.content);
+      else if (m.role === 'assistant' && Array.isArray(m.content)) {
+        const t = m.content.filter(c => c.type === 'text').map(c => c.text).join('');
+        if (t.trim()) hannaPaint('assistant', t);
+      }
+    });
+    hannaScroll();
+  } catch (e) { console.warn('session load:', e.code || e.message); }
+}
+
+function hannaNewSession() {
+  HANNA_MSGS = []; hannaSessionId = null;
+  document.getElementById('hanna-log').innerHTML = '';
+  hannaWelcome();
+}
+
+// ── Panel rendering ──────────────────────────────────────────
+function hannaPaint(role, text) {
+  const log = document.getElementById('hanna-log');
+  const el = document.createElement('div');
+  el.className = 'h-bubble h-' + role;
+  el.innerHTML = role === 'assistant'
+    ? '<div class="hb-who">⚓ Hanna</div><div class="hb-body"></div><div class="hb-tools"></div>'
+    : '<div class="hb-body"></div>';
+  el.querySelector('.hb-body').textContent = text;
+  log.appendChild(el);
+  hannaScroll();
+  return el;
+}
+
+function hannaTool(bubble, name) {
+  const row = bubble.querySelector('.hb-tools');
+  if (!row) return;
+  const chip = document.createElement('span');
+  chip.className = 'hb-tool';
+  chip.textContent = '⚙ ' + name.replace(/_/g, ' ');
+  row.appendChild(chip);
+  hannaScroll();
+}
+
+function hannaTyping(on) {
+  document.getElementById('hanna-typing').style.display = on ? 'flex' : 'none';
+  const b = document.getElementById('hanna-send');
+  if (b) b.disabled = on;
+}
+
+function hannaScroll() {
+  const log = document.getElementById('hanna-log');
+  if (log) log.scrollTop = log.scrollHeight;
+}
+
+function hannaWelcome() {
+  hannaPaint('assistant',
+    'Course plotted. I have the bookings, the calendar, vendors, projects and the Chronicle in front of me — ask away, in English or português.');
+}
+
+function hannaKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); hannaSend(); }
+}
+
+function hannaAsk(q) { document.getElementById('hanna-input').value = q; hannaSend(); }
+
+let hannaStarted = false;
+function initHanna() {
+  if (hannaStarted) return;
+  hannaStarted = true;
+  hannaLoadLast().then(() => {
+    if (!HANNA_MSGS.length) hannaWelcome();
+  });
 }
 
 // ── BLOCKS ────────────────────────────────────────────────────

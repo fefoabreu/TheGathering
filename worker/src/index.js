@@ -22,6 +22,8 @@ const ALLOWED_ORIGINS = [
 ];
 
 const FIREBASE_PROJECT_ID = 'thegathering-996d2';
+// Public by design — Firebase web API keys are identifiers, not secrets.
+const FIREBASE_API_KEY    = 'AIzaSyDgogQXGPYZsOWbSwEJBva0UcMUUNuDPH4';
 const ANTHROPIC_VERSION   = '2023-06-01';
 const DEFAULT_MODEL       = 'claude-sonnet-5';
 const MAX_TOKENS          = 2048;
@@ -47,29 +49,36 @@ function json(body, status, origin) {
 /**
  * Verify a Firebase ID token.
  *
- * Firebase signs ID tokens with rotating Google certificates. Rather than
- * implementing RS256 verification by hand, we ask Google's token info
- * endpoint — it validates the signature and expiry for us. We then check
- * the audience matches this project, so a token minted for some other
- * Firebase project can't be replayed here.
+ * Firebase ID tokens are JWTs signed by Google's securetoken service — not
+ * Google OAuth ID tokens, so the oauth2 tokeninfo endpoint rejects them.
+ * Rather than hand-rolling RS256 verification against rotating X.509 certs,
+ * we hand the token to Firebase's own accounts:lookup, which validates the
+ * signature, expiry and project binding in one call and returns the user.
+ * Fewer moving parts on a security boundary is worth one round trip.
  */
-async function verifyFirebaseToken(token) {
+async function verifyFirebaseToken(token, apiKey) {
   if (!token) return { ok: false, reason: 'missing token' };
+  if (!apiKey) return { ok: false, reason: 'proxy misconfigured' };
 
-  const res = await fetch(
-    'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(token)
-  );
-  if (!res.ok) return { ok: false, reason: 'token rejected by Google' };
-
-  const info = await res.json();
-  if (info.aud !== FIREBASE_PROJECT_ID) return { ok: false, reason: 'wrong audience' };
-  if (info.iss && !info.iss.includes(FIREBASE_PROJECT_ID)) {
-    return { ok: false, reason: 'wrong issuer' };
+  let res;
+  try {
+    res = await fetch(
+      'https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' + encodeURIComponent(apiKey),
+      { method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token }) }
+    );
+  } catch {
+    return { ok: false, reason: 'verification unavailable' };
   }
-  const exp = Number(info.exp || 0);
-  if (exp && exp * 1000 < Date.now()) return { ok: false, reason: 'token expired' };
 
-  return { ok: true, uid: info.sub || info.user_id };
+  if (!res.ok) return { ok: false, reason: 'invalid or expired token' };
+
+  const data = await res.json().catch(() => null);
+  const user = data && Array.isArray(data.users) && data.users[0];
+  if (!user) return { ok: false, reason: 'token not recognised' };
+
+  return { ok: true, uid: user.localId };
 }
 
 export default {
@@ -88,7 +97,7 @@ export default {
     // Caller must present a Firebase ID token from this project.
     const auth = request.headers.get('Authorization') || '';
     const idToken = auth.startsWith('Bearer ') ? auth.slice(7) : '';
-    const check = await verifyFirebaseToken(idToken);
+    const check = await verifyFirebaseToken(idToken, env.FIREBASE_API_KEY || FIREBASE_API_KEY);
     if (!check.ok) {
       return json({ error: 'Unauthorized: ' + check.reason }, 401, origin);
     }
