@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
   <!-- Firebase SDK (for real-time guide sync) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
@@ -685,6 +686,103 @@
     .mm-lang { align-self:flex-start; margin:.8rem 0 .2rem; }
     .mm-lang .lang-btn { padding:.5rem .9rem; font-size:.72rem; }
 
+
+    /* ══ CAPTAIN SISAY ═══════════════════════════════════════════ */
+    .sisay-fab {
+      position:fixed; right:1.5rem; bottom:1.5rem; z-index:9400;
+      display:flex; align-items:center; gap:.55rem; cursor:pointer;
+      padding:.85rem 1.3rem; border-radius:40px; border:1px solid rgba(212,163,64,.5);
+      background:rgba(13,33,55,.94); color:var(--text-light);
+      font-family:'Cinzel',serif; font-size:.76rem; letter-spacing:.12em;
+      box-shadow:0 10px 34px rgba(0,0,0,.45); backdrop-filter:blur(10px);
+      transition:var(--ease);
+    }
+    .sisay-fab:hover { border-color:var(--gold); transform:translateY(-2px); box-shadow:0 14px 42px rgba(0,0,0,.55); }
+    .sisay-fab.hidden { opacity:0; pointer-events:none; transform:translateY(10px); }
+    .sf-mark { font-size:1rem; }
+
+    .sisay-panel {
+      position:fixed; right:1.5rem; bottom:1.5rem; z-index:9450;
+      width:min(400px,calc(100vw - 3rem)); max-height:min(640px,80vh);
+      display:none; flex-direction:column; overflow:hidden;
+      border-radius:16px; border:1px solid rgba(212,163,64,.28);
+      background:linear-gradient(170deg,rgba(13,33,55,.99),rgba(8,20,34,.99));
+      box-shadow:0 24px 70px rgba(0,0,0,.6);
+    }
+    .sisay-panel.show { display:flex; animation:s-rise .3s cubic-bezier(.23,1,.32,1); }
+    @keyframes s-rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+    .sisay-head {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1rem 1.1rem; border-bottom:1px solid rgba(255,255,255,.07);
+    }
+    .sh-name { font-family:'Cinzel',serif; font-size:.92rem; color:var(--gold); letter-spacing:.08em; }
+    .sh-role { font-size:.66rem; color:rgba(249,244,236,.45); margin-top:.15rem; letter-spacing:.06em; }
+    .sisay-close {
+      width:30px; height:30px; border-radius:50%; cursor:pointer;
+      background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+      color:var(--text-light); font-size:.85rem;
+    }
+    .sisay-close:hover { background:rgba(212,163,64,.85); color:#0B0704; }
+
+    .sisay-log {
+      flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:.7rem;
+    }
+    .s-bubble { max-width:88%; padding:.65rem .85rem; border-radius:12px; font-size:.87rem; line-height:1.6; }
+    .s-guest {
+      align-self:flex-end; background:rgba(224,120,64,.16);
+      border:1px solid rgba(224,120,64,.32); color:var(--text-light); border-bottom-right-radius:4px;
+    }
+    .s-sisay {
+      align-self:flex-start; background:rgba(212,163,64,.08);
+      border:1px solid rgba(212,163,64,.2); color:rgba(249,244,236,.92); border-bottom-left-radius:4px;
+    }
+    .sb-who { font-family:'Cinzel',serif; font-size:.56rem; letter-spacing:.16em;
+              text-transform:uppercase; color:var(--gold); margin-bottom:.3rem; }
+    .sb-body { white-space:pre-wrap; }
+
+    /* Sisay tutors a card — revealed inline, same frame guests already know */
+    .s-cards { display:flex; gap:.55rem; overflow-x:auto; padding:.2rem 0 .4rem; scrollbar-width:none; }
+    .s-cards::-webkit-scrollbar { display:none; }
+    .s-card { flex-shrink:0; width:132px; cursor:pointer; transition:transform .3s; }
+    .s-card:hover { transform:translateY(-4px); }
+
+    .sisay-typing { display:none; gap:4px; padding:0 1.2rem .4rem; align-items:center; }
+    .sisay-typing span { width:5px; height:5px; border-radius:50%; background:var(--gold); opacity:.5;
+                         animation:s-dot 1.2s infinite ease-in-out; }
+    .sisay-typing span:nth-child(2){ animation-delay:.18s; }
+    .sisay-typing span:nth-child(3){ animation-delay:.36s; }
+    @keyframes s-dot { 0%,60%,100%{transform:translateY(0);opacity:.35} 30%{transform:translateY(-4px);opacity:1} }
+
+    .sisay-chips { display:flex; gap:.35rem; padding:0 1rem .6rem; overflow-x:auto; scrollbar-width:none; }
+    .sisay-chips::-webkit-scrollbar { display:none; }
+    .sisay-chips button {
+      flex-shrink:0; padding:.35rem .7rem; border-radius:16px; cursor:pointer; font-size:.68rem;
+      background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+      color:rgba(249,244,236,.6); transition:all .25s;
+    }
+    .sisay-chips button:hover { border-color:rgba(212,163,64,.5); color:var(--text-light); }
+
+    .sisay-input-row { display:flex; gap:.5rem; padding:.8rem 1rem 1rem; align-items:flex-end; }
+    .sisay-input-row textarea {
+      flex:1; resize:none; min-height:40px; max-height:110px; padding:.6rem .8rem;
+      border-radius:10px; font-family:inherit; font-size:.87rem; line-height:1.5;
+      background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.14);
+      color:var(--text-light);
+    }
+    .sisay-input-row textarea:focus { outline:none; border-color:rgba(212,163,64,.5); }
+    #sisay-send {
+      flex-shrink:0; width:40px; height:40px; border-radius:10px; cursor:pointer;
+      background:var(--gold); border:none; color:#0B0704; font-size:1rem; font-weight:700;
+    }
+    #sisay-send:disabled { opacity:.4; cursor:default; }
+
+    @media(max-width:650px){
+      .sisay-fab { right:1rem; bottom:1rem; padding:.75rem 1.05rem; font-size:.7rem; }
+      .sisay-panel { right:.6rem; left:.6rem; bottom:.6rem; width:auto; max-height:78vh; }
+      .sisay-input-row textarea { font-size:16px; }   /* stop iOS zoom-on-focus */
+    }
+
     /* ══ TILE-BACK ACTIONS ═══════════════════════════════════════ */
     .tb-actions {
       position:absolute; top:.6rem; right:.6rem; z-index:3;
@@ -1193,6 +1291,35 @@
   </div>
   <div class="gal-strip" id="gal-strip"></div>
   <p class="gal-count" id="gal-count"></p>
+</div>
+
+<!-- CAPTAIN SISAY — guest concierge ─────────────────────────── -->
+<button class="sisay-fab" id="sisay-fab" onclick="sisayOpen()" aria-label="Ask Sisay">
+  <span class="sf-mark">⚓</span><span class="sf-label">Ask Sisay</span>
+</button>
+
+<div class="sisay-panel" id="sisay-panel">
+  <div class="sisay-head">
+    <div>
+      <div class="sh-name">Captain Sisay</div>
+      <div class="sh-role">At the helm · TheGathering</div>
+    </div>
+    <button class="sisay-close" onclick="sisayClose()" aria-label="Close">✕</button>
+  </div>
+
+  <div class="sisay-log" id="sisay-log"></div>
+  <div class="sisay-typing" id="sisay-typing"><span></span><span></span><span></span></div>
+
+  <div class="sisay-chips">
+    <button onclick="sisayAsk('Where should we eat tonight?')">Where should we eat?</button>
+    <button onclick="sisayAsk('How do I use the Sonos?')">Using the Sonos</button>
+    <button onclick="sisayAsk('O que fazer amanhã em Garopaba?')">O que fazer amanhã?</button>
+  </div>
+
+  <div class="sisay-input-row">
+    <textarea id="sisay-input" rows="1" placeholder="Ask Sisay…" onkeydown="sisayKey(event)"></textarea>
+    <button id="sisay-send" onclick="sisaySend()">→</button>
+  </div>
 </div>
 
 <!-- CINEMA — video tour modal ──────────────────────────────── -->
@@ -2207,6 +2334,200 @@
     if (TG_LANG === 'pt') applyLang('pt');
     tgObserver.observe(document.body, {childList:true, subtree:true});
   })();
+
+
+// ═══════════════════════════════════════════════════════════
+//  CAPTAIN SISAY — guest concierge
+// ═══════════════════════════════════════════════════════════
+//  Sisay tutors a permanent: asked where to eat, she doesn't
+//  write a paragraph — she flips up the card. Her answers are
+//  short, and the Guide does the rest of the talking.
+// ═══════════════════════════════════════════════════════════
+
+const SISAY_PROXY = 'https://sisay.fefoabreu.me/';
+
+// House manual. Guest-facing, not secret. Firestore overrides this if the
+// owners publish an edited version to gathering/houseGuide.
+let SISAY_MANUAL = {
+  tv:        'Samsung The Frame, 75" in the living room. Input via the One Connect box behind the panel. Art Mode is the default when idle — press the remote\'s power once to wake it to TV.',
+  projector: 'Projector serves the deck for movie nights. Power on, then select HDMI. Pair audio to the Sonos rather than the built-in speaker.',
+  sonos:     'Sonos is grouped across living room, kitchen and deck. Use the Sonos app on the guest WiFi, pick the rooms you want, then AirPlay or Spotify Connect to them.',
+  pool:      'Heated pool on the hillside deck. Heating is a paid add-on — arrange it before arrival so it is warm when you get here.',
+  wifi:      'Guest WiFi details are on the welcome card in the kitchen and in the check-in message.',
+  house:     '4 suites — Planície, Ilha, Montanha, Floresta. Sleeps 12 (max 8 adults + 4 children up to 10). No pets. Not suitable for children under 2.',
+  checkin:   'Managed by Estar Garopaba. They send check-in details, door codes and arrival instructions before your stay.',
+};
+
+const SISAY_SYSTEM = `You are **Captain Sisay**, host and concierge of TheGathering Silveira 🌊🌄 — a hillside house at Praia da Silveira, Garopaba, Santa Catarina, Brazil, "where the mountain meets the sea".
+
+You once commanded the Weatherlight across the multiverse. You now keep this house, and you are fiercely protective of your passengers. Worldly, warm, charismatic, never stiff. Reply in the guest's language — English or Portuguese — deciding per message.
+
+**Be brief.** Two or three sentences, usually. You are a host at the door, not a brochure.
+
+**You tutor a card, you don't recite a menu.** When a guest asks where to eat, drink, surf or explore, call suggest_experience and let the card do the talking — then add one line of your own about why it's the right pick tonight. Never list every option.
+
+**What you know:** the curated Garopaba Guide (call get_guide_cards) and the house manual — the Frame TV, the deck projector, the Sonos, the pool, capacity and rules (call get_house_manual). Never invent a restaurant, price, phone number or booking link. If it isn't in your tools, say you'll have the owners confirm.
+
+**What you must never do:** you have no access to bookings, guest names, door codes, WiFi passwords, vendor details or anything financial, and you must not speculate about them. If asked, say warmly that check-in details come from Estar Garopaba directly. Never discuss commissions, contracts or owner matters — you serve the guests, and the crew keeps its own counsel.`;
+
+const SISAY_TOOLS = [
+  { name:'get_guide_cards', description:'The curated Garopaba Guide — restaurants, bars, coffee, surf, adventure. Optionally filter by category.',
+    input_schema:{ type:'object', properties:{ category:{ type:'string',
+      description:'coffee, burgers, sushi, cowork, poke, happy-hour, sandboarding, acougue, pizza' } } } },
+  { name:'get_house_manual', description:'How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity and rules.',
+    input_schema:{ type:'object', properties:{ topic:{ type:'string',
+      description:'tv, projector, sonos, pool, wifi, house, checkin' } } } },
+  { name:'suggest_experience', description:'Pick the best guide cards for what the guest is after and reveal them. Prefer this over describing places in prose.',
+    input_schema:{ type:'object', required:['ids'], properties:{
+      ids:{ type:'array', items:{type:'string'}, description:'Card ids from get_guide_cards, best first, at most three.' } } } },
+];
+
+async function sisayRunTool(name, input) {
+  input = input || {};
+  const cards = (typeof guideCards !== 'undefined' ? guideCards : []).filter(c => c.active !== false);
+  switch (name) {
+    case 'get_guide_cards': {
+      const list = input.category ? cards.filter(c => c.category === input.category) : cards;
+      return list.map(c => ({ id:c.id, name:c.name, category:c.category,
+                              label:c.categoryLabel, about:c.description, address:c.address }));
+    }
+    case 'get_house_manual':
+      return input.topic ? (SISAY_MANUAL[input.topic] || 'Not covered — the owners can confirm.') : SISAY_MANUAL;
+    case 'suggest_experience': {
+      const picked = (input.ids || []).map(id => cards.find(c => c.id === id)).filter(Boolean).slice(0, 3);
+      if (!picked.length) return 'No matching cards.';
+      sisayRevealCards(picked);
+      return picked.map(c => ({ id:c.id, name:c.name, about:c.description }));
+    }
+    default: return 'Unknown tool: ' + name;
+  }
+}
+
+// ── Conversation ─────────────────────────────────────────────
+let SISAY_MSGS = [], sisayBusy = false, sisayAuth = null, sisayStarted = false;
+
+async function sisayToken() {
+  if (!sisayAuth) throw new Error('offline');
+  if (!sisayAuth.currentUser) await sisayAuth.signInAnonymously();
+  return sisayAuth.currentUser.getIdToken();
+}
+
+async function sisayCall() {
+  const res = await fetch(SISAY_PROXY, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + await sisayToken() },
+    body: JSON.stringify({ system:SISAY_SYSTEM, tools:SISAY_TOOLS, messages:SISAY_MSGS }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    // The Worker's own limits speak for themselves; anything else is generic.
+    const msg = data && data.message ? data.message
+      : 'The line to the helm is down for a moment — try again shortly.';
+    throw new Error(msg);
+  }
+  return data;
+}
+
+async function sisaySend(text) {
+  if (sisayBusy) return;
+  const box = document.getElementById('sisay-input');
+  text = (text != null ? text : box.value).trim();
+  if (!text) return;
+
+  sisayBusy = true;
+  box.value = '';
+  sisayBubble('guest', text);
+  SISAY_MSGS.push({ role:'user', content:text });
+  sisayTyping(true);
+
+  try {
+    for (let hop = 0; hop < 4; hop++) {
+      const turn = await sisayCall();
+      const content = (turn.content || []).filter(b => b.type !== 'text' || (b.text || '').trim());
+      SISAY_MSGS.push({ role:'assistant', content });
+
+      const said = content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+      if (said) { sisayTyping(false); sisayBubble('sisay', said); }
+
+      const calls = content.filter(b => b.type === 'tool_use');
+      if (!calls.length) break;
+
+      const results = [];
+      for (const c of calls) {
+        let out; try { out = await sisayRunTool(c.name, c.input); }
+        catch (e) { out = 'Tool failed.'; }
+        results.push({ type:'tool_result', tool_use_id:c.id,
+                       content: typeof out === 'string' ? out : JSON.stringify(out) });
+      }
+      SISAY_MSGS.push({ role:'user', content:results });
+    }
+  } catch (e) {
+    sisayTyping(false);
+    sisayBubble('sisay', e.message || 'Something went sideways.');
+  } finally {
+    sisayTyping(false); sisayBusy = false;
+  }
+}
+
+// ── Panel ────────────────────────────────────────────────────
+function sisayBubble(who, text) {
+  const log = document.getElementById('sisay-log');
+  const el = document.createElement('div');
+  el.className = 's-bubble s-' + who;
+  if (who === 'sisay') {
+    el.innerHTML = '<div class="sb-who">⚓ Sisay</div><div class="sb-body"></div>';
+    el.querySelector('.sb-body').textContent = text;
+  } else { el.textContent = text; }
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+  return el;
+}
+
+// Sisay tutors the card: reveal it inline, in the same frame guests already know.
+function sisayRevealCards(cards) {
+  const log = document.getElementById('sisay-log');
+  const wrap = document.createElement('div');
+  wrap.className = 's-cards';
+  wrap.innerHTML = cards.map(c => `<div class="s-card" onclick="openCardDetail('${c.id}')">
+      ${buildGuideCardHTML(c, false)}</div>`).join('');
+  log.appendChild(wrap);
+  log.scrollTop = log.scrollHeight;
+}
+
+function sisayTyping(on) {
+  document.getElementById('sisay-typing').style.display = on ? 'flex' : 'none';
+  const b = document.getElementById('sisay-send'); if (b) b.disabled = on;
+}
+
+function sisayOpen() {
+  document.getElementById('sisay-panel').classList.add('show');
+  document.getElementById('sisay-fab').classList.add('hidden');
+  if (!sisayStarted) {
+    sisayStarted = true;
+    sisayBubble('sisay', "Welcome aboard. I'm Sisay — I keep this house. Ask me where to eat, how the projector works, or what's worth doing tomorrow.");
+  }
+  setTimeout(() => document.getElementById('sisay-input').focus(), 250);
+}
+function sisayClose() {
+  document.getElementById('sisay-panel').classList.remove('show');
+  document.getElementById('sisay-fab').classList.remove('hidden');
+}
+function sisayKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sisaySend(); } }
+function sisayAsk(q) { sisaySend(q); }
+
+(function initSisay(){
+  const ready = typeof TG_FIREBASE_ENABLED !== 'undefined' && TG_FIREBASE_ENABLED && typeof firebase !== 'undefined';
+  if (!ready) return;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(TG_FIREBASE_CONFIG);
+    sisayAuth = firebase.auth();
+    sisayAuth.signInAnonymously().catch(() => {});
+    // Owners can publish an edited house manual; fall back to the built-in copy.
+    firebase.firestore().collection('gathering').doc('houseGuide').get()
+      .then(d => { if (d.exists && d.data().manual) SISAY_MANUAL = { ...SISAY_MANUAL, ...d.data().manual }; })
+      .catch(() => {});
+  } catch (e) {}
+})();
 
   // Brand mark returns to the top from anywhere on the page
   function goHome(e) {

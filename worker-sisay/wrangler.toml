@@ -1,0 +1,26 @@
+name = "tgs-sisay"
+main = "src/index.js"
+compatibility_date = "2026-08-12"
+
+# The Anthropic API key is NOT here. It is an encrypted Worker secret:
+#   wrangler secret put ANTHROPIC_API_KEY
+# Nothing in this file is sensitive, which is why it is safe to commit.
+
+workers_dev = false
+
+[[routes]]
+pattern = "sisay.fefoabreu.me"
+custom_domain = true
+
+# Spend and rate limiting live here. Sisay's surface is public, so these are
+# the difference between a concierge and a stranger's free subscription.
+[[kv_namespaces]]
+binding = "SISAY_LIMITS"
+id = "291d8679717f4fd694c1d87f9a7ba91e"
+
+[vars]
+MODEL = "claude-sonnet-5"
+DAILY_USD_CEILING = "2.00"
+
+[observability]
+enabled = true
