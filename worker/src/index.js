@@ -148,6 +148,9 @@ function parseIcs(text) {
       notes:    icsUnescape(field('DESCRIPTION')).slice(0, 500),
       source:   'google',
       recurring: /^RRULE/mi.test(chunk),
+      rrule:    (chunk.match(/^RRULE:(.*)$/mi) || [,''])[1].trim(),
+      transp:   (chunk.match(/^TRANSP:(.*)$/mi) || [,''])[1].trim(),
+      timed:    !/VALUE=DATE(?!-TIME)/i.test(chunk.match(/^DTSTART[^:\r\n]*/mi)?.[0] || ''),
     });
   }
   out.sort((a, b) => a.from.localeCompare(b.from));
@@ -228,7 +231,10 @@ export default {
     if (payload.action === 'calendar') return handleCalendar(env, origin);
 
     const body = {
-      model:      payload.model  || env.MODEL || DEFAULT_MODEL,
+      // The model is set by config, not by the caller. Letting the client
+      // pick meant a browser session could request a costlier model and
+      // quietly undo the choice made here.
+      model:      env.MODEL || DEFAULT_MODEL,
       max_tokens: Math.min(payload.max_tokens || MAX_TOKENS, 8192),
       messages:   payload.messages || [],
       stream:     payload.stream !== false,
