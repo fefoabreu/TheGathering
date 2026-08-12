@@ -31,6 +31,20 @@ const TG_PROJECTS_PATH = { collection: "gathering", doc: "projects" };
 // this repo — the values live in Firestore and are entered from the portal.
 const TG_SECRETS_PATH  = { collection: "gathering", doc: "secrets" };
 
+// Phase 2 — the rest of the portal's data. Same document-per-topic shape as
+// the records above, so this extends the existing schema rather than
+// replacing it. Volumes here are tiny (tens of records), well inside the 1MB
+// per-document limit.
+const TG_BOOKINGS_PATH = { collection: "gathering", doc: "bookings"  };
+const TG_VENDORS_PATH  = { collection: "gathering", doc: "vendors"   };
+const TG_HOUSE_PATH    = { collection: "gathering", doc: "houseInfo" };
+const TG_COSTS_PATH    = { collection: "gathering", doc: "costs"     };
+
+// The Chronicle. A real collection, not a document: it grows over time and
+// wants ordering and limits. Same for agent chat sessions in Phase 3.
+const TG_DECISIONS_COLL = "decisions";
+const TG_SESSIONS_COLL  = "agentSessions";
+
 // ──────────────────────────────────────────────────────────────
 //  Owner sign-in
 // ──────────────────────────────────────────────────────────────

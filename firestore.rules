@@ -37,6 +37,18 @@ service cloud.firestore {
       allow read, write: if signedIn();
     }
 
+    // The Chronicle and agent chat history. Collections rather than
+    // documents because both grow over time and want ordering.
+    match /decisions/{id} {
+      allow read, write: if signedIn();
+    }
+    match /agentSessions/{id} {
+      allow read, write: if signedIn();
+      match /messages/{msg} {
+        allow read, write: if signedIn();
+      }
+    }
+
     // The allowlist itself is console-only. Never readable by a client:
     // rules `get()` runs server-side and is not subject to these rules,
     // so isOwner() still works.
