@@ -76,9 +76,26 @@ async function verifyFirebaseToken(token, apiKey) {
   return { ok: true, uid: user.localId };
 }
 
-/** Spend so far today, in USD. */
+/**
+ * Spend so far today, in USD.
+ *
+ * ⚠ This is a TRIPWIRE, not a hard ceiling, and the difference matters.
+ * KV reads are edge-cached (60s minimum TTL) and eventually consistent, so
+ * this can run a minute behind reality. recordSpend below is a
+ * read-modify-write, which is not atomic — concurrent requests overwrite each
+ * other's increments and undercount, which is precisely the condition sustained
+ * abuse creates.
+ *
+ * It will stop a slow drip. It will not stop a burst.
+ *
+ * The authoritative control is the spend limit set on the Anthropic workspace
+ * itself, which is enforced upstream and cannot be raced. A true in-Worker
+ * ceiling needs a Durable Object for an atomic counter — worth doing if guest
+ * traffic ever justifies it.
+ */
 async function spentToday(kv) {
-  const v = await kv.get('spend:' + today());
+  // Ask for the freshest value KV will give us.
+  const v = await kv.get('spend:' + today(), { cacheTtl: 60 });
   return v ? parseFloat(v) : 0;
 }
 
@@ -157,7 +174,22 @@ export default {
 
     if (!upstream.ok) {
       const detail = await upstream.text();
-      return json({ error: 'Upstream error', status: upstream.status, detail }, upstream.status, origin);
+      // A 401 from upstream almost always means the stored secret is malformed
+      // rather than wrong. Report its SHAPE — never its value — so the problem
+      // is diagnosable without anyone pasting a key into a chat or a log.
+      let keyShape;
+      if (upstream.status === 401) {
+        const k = env.ANTHROPIC_API_KEY || '';
+        keyShape = {
+          length: k.length,
+          startsWithExpectedPrefix: k.startsWith('sk-ant-'),
+          hasLeadingOrTrailingSpace: k !== k.trim(),
+          containsNewline: /[\r\n]/.test(k),
+          containsQuotes: /["']/.test(k),
+        };
+      }
+      return json({ error: 'Upstream error', status: upstream.status, detail, keyShape },
+                  upstream.status, origin);
     }
 
     const result = await upstream.json();
