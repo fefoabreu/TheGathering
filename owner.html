@@ -2702,6 +2702,8 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 
 **Owner use is free, but the calendar is the risk.** Blocking dates in this portal is NOT sufficient. The Estar-administered calendar is the official one (contract clauses 5.3 and 5.5). An owner block that is not confirmed in writing with Estar, and that collides with a confirmed booking, makes the owners liable for the guest's refund, fines, and Estar's commission anyway (clause 6.4). Whenever you add or discuss an owner block, say plainly that it must also be confirmed in writing with Estar. Never let this pass as a footnote.
 
+**The archive.** You hold a distilled copy of the owners' Drive folder — the partnership agreement of 22 Nov 2023, the purchase and construction timeline, ownership and equity, registry costs, funding, rental terms and ROI, and the rules on selling a share or inheritance. Reach it with search_property_docs, and reach for it whenever a question touches the history, the deal or the paperwork. It is a snapshot, not a live feed: for current money — balances, contributions to date, this year's costs — say the Finanças spreadsheet in Drive is the authority rather than quoting a figure that may have moved. It deliberately holds no CPFs, bank accounts or personal contact details; if asked for those, say they are in the agreement in Drive and you do not carry them.
+
 **Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks, tasks and vendor records on request. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
 
 You are talking to one of the three owners but you do not know which — there is a single shared login. When the answer depends on it, just ask ("whose dates should I block?").
@@ -2732,6 +2734,9 @@ const HANNA_TOOLS = [
       title:{type:'string'}, done:{type:'boolean'} } } },
   { name:'get_house_info', description:'Suites, capacity, house rules and the Estar management terms.',
     input_schema:{ type:'object', properties:{} } },
+  { name:'search_property_docs', description:"The owners' Drive folder, distilled: the partnership agreement, the purchase and construction timeline, ownership and equity, costs and registry fees, how the purchase was funded, rental terms and ROI, the rules on selling a share and inheritance. Use this for any question about the history, the deal or the paperwork — do not guess at those.",
+    input_schema:{ type:'object', required:['query'], properties:{ query:{ type:'string',
+      description:'What you want to know, in plain words — e.g. "when did we buy the house and how long did the build take".' } } } },
   { name:'list_decisions', description:'Read the Chronicle — decisions taken on the venture.',
     input_schema:{ type:'object', properties:{ limit:{type:'number'} } } },
   { name:'add_decision', description:'Record a decision in the Chronicle so all three owners see it.',
@@ -2789,6 +2794,22 @@ async function hannaRunTool(name, input) {
       return { updated: hit.title, done: hit.done };
     }
     case 'get_house_info': return storeGet('house') || {};
+
+    // The knowledge pack is held in the Worker's KV, not in the browser and
+    // not in Firestore — the repo is public and guests hold anonymous tokens.
+    case 'search_property_docs': {
+      const u = firebase.auth().currentUser;
+      if (!u) return { error: 'No session — cannot reach the archive.' };
+      const res = await fetch(HANNA_PROXY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json',
+                   'Authorization': 'Bearer ' + await u.getIdToken() },
+        body: JSON.stringify({ action: 'docs', query: input.query || '' }),
+      });
+      const d = await res.json();
+      if (d.error) return { error: d.message || d.error };
+      return d;
+    }
     case 'list_decisions': return (TG_DECISIONS || []).slice(0, input.limit || 20);
     case 'add_decision': {
       if (!input.title) return 'A title is required.';

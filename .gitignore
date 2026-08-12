@@ -1,3 +1,7 @@
 # working files
 assets/interior.pdf
 assets/rooms/all_*.jpg
+
+# Hanna's property knowledge pack, distilled from the owners' Drive folder.
+# It lives in Cloudflare KV, never in this repo — the repo is public.
+worker/knowledge.local.json

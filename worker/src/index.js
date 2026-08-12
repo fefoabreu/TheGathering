@@ -197,6 +197,68 @@ async function handleCalendar(env, origin) {
   return json(payload, 200, origin);
 }
 
+/**
+ * Property knowledge (read-only).
+ *
+ * Distilled from the owners' Google Drive folder — the partnership agreement,
+ * the Habite-se, the project file. Hanna could reason perfectly well about the
+ * house but had never been told anything about it, so questions like "when did
+ * we buy it" got an honest "I have no record of that".
+ *
+ * It lives in KV rather than in this file because the repo is public, and
+ * rather than in Firestore because guests on the public site hold anonymous
+ * Firebase tokens and the rules grant any signed-in caller the `gathering`
+ * collection. KV is only reachable from inside the Worker.
+ *
+ * Deliberately excluded when the pack was built: CPFs, bank accounts, home
+ * addresses and personal phone numbers, for the owners and for third parties
+ * alike. None of it helps answer a question about the house, and it is
+ * LGPD-regulated the moment it concerns someone who is not an owner.
+ *
+ * Keyword match, not embeddings. The pack is seven sections — anything
+ * cleverer would cost more than reading the whole thing.
+ */
+async function handleDocs(env, origin, query) {
+  const kv = env.HANNA_CACHE;
+  if (!kv) return json({ error: 'knowledge_unavailable' }, 503, origin);
+
+  const pack = await kv.get('knowledge:v1', 'json');
+  if (!pack || !Array.isArray(pack.sections)) {
+    return json({
+      error: 'knowledge_not_loaded',
+      message: 'No property knowledge pack has been uploaded yet.',
+    }, 503, origin);
+  }
+
+  const q = String(query || '').toLowerCase();
+  if (!q) {
+    return json({ updated: pack._updated, source: pack._source,
+                  sections: pack.sections.map(s => ({ id: s.id, title: s.title })) }, 200, origin);
+  }
+
+  const scored = pack.sections.map(s => {
+    let score = 0;
+    for (const k of (s.keywords || [])) if (q.includes(k.toLowerCase())) score += 2;
+    for (const w of q.split(/[^a-zà-ÿ0-9]+/i)) {
+      if (w.length < 4) continue;
+      if ((s.title + ' ' + s.body).toLowerCase().includes(w)) score += 1;
+    }
+    return { s, score };
+  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
+
+  // Nothing matched — hand back the contents page rather than nothing at all,
+  // so she can say what she does hold instead of guessing.
+  const hits = scored.length ? scored.map(x => x.s) : pack.sections.slice(0, 1);
+
+  return json({
+    updated: pack._updated,
+    source:  pack._source,
+    matched: scored.length,
+    available: pack.sections.map(s => s.title),
+    sections: hits.map(s => ({ id: s.id, title: s.title, body: s.body })),
+  }, 200, origin);
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -229,6 +291,7 @@ export default {
     // Calendar sync shares the proxy's auth rather than standing up a second
     // authenticated surface.
     if (payload.action === 'calendar') return handleCalendar(env, origin);
+    if (payload.action === 'docs')     return handleDocs(env, origin, payload.query);
 
     const body = {
       // The model is set by config, not by the caller. Letting the client

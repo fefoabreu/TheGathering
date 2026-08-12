@@ -48,6 +48,25 @@ actions only Fêfo can take — do not attempt to work around them.
 Never create accounts or set/handle owner passwords. Write the code that signs in, and
 leave account creation and password entry to Fêfo.
 
+## Hanna's property knowledge
+
+Hanna answers questions about the house's history, the deal and the paperwork from
+a **snapshot** of the owners' Drive folder (Property Mgmt → Garopaba → The Gathering
+Silveira), not a live feed. It is not a Drive integration — there is no OAuth.
+
+- Source pack: `worker/knowledge.local.json` — **gitignored, never commit it**
+- Upload: `worker/push-knowledge.sh` → Cloudflare KV `HANNA_CACHE / knowledge:v1`
+- Served by: `handleDocs()` in `worker/src/index.js`, `action: 'docs'`
+- Reached by: Hanna's `search_property_docs` tool in `owner.html`
+
+It lives in KV rather than Firestore on purpose: guests on the public site hold
+anonymous Firebase tokens, and `firestore.rules` grants any signed-in caller the
+`gathering` collection. KV is only reachable from inside the Worker.
+
+The pack deliberately omits CPFs, bank accounts, home addresses and personal phone
+numbers — for owners and third parties alike. Re-run the script when the source
+documents change materially.
+
 ## Conventions
 
 - Single-file pages: keep CSS in the page's `<style>` and JS in its `<script>`.
