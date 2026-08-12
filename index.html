@@ -742,9 +742,17 @@
     .sb-body { white-space:pre-wrap; }
 
     /* Sisay tutors a card — revealed inline, same frame guests already know */
-    .s-cards { display:flex; gap:.55rem; overflow-x:auto; padding:.2rem 0 .4rem; scrollbar-width:none; }
+    /* overflow-x:auto silently forces overflow-y:auto, which cropped the
+       cards to a sliver. Give the rail the card's height explicitly. */
+    .s-cards { display:flex; gap:.55rem; overflow-x:auto; overflow-y:hidden;
+               height:248px; flex-shrink:0;   /* log is a column flex box; without
+               this the rail gets squeezed */ padding:.2rem 0 .4rem; scrollbar-width:none; }
     .s-cards::-webkit-scrollbar { display:none; }
-    .s-card { flex-shrink:0; width:132px; cursor:pointer; transition:transform .3s; }
+    /* The guide-card markup does not give a flex item its height here, so the
+       row collapsed to zero. Pin the box to the card's rendered ratio. */
+    .s-cards { align-items:flex-start; }
+    .s-card { flex-shrink:0; width:132px; height:236px; cursor:pointer; transition:transform .3s; }
+    .s-card > * { width:100%; }
     .s-card:hover { transform:translateY(-4px); }
 
     .sisay-typing { display:none; gap:4px; padding:0 1.2rem .4rem; align-items:center; }
