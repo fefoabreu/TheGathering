@@ -688,6 +688,54 @@
 
 
 
+
+    /* ══ SISAY — the mark follows you down the page ══════════════ */
+    /*  She lives in the hero logo. Scroll past it and the mark
+        genies down to the corner; come back and it returns.       */
+    .hero-logo { cursor:pointer; }
+    .hero-logo:hover { transform:scale(1.03); filter:brightness(1.08); }
+
+    .sisay-orb {
+      position:fixed; right:1.6rem; bottom:1.6rem; z-index:9400;
+      width:64px; height:64px; padding:0; border:0; border-radius:50%;
+      background:none; cursor:pointer; opacity:0; pointer-events:none;
+      transform-origin:center center;
+      box-shadow:0 10px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(212,163,64,.35);
+      -webkit-tap-highlight-color:transparent;
+    }
+    .sisay-orb img { width:100%; height:100%; border-radius:50%; display:block; }
+    .sisay-orb::after {
+      content:''; position:absolute; inset:-5px; border-radius:50%;
+      border:1px solid rgba(212,163,64,.4); opacity:0; transition:opacity .35s ease;
+    }
+    .sisay-orb:hover::after { opacity:1; }
+    .sisay-orb.here    { opacity:1; pointer-events:auto; animation:genie-out .62s cubic-bezier(.2,.8,.3,1) both; }
+    .sisay-orb.leaving { opacity:1; pointer-events:none;  animation:genie-in  .52s cubic-bezier(.6,0,.8,.4) both; }
+    .sisay-orb.hidden  { opacity:0; pointer-events:none; }
+
+    /*  --gx/--gy carry the distance to the hero logo, measured live.
+        The mid-frames squeeze horizontally and stretch vertically —
+        that pinch is what reads as the genie rather than a plain scale. */
+    @keyframes genie-out {
+      0%   { opacity:0; transform:translate(var(--gx), var(--gy)) scale(.06) scaleX(.3) scaleY(1.9); }
+      45%  { opacity:1; transform:translate(calc(var(--gx) * .35), calc(var(--gy) * .35)) scale(.55) scaleX(.62) scaleY(1.35); }
+      75%  { transform:translate(0,0) scale(1.06) scaleX(1.05) scaleY(.95); }
+      100% { opacity:1; transform:translate(0,0) scale(1); }
+    }
+    @keyframes genie-in {
+      0%   { opacity:1; transform:translate(0,0) scale(1); }
+      25%  { transform:translate(0,0) scale(.94) scaleX(1.06) scaleY(.9); }
+      60%  { opacity:1; transform:translate(calc(var(--gx) * .4), calc(var(--gy) * .4)) scale(.5) scaleX(.55) scaleY(1.5); }
+      100% { opacity:0; transform:translate(var(--gx), var(--gy)) scale(.06) scaleX(.28) scaleY(2); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sisay-orb.here, .sisay-orb.leaving { animation:none; }
+      .sisay-orb.here { opacity:1; } .sisay-orb.leaving { opacity:0; }
+    }
+    @media(max-width:650px){
+      .sisay-orb { right:1rem; bottom:1rem; width:54px; height:54px; }
+    }
+
     /* ══ AGENT CARD LAUNCHER ═════════════════════════════════════ */
     /*  Not a chat bubble. A card you tap to summon a member of the
         crew — same visual grammar as the guide deck.               */
@@ -1152,7 +1200,8 @@
     <source src="assets/birds-eye.mp4" type="video/mp4">
   </video>
   <button class="sound-btn" id="sound-btn" onclick="toggleSound()" title="Toggle ambient sound">🔇</button>
-  <img src="assets/logo-circle.png" alt="The Gathering Silveira" class="hero-logo">
+  <img src="assets/logo-circle.png" alt="The Gathering Silveira — ask Sisay" class="hero-logo"
+       id="hero-logo" onclick="sisayOpen()" title="Ask Sisay">
   <p class="hero-location"><span class="hl-place">Praia da Silveira</span><span class="hl-sep">&nbsp;·&nbsp;</span><span class="hl-region">Garopaba, SC &nbsp;·&nbsp; Brasil</span></p>
   <p class="hero-tagline">"Where the mountain meets the sea"</p>
   <div class="hero-cta">
@@ -1357,23 +1406,14 @@
 </div>
 
 <!-- CAPTAIN SISAY — guest concierge ─────────────────────────── -->
-<button class="agent-card agent-sisay" id="sisay-fab" onclick="sisayOpen()"
-        aria-label="Summon Captain Sisay" style="--ac-a:#E8DCC0;--ac-b:#C9B48A;--ac-glow:rgba(224,120,64,.5)">
-  <div class="ac-frame">
-    <div class="ac-titlebar">
-      <span class="ac-name">Captain Sisay</span>
-      <span class="ac-cost"><i class="ms ms-2 ms-cost"></i><i class="ms ms-w ms-cost"></i></span>
-    </div>
-    <div class="ac-art" style="background-image:url('assets/sisay.jpg')">⚓</div>
-    <div class="ac-type">Legendary — Concierge</div>
-    <div class="ac-text" id="sisay-fab-text"></div>
-  </div>
+<button class="sisay-orb" id="sisay-fab" onclick="sisayOpen()" aria-label="Ask Sisay">
+  <img src="assets/logo-circle.png" alt="">
 </button>
 
 <div class="sisay-panel" id="sisay-panel">
   <div class="sisay-head">
     <div>
-      <div class="sh-name">Captain Sisay</div>
+      <div class="sh-name">Sisay</div>
       <div class="sh-role">At the helm · TheGathering</div>
     </div>
     <button class="sisay-close" onclick="sisayClose()" aria-label="Close">✕</button>
@@ -2427,7 +2467,7 @@ let SISAY_MANUAL = {
   checkin:   'Managed by Estar Garopaba. They send check-in details, door codes and arrival instructions before your stay.',
 };
 
-const SISAY_SYSTEM = `You are **Captain Sisay**, host and concierge of TheGathering Silveira 🌊🌄 — a hillside house at Praia da Silveira, Garopaba, Santa Catarina, Brazil, "where the mountain meets the sea".
+const SISAY_SYSTEM = `You are **Sisay**, host and concierge of TheGathering Silveira 🌊🌄 — a hillside house at Praia da Silveira, Garopaba, Santa Catarina, Brazil, "where the mountain meets the sea".
 
 You once commanded the Weatherlight across the multiverse. You now keep this house, and you are fiercely protective of your passengers. Worldly, warm, charismatic, never stiff. Reply in the guest's language — English or Portuguese — deciding per message.
 
@@ -2630,6 +2670,61 @@ function sisayClose() {
 function sisayKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sisaySend(); } }
 function sisayAsk(q) { sisaySend(q); }
 
+
+// ── The mark travels between the hero and the corner ─────────
+//  Sisay is not a widget bolted to the page — she is the house's own mark,
+//  which lives in the hero and follows you down. Measured live so it still
+//  lands on the logo after a resize or an orientation change.
+let sisayPerched = null;   // null = not decided yet, true = in the corner
+
+function sisayMeasureFlight() {
+  const orb = document.getElementById('sisay-fab');
+  const logo = document.getElementById('hero-logo');
+  if (!orb || !logo) return;
+  const o = orb.getBoundingClientRect(), l = logo.getBoundingClientRect();
+  const ox = o.left + o.width / 2, oy = o.top + o.height / 2;
+
+  // Aim at the hero logo, but clamp the origin to just off the viewport edge.
+  // Unclamped this was a ~1400px flight with the logo far above the fold, so
+  // most of the genie played off-screen and all you saw was a pop.
+  const margin = 90;
+  const tx = Math.max(-margin, Math.min(innerWidth  + margin, l.left + l.width  / 2));
+  const ty = Math.max(-margin, Math.min(innerHeight + margin, l.top  + l.height / 2));
+
+  orb.style.setProperty('--gx', (tx - ox) + 'px');
+  orb.style.setProperty('--gy', (ty - oy) + 'px');
+}
+
+function sisayPerch(show) {
+  const orb = document.getElementById('sisay-fab');
+  if (!orb || show === sisayPerched) return;
+  sisayMeasureFlight();
+  orb.classList.remove('here', 'leaving', 'hidden');
+  void orb.offsetWidth;                    // restart the animation
+  if (show) orb.classList.add('here');
+  else {
+    // Only play the return flight if she was actually out here.
+    if (sisayPerched === true) {
+      orb.classList.add('leaving');
+      setTimeout(() => { if (!sisayPerched) orb.classList.add('hidden'); }, 520);
+    } else orb.classList.add('hidden');
+    if (typeof sisayClose === 'function') sisayClose();
+  }
+  sisayPerched = show;
+}
+
+(function sisayScrollWatch(){
+  const hero = document.getElementById('home');
+  if (!hero) return;
+  const decide = () => {
+    // Out once the hero is mostly behind you.
+    sisayPerch(scrollY > hero.offsetHeight * 0.72);
+  };
+  addEventListener('scroll', decide, { passive:true });
+  addEventListener('resize', () => { sisayMeasureFlight(); decide(); });
+  setTimeout(decide, 400);
+})();
+
 (function initSisay(){
   setTimeout(sisayApplyCopy, 0);
   const ready = typeof TG_FIREBASE_ENABLED !== 'undefined' && TG_FIREBASE_ENABLED && typeof firebase !== 'undefined';
@@ -2650,6 +2745,7 @@ function sisayAsk(q) { sisaySend(q); }
     e.preventDefault();
     closeMenu();
     scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof sisayPerch === 'function') sisayPerch(false);
     history.replaceState(null, '', location.pathname + location.search);
   }
 
