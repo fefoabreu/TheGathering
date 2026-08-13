@@ -26,7 +26,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
@@ -280,7 +280,17 @@
        `.card-edit-modal` is declared further down the file, so at equal
        specificity it won; qualified so this width sticks. */
     .card-edit-modal.manifest-modal { width:min(748px,96vw); max-height:90vh; overflow-y:auto; line-height:1.8; }
-    .manifest-modal p { font-size:.92rem; color:var(--text); margin-bottom:1rem; }
+        /*  The story was set in Inter — the interface typeface — which is why it
+        read like an email rather than a manifest. EB Garamond is an old-style
+        book serif and the natural companion to Cinzel's Roman capitals. Its
+        x-height is smaller, so the sizes come up to compensate. */
+    .manifest-modal p {
+      font-family:'EB Garamond',Georgia,serif;
+      font-size:1.08rem; line-height:1.72; color:var(--text); margin-bottom:1rem;
+    }
+    .manifest-modal .mf-lede,
+    .manifest-modal .mf-close,
+    .manifest-modal em { font-family:'EB Garamond',Georgia,serif; }
     .mf-doorway {
       margin-top:2rem; padding-top:1.4rem; border-top:1px solid var(--border);
       display:flex; flex-direction:column; align-items:center; gap:.35rem; text-align:center;
@@ -300,7 +310,7 @@
       font-family:'Cinzel Decorative','Cinzel',serif; font-size:1.75rem;
       color:var(--gold); margin-bottom:.9rem; text-shadow:0 0 26px rgba(201,168,76,.3);
     }
-    .mf-lede { font-style:italic; color:var(--text-dim) !important; font-size:1rem !important; }
+    .mf-lede { font-style:italic; color:var(--text-dim) !important; font-size:1.16rem !important; }
     .mf-beat {
       font-family:'Cinzel',serif; font-size:1rem !important; color:var(--gold) !important;
       text-align:center; margin:1.4rem 0 !important; line-height:1.7;
@@ -336,21 +346,34 @@
     }
     /* The tile is locked to the card's proportions, so the copy has to fit the
        face rather than the face growing to the copy. */
-    .mf-member p { font-size:.735rem !important; line-height:1.5 !important; margin:0 !important; color:var(--text-dim) !important; }
+    .mf-member p {
+      font-family:'EB Garamond',Georgia,serif !important;
+      font-size:.86rem !important; line-height:1.42 !important;
+      margin:0 !important; color:var(--text-dim) !important;
+    }
 
     /* Typeline — the rules-text divider a real card carries above its footer. */
+    /* Laid out like a real card's type line: type on the left, mana on the
+       right, with the role beneath it. */
     .mf-typeline {
-      position:relative; z-index:1; margin-top:auto; padding-top:.55rem;
+      position:relative; z-index:1; margin-top:auto; padding-top:.5rem;
       border-top:1px solid rgba(201,168,76,.22);
-      font-family:'Cinzel',serif; font-size:.545rem; line-height:1.7;
-      letter-spacing:.11em; text-transform:uppercase; color:rgba(201,168,76,.72);
+      font-family:'Cinzel',serif; font-size:.545rem; line-height:1.55;
+      letter-spacing:.09em; text-transform:uppercase; color:rgba(201,168,76,.72);
     }
+    .mf-tl-type { display:flex; align-items:center; gap:.5rem; justify-content:space-between; }
+    .mf-tl-type > span:first-child { min-width:0; }
+    .mf-mana { display:flex; gap:2px; flex-shrink:0; }
+    .mf-mana .ms { font-size:.62rem; }
+    .mf-tl-role { margin-top:.18rem; }
     /* Real cards carry a faint set watermark behind the text box; the tiles
        borrow the idea so the space below the copy reads as deliberate. */
+    /* Centred and much larger, the way a real card's watermark sits behind the
+       whole text box. It used to sit low, where the typeline rule cut across it. */
     .mf-front::after {
-      content:attr(data-mark); position:absolute; left:50%; bottom:16%;
-      transform:translateX(-50%); font-size:5.4rem; line-height:1;
-      opacity:.06; filter:grayscale(1); pointer-events:none; user-select:none;
+      content:attr(data-mark); position:absolute; left:50%; top:47%;
+      transform:translate(-50%,-50%); font-size:8.6rem; line-height:1;
+      opacity:.13; filter:grayscale(1); pointer-events:none; user-select:none;
     }
     .mf-tap {
       position:relative; z-index:1;
@@ -1937,7 +1960,7 @@
       <p>But even the greatest explorers eventually seek a sanctuary. A place where the
       sunsets touch the mountains, where the tides offer a different kind of magic.</p>
 
-      <p class="mf-beat">At the top of the Silveira mountains, <em>where the mountain meets
+      <p class="mf-beat">At the top of the Morro da Silveira, <em>where the mountain meets
       the sea</em>, they found TheGathering Silveira.</p>
 
     <p>To ensure this haven operates flawlessly, the old crew has taken over
@@ -1958,7 +1981,10 @@
             of the property — balancing the solar pool integrations, commanding the
             smart entry arrays, and ensuring every bespoke fixture within the house
             operates in perfect, silent harmony.</p>
-            <div class="mf-typeline">Mana alignment: White / Blue<br>Role: Backend Artificer</div>
+            <div class="mf-typeline">
+              <div class="mf-tl-type"><span>Legendary Creature — Human Artificer</span><span class="mf-mana"><i class="ms ms-w ms-cost" aria-hidden="true"></i><i class="ms ms-u ms-cost" aria-hidden="true"></i></span></div>
+              <div class="mf-tl-role">Role: Backend Artificer</div>
+            </div>
             <span class="mf-tap">✦ Tap to draw her card</span>
           </div>
           <div class="mf-face mf-back">
@@ -1981,7 +2007,10 @@
             Whether mapping out sunset trails on the Silveira mountains or unlocking
             hidden local gems, her deck always holds the perfect answer for the voyage
             ahead.</p>
-            <div class="mf-typeline">Mana alignment: WUBRG<br>Role: Frontend Concierge</div>
+            <div class="mf-typeline">
+              <div class="mf-tl-type"><span>Legendary Creature — Human Soldier</span><span class="mf-mana"><i class="ms ms-w ms-cost" aria-hidden="true"></i><i class="ms ms-u ms-cost" aria-hidden="true"></i><i class="ms ms-b ms-cost" aria-hidden="true"></i><i class="ms ms-r ms-cost" aria-hidden="true"></i><i class="ms ms-g ms-cost" aria-hidden="true"></i></span></div>
+              <div class="mf-tl-role">Role: Frontend Concierge</div>
+            </div>
             <span class="mf-tap">✦ Tap to draw her card</span>
           </div>
           <div class="mf-face mf-back">
