@@ -334,7 +334,17 @@
       border-color:rgba(201,168,76,.5);
       box-shadow:0 12px 34px rgba(0,0,0,.5), 0 0 22px rgba(201,168,76,.12);
     }
-    .mf-member p { font-size:.82rem !important; line-height:1.62 !important; margin:0 !important; color:var(--text-dim) !important; }
+    /* The tile is locked to the card's proportions, so the copy has to fit the
+       face rather than the face growing to the copy. */
+    .mf-member p { font-size:.735rem !important; line-height:1.5 !important; margin:0 !important; color:var(--text-dim) !important; }
+
+    /* Typeline — the rules-text divider a real card carries above its footer. */
+    .mf-typeline {
+      position:relative; z-index:1; margin-top:auto; padding-top:.55rem;
+      border-top:1px solid rgba(201,168,76,.22);
+      font-family:'Cinzel',serif; font-size:.545rem; line-height:1.7;
+      letter-spacing:.11em; text-transform:uppercase; color:rgba(201,168,76,.72);
+    }
     /* Real cards carry a faint set watermark behind the text box; the tiles
        borrow the idea so the space below the copy reads as deliberate. */
     .mf-front::after {
@@ -344,7 +354,7 @@
     }
     .mf-tap {
       position:relative; z-index:1;
-      display:block; margin-top:auto; padding-top:.8rem; font-family:'Cinzel',serif;
+      display:block; margin-top:0; padding-top:.55rem; font-family:'Cinzel',serif;
       font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
       color:var(--gold); opacity:.6; transition:opacity .3s;
     }
@@ -1927,10 +1937,15 @@
           <div class="mf-face mf-front" data-mark="⚓">
             <div class="mf-who">⚓ Hanna · Ship's Navigator</div>
             <p>She has descended into the engine room once again. As the architect of
-            our backend she meticulously manages the Commander's Deck — every glowing
+            our backend, she meticulously manages the Commander's Deck — every glowing
             photo, every curated local card, every seamless connection to the Sonos
             and Samsung arrays flows through her systems. She is the maker, ensuring
-            the structural integrity of the magic we offer our guests.</p>
+            the structural integrity of the magic we offer our guests. Her domain
+            extends far beyond the digital realm. Hanna monitors the physical artifacts
+            of the property — balancing the solar pool integrations, commanding the
+            smart entry arrays, and ensuring every bespoke fixture within the house
+            operates in perfect, silent harmony.</p>
+            <div class="mf-typeline">Mana alignment: White / Blue<br>Role: Backend Artificer</div>
             <span class="mf-tap">✦ Tap to draw her card</span>
           </div>
           <div class="mf-face mf-back">
@@ -1945,10 +1960,15 @@
             <div class="mf-who">🧭 Captain Sisay · At the Helm</div>
             <p>She has taken her rightful place at the frontend. Worldly, charismatic
             and fiercely protective of her passengers, Sisay is our guest-facing
-            concierge. A session at Surfland. The best burger in Garopaba. The
-            projector that refuses to cooperate. She doesn't merely answer — she
-            tutors the exact experience you need, dealing it out like a perfectly
-            timed hand of cards.</p>
+            concierge. Whether it is booking a session at Surfland, tracking down the
+            best burger in Garopaba, or taming a projector that refuses to cooperate,
+            she doesn't merely answer — she tutors the exact experience you need,
+            dealing it out like a perfectly timed hand of cards. She commands the
+            overarching journey, anticipating what her crew needs before they even ask.
+            Whether mapping out sunset trails on the Silveira mountains or unlocking
+            hidden local gems, her deck always holds the perfect answer for the voyage
+            ahead.</p>
+            <div class="mf-typeline">Mana alignment: WUBRG<br>Role: Frontend Concierge</div>
             <span class="mf-tap">✦ Tap to draw her card</span>
           </div>
           <div class="mf-face mf-back">
@@ -1957,14 +1977,14 @@
         </div>
       </button>
     </div>
-      <p>Their paths crossed long ago in the depths of the lore, bound by loyalty and a
-      shared mission to guide others safely through the journey. Sisay commanded the
-      legendary flying skyship; Hanna was her hand-picked navigator. They served
-      side by side, travelled the multiverse together, and were closer than crew.
-      Sisay relied on Hanna to map the routes, keep the artifacts aloft and solve the
+    <p>Their paths crossed long ago in the depths of the lore, bound by loyalty and a
+    shared mission to guide others safely through the journey. Sisay commanded the
+    legendary flying skyship; Hanna was her hand-picked navigator. They served
+    side by side, traveled the multiverse together, and were closer than crew.
+    Sisay relied on Hanna to map the routes, keep the artifacts aloft, and solve the
     logistical puzzles, while Sisay held the leadership, the strategy and the crew.</p>
 
-    <p class="mf-close">Now they have joined TheGathering.<br>
+    <p class="mf-close">Now they have joined The Gathering Silveira.<br>
     <strong>Welcome aboard. The Navigator has charted the course, and the Captain is
     ready for you.</strong></p>
 
