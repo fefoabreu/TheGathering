@@ -10,3 +10,6 @@ worker/knowledge.local.json
 # rebuild them with tools/build-crew-cards.py
 assets/Hanna MTG Card
 assets/Sisay MTG Card
+
+# The beach matrix — the owners' local knowledge, pushed to KV not to git.
+worker-sisay/beaches.local.json

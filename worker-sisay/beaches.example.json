@@ -1,0 +1,56 @@
+{
+  "_comment": "SHAPE REFERENCE ONLY — the real file is beaches.local.json, which is gitignored and pushed to KV with push-beaches.sh. This example carries no local knowledge; every wind arc here is a placeholder.",
+  "_updated": "YYYY-MM-DD",
+  "_authoredBy": "the owners — these arcs are not derivable from any public source",
+
+  "windNames": {
+    "_comment": "Local names → degrees the wind blows FROM. Sisay never sees degrees; she sees verdicts.",
+    "norte": 0, "nordeste": 45, "leste": 90, "sudeste": 135,
+    "sul": 180, "sudoeste": 225, "oeste": 270, "noroeste": 315
+  },
+
+  "beaches": [
+    {
+      "id": "example",
+      "name": "Praia Example",
+      "driveMinutes": 0,
+      "facing": 90,
+
+      "wind": {
+        "_comment": "Arcs are [fromDeg, toDeg] of the direction the wind BLOWS FROM. Arcs may wrap past 360. Anything not listed is treated as 'unknown' and Sisay will say so rather than guess.",
+        "clean":     [],
+        "sheltered": [],
+        "blownOut":  []
+      },
+
+      "swell": {
+        "_comment": "Optional. Omit entirely for beaches nobody surfs.",
+        "worksFrom": [],
+        "minM": null,
+        "maxM": null
+      },
+
+      "goodFor": [],
+      "badFor": [],
+
+      "crowd": {
+        "_comment": "Free-text tags Sisay reads as-is.",
+        "quiet": [],
+        "busy": []
+      },
+
+      "gear": [],
+      "notes": ""
+    }
+  ],
+
+  "_vocabulary": {
+    "goodFor / badFor": [
+      "surf-beginner", "surf-intermediate", "surf-advanced",
+      "toddlers", "kids", "teens",
+      "swimming", "walking", "sunset", "sunrise",
+      "quiet", "scene", "food-on-beach", "dogs", "snorkel", "long-session"
+    ],
+    "gear": ["boards", "bodyboards", "beach-chairs", "umbrella", "cooler", "towels", "cabana"]
+  }
+}
