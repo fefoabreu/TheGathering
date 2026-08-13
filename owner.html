@@ -300,6 +300,9 @@
           with non-breaking spaces, which changes nothing else. */
     }
     .manifest-modal .mf-beat { text-wrap:balance; }
+    /* The paragraph that closes the story reads better centred — it is the
+       scroll unrolling, not a column of body copy. */
+    .manifest-modal p.mf-story { text-align:center; text-wrap:balance; }
     .manifest-modal .mf-lede,
     .manifest-modal .mf-close,
     .manifest-modal em { font-family:'Cinzel',serif; }
@@ -377,7 +380,7 @@
         clipping — the empty half the tiles used to show is gone. */
     .mf-member p {
       font-family:'Cinzel',serif !important;
-      font-size:.72rem !important; line-height:1.45 !important;
+      font-size:.76rem !important; line-height:1.35 !important;
       margin:0 !important; color:rgba(236,226,206,.88) !important;
     }
     /*  The tile is a fixed-ratio box, so a fixed px size fills it at one width
@@ -386,11 +389,10 @@
         every breakpoint. 3.86cqw is .8rem at the 332px desktop tile. */
     @supports (container-type: inline-size) {
       /*  Largest size whose copy still stops clear of the watermark above the
-          gold rule, checked at both tile widths rather than one — wrapping is
-          discrete, so the worst case moves: 3.6 clears a 368px tile by 8px and
-          overlaps a 331px one by 10. 3.5 clears both, by 15px at the tightest.
-          Sisay's block is the longer of the two and sets the ceiling. */
-      .mf-member p { font-size:3.5cqw !important; }
+          gold rule, checked at BOTH tile widths — wrapping is discrete, so the
+          worst case moves between them, and Sisay's longer block sets the
+          ceiling. Tighter leading and a smaller mark bought the room for this. */
+      .mf-member p { font-size:3.7cqw !important; }
     }
 
     /* Typeline — the rules-text divider a real card carries above its footer. */
@@ -416,7 +418,7 @@
        the text contrast it could not spare. */
     .mf-typeline::before {
       content:attr(data-mark); position:absolute; right:0; bottom:100%;
-      margin-bottom:.3rem; font-size:2.5rem; line-height:1;
+      margin-bottom:.3rem; font-size:2rem; line-height:1;
       opacity:.2; filter:grayscale(1); pointer-events:none; user-select:none;
     }
     .mf-tap {
@@ -1167,6 +1169,9 @@
     /* ══ SCROLLBAR ════════════════════════════════════════════════ */
     ::-webkit-scrollbar { width:5px; height:5px; }
     ::-webkit-scrollbar-track { background:rgba(4,6,8,.8); }
+    /* …except inside a rounded panel, where an opaque track strip squares off
+       the corners it runs past. */
+    .card-edit-modal::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:rgba(201,168,76,.2); border-radius:3px; }
     ::-webkit-scrollbar-thumb:hover { background:rgba(201,168,76,.38); }
 
@@ -1287,7 +1292,7 @@
       box-shadow:0 0 0 1px rgba(201,168,76,.38),0 0 50px rgba(0,0,0,.8);
       position:relative;
     }
-    .card-edit-modal::before { content:''; position:absolute; inset:-1px; border-radius:calc(var(--r)+1px); z-index:-1; background:linear-gradient(135deg,rgba(201,168,76,.42) 0%,transparent 40%,transparent 60%,rgba(201,168,76,.32) 100%); }
+    .card-edit-modal::before { content:''; position:absolute; inset:-1px; border-radius:calc(var(--r) + 1px); z-index:-1; background:linear-gradient(135deg,rgba(201,168,76,.42) 0%,transparent 40%,transparent 60%,rgba(201,168,76,.32) 100%); }
     .cem-title { font-family:'Cinzel',serif; font-size:.88rem; color:var(--gold); letter-spacing:.14em; margin-bottom:1.5rem; display:flex; align-items:center; gap:.8rem; }
     .cem-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,rgba(201,168,76,.3),transparent); }
     .cem-close { position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-mute); cursor:pointer; font-size:1.1rem; transition:color .3s; }
@@ -2071,16 +2076,16 @@
         </div>
       </button>
     </div>
-    <p>Their paths crossed long ago in the depths of the lore, bound by loyalty and a
+    <p class="mf-story">Their paths crossed long ago in the depths of the lore, bound by loyalty and a
     shared mission to guide others safely through the journey. Sisay commanded the
     legendary flying skyship; Hanna was her hand-picked navigator. They served
     side by side, traveled the multiverse together, and were closer than crew.
     Sisay relied on Hanna to map the routes, keep the artifacts aloft, and solve the
     logistical puzzles, while Sisay held the leadership, the&nbsp;strategy&nbsp;and&nbsp;the&nbsp;crew.</p>
 
-    <p class="mf-close">Now they have joined The Gathering Silveira.
-    Welcome aboard. The Navigator has charted the course, and the Captain
-    is ready for you.</p>
+    <p class="mf-close">Now they have joined The&nbsp;Gathering&nbsp;Silveira.
+    The Navigator has charted the course, and the Captain is ready for you.
+    Welcome&nbsp;aboard.</p>
 
     <div class="mf-sig">✦ Fêfo · Pipo · Zé ✦<br>
       <span>"One will corrupt, two will divide. With three, there is balance." — Galadriel, Lady&nbsp;of&nbsp;Lothlórien</span></div>
