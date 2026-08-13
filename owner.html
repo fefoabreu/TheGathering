@@ -292,11 +292,12 @@
     .manifest-modal p {
       font-family:'Cinzel',serif;
       font-size:.92rem; line-height:1.85; color:var(--text); margin-bottom:1.05rem;
-      /* `balance` was tried here and made it worse: it evens the line lengths,
-         which just relocates the awkward break instead of removing it. The
-         phrases that must not split are bound with non-breaking spaces
-         instead — deterministic, and it leaves every other line alone. */
-      text-wrap:pretty;
+      /*  No wrap heuristic here. Both `balance` and `pretty` reflow the whole
+          paragraph to even out or protect the last line, and the cost is a
+          ragged right edge on every line above it — the copy stops looking
+          set and starts looking left-aligned. Default greedy wrapping fills
+          each line, and the two phrases that must not split are held together
+          with non-breaking spaces, which changes nothing else. */
     }
     .manifest-modal .mf-beat { text-wrap:balance; }
     .manifest-modal .mf-lede,
@@ -376,7 +377,7 @@
         clipping — the empty half the tiles used to show is gone. */
     .mf-member p {
       font-family:'Cinzel',serif !important;
-      font-size:.7rem !important; line-height:1.45 !important;
+      font-size:.72rem !important; line-height:1.45 !important;
       margin:0 !important; color:rgba(236,226,206,.88) !important;
     }
     /*  The tile is a fixed-ratio box, so a fixed px size fills it at one width
@@ -384,10 +385,12 @@
         bare. Sized against the tile's own width instead, the fill holds at
         every breakpoint. 3.86cqw is .8rem at the 332px desktop tile. */
     @supports (container-type: inline-size) {
-      /* 3.4, not the 3.86 that filled the face edge to edge — the copy was
-         running down over the watermark sitting above the gold rule. This
-         leaves it about 44px of clearance at every tile width. */
-      .mf-member p { font-size:3.4cqw !important; }
+      /*  Largest size whose copy still stops clear of the watermark above the
+          gold rule, checked at both tile widths rather than one — wrapping is
+          discrete, so the worst case moves: 3.6 clears a 368px tile by 8px and
+          overlaps a 331px one by 10. 3.5 clears both, by 15px at the tightest.
+          Sisay's block is the longer of the two and sets the ceiling. */
+      .mf-member p { font-size:3.5cqw !important; }
     }
 
     /* Typeline — the rules-text divider a real card carries above its footer. */
@@ -2005,10 +2008,9 @@
       treacherous and magnificent corners of the multiverse. By her side was Hanna, the
       Ship's Navigator — a brilliant artificer who understood the heartbeat of the ship's
       engines better than anyone alive. Together they mapped the unknown, weathered
-      impossible storms, and turned a ragtag crew into a family.</p>
-
-      <p>But even the greatest explorers eventually seek a sanctuary. A place where the
-      sunsets touch the mountains, where the tides offer a different kind of magic.</p>
+      impossible storms, and turned a ragtag crew into a family. But even the greatest
+      explorers eventually seek a sanctuary. A place where the sunsets touch the
+      mountains, where the tides offer a different kind of magic.</p>
 
       <p class="mf-beat">At the top of the Morro da Silveira,
       <em>where&nbsp;the&nbsp;mountain&nbsp;meets&nbsp;the&nbsp;sea</em>, they found TheGathering&nbsp;Silveira.</p>
