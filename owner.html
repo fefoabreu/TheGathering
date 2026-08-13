@@ -288,7 +288,14 @@
     .manifest-modal p {
       font-family:'Cinzel',serif;
       font-size:.92rem; line-height:1.85; color:var(--text); margin-bottom:1.05rem;
+      /* Stop a line breaking just before the last word or two. The punch lines
+         — "The Commander Deck." and "ready for you." — were each landing alone
+         on a line of their own. `pretty` pulls earlier breaks to prevent it. */
+      text-wrap:pretty;
     }
+    .manifest-modal .mf-beat,
+    .manifest-modal .mf-close,
+    .manifest-modal p.mf-punch { text-wrap:balance; }
     .manifest-modal .mf-lede,
     .manifest-modal .mf-close,
     .manifest-modal em { font-family:'Cinzel',serif; }
@@ -303,15 +310,27 @@
     }
     .mf-doorway button:hover { color:#F0DFA8; text-shadow:0 0 26px rgba(201,168,76,.7); }
     .mf-doorway span { font-size:.72rem; color:var(--text-mute); font-style:italic; }
+    /*  The eyebrow used to sit on its own line above the title, leaving the
+        whole top-right of the modal empty. It now runs along the top edge
+        beside the close button, and the title takes the space it vacated. */
+    .mf-head {
+      display:flex; align-items:baseline; justify-content:space-between;
+      gap:2rem; margin-bottom:.4rem; padding-right:2.4rem;
+    }
     .mf-eyebrow {
       font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:.28em;
-      text-transform:uppercase; color:var(--gold); margin-bottom:.5rem;
+      text-transform:uppercase; color:var(--gold);
+      flex-shrink:0; text-align:right; padding-top:.7rem; opacity:.75;
     }
     .mf-title {
       font-family:'Cinzel Decorative','Cinzel',serif; font-size:1.75rem;
-      color:var(--gold); margin-bottom:.9rem; text-shadow:0 0 26px rgba(201,168,76,.3);
+      color:var(--gold); margin:0; text-shadow:0 0 26px rgba(201,168,76,.3);
     }
-    .mf-lede { font-style:italic; color:var(--text-dim) !important; font-size:1rem !important; }
+    .mf-lede { font-style:italic; color:var(--text-dim) !important; font-size:1rem !important; margin:0 0 1.6rem !important; }
+    @media(max-width:620px){
+      .mf-head { flex-direction:column-reverse; gap:.35rem; padding-right:2.2rem; }
+      .mf-eyebrow { text-align:left; padding-top:.25rem; }
+    }
     .mf-beat {
       font-family:'Cinzel',serif; font-size:1rem !important; color:var(--gold) !important;
       text-align:center; margin:1.4rem 0 !important; line-height:1.7;
@@ -355,7 +374,7 @@
     .mf-member p {
       font-family:'Cinzel',serif !important;
       font-size:.8rem !important; line-height:1.45 !important;
-      margin:0 !important; color:var(--text-dim) !important;
+      margin:0 !important; color:rgba(236,226,206,.88) !important;
     }
     /*  The tile is a fixed-ratio box, so a fixed px size fills it at one width
         only — at any wider tile the copy stayed put and left the bottom half
@@ -383,10 +402,13 @@
        borrow the idea so the space below the copy reads as deliberate. */
     /* Centred and much larger, the way a real card's watermark sits behind the
        whole text box. It used to sit low, where the typeline rule cut across it. */
-    .mf-front::after {
-      content:attr(data-mark); position:absolute; left:50%; top:47%;
-      transform:translate(-50%,-50%); font-size:8.6rem; line-height:1;
-      opacity:.13; filter:grayscale(1); pointer-events:none; user-select:none;
+    /* Anchored to the typeline rather than the face, so it always sits just
+       above the gold rule in the lower right. Behind the copy it was costing
+       the text contrast it could not spare. */
+    .mf-typeline::before {
+      content:attr(data-mark); position:absolute; right:0; bottom:100%;
+      margin-bottom:.3rem; font-size:2.5rem; line-height:1;
+      opacity:.2; filter:grayscale(1); pointer-events:none; user-select:none;
     }
     .mf-tap {
       position:relative; z-index:1;
@@ -422,7 +444,10 @@
       font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.12em;
       color:var(--gold); margin-bottom:.55rem;
     }
-    .mf-close { text-align:center; margin-top:1.4rem !important; }
+    /* Split into two paragraphs so balancing can work on each; the <br> that
+       used to join them stopped it and stranded "for you." on a line alone. */
+    .mf-close { text-align:center; margin-top:1.4rem !important; margin-bottom:.2rem !important; }
+    .mf-close-final { margin-top:.2rem !important; }
     .mf-sig {
       margin-top:1.6rem; padding-top:1.2rem; border-top:1px solid var(--border);
       text-align:center; font-family:'Cinzel',serif; font-size:.72rem;
@@ -1961,8 +1986,10 @@
   <div class="card-edit-modal manifest-modal">
     <button class="cem-close" onclick="closeManifest()">✕</button>
 
-    <div class="mf-eyebrow">The Weatherlight Manifest</div>
-    <h2 class="mf-title">A New Horizon</h2>
+    <div class="mf-head">
+      <h2 class="mf-title">A New Horizon</h2>
+      <div class="mf-eyebrow">The Weatherlight Manifest</div>
+    </div>
     <p class="mf-lede">Every legendary vessel requires an exceptional crew.</p>
       <p>For years, Captain Sisay commanded the <em>Weatherlight</em>, navigating the most
       treacherous and magnificent corners of the multiverse. By her side was Hanna, the
@@ -1976,14 +2003,14 @@
       <p class="mf-beat">At the top of the Morro da Silveira, <em>where the mountain meets
       the sea</em>, they found TheGathering Silveira.</p>
 
-    <p>To ensure this haven operates flawlessly, the old crew has taken over
+    <p class="mf-punch">To ensure this haven operates flawlessly, the old crew has taken over
     <strong>The Commander Deck</strong>.</p>
 
     <div class="mf-crew">
       <button class="mf-member" onclick="this.classList.toggle('flipped')"
               aria-label="Hanna, Ship's Navigator — tap to draw her card">
         <div class="mf-inner">
-          <div class="mf-face mf-front" data-mark="⚓">
+          <div class="mf-face mf-front">
             <div class="mf-who">⚓ Hanna · Ship's Navigator</div>
             <p>She has descended into the engine room once again. As the architect of
             our backend, she meticulously manages the Commander's Deck — every glowing
@@ -1994,7 +2021,7 @@
             of the property — balancing the solar pool integrations, commanding the
             smart entry arrays, and ensuring every bespoke fixture within the house
             operates in perfect, silent harmony.</p>
-            <div class="mf-typeline">
+            <div class="mf-typeline" data-mark="⚓">
               <div class="mf-tl-type"><span>Legendary Creature — Human Artificer</span><span class="mf-mana"><i class="ms ms-w ms-cost" aria-hidden="true"></i><i class="ms ms-u ms-cost" aria-hidden="true"></i></span></div>
               <div class="mf-tl-role">Role: Backend Artificer</div>
             </div>
@@ -2008,7 +2035,7 @@
       <button class="mf-member" onclick="this.classList.toggle('flipped')"
               aria-label="Captain Sisay — tap to draw her card">
         <div class="mf-inner">
-          <div class="mf-face mf-front" data-mark="🧭">
+          <div class="mf-face mf-front">
             <div class="mf-who">🧭 Captain Sisay · At the Helm</div>
             <p>She has taken her rightful place at the frontend. Worldly, charismatic
             and fiercely protective of her passengers, Sisay is our guest-facing
@@ -2020,7 +2047,7 @@
             Whether mapping out sunset trails on the Silveira mountains or unlocking
             hidden local gems, her deck always holds the perfect answer for the voyage
             ahead.</p>
-            <div class="mf-typeline">
+            <div class="mf-typeline" data-mark="🧭">
               <div class="mf-tl-type"><span>Legendary Creature — Human Soldier</span><span class="mf-mana"><i class="ms ms-w ms-cost" aria-hidden="true"></i><i class="ms ms-u ms-cost" aria-hidden="true"></i><i class="ms ms-b ms-cost" aria-hidden="true"></i><i class="ms ms-r ms-cost" aria-hidden="true"></i><i class="ms ms-g ms-cost" aria-hidden="true"></i></span></div>
               <div class="mf-tl-role">Role: Frontend Concierge</div>
             </div>
@@ -2039,9 +2066,9 @@
     Sisay relied on Hanna to map the routes, keep the artifacts aloft, and solve the
     logistical puzzles, while Sisay held the leadership, the strategy and the crew.</p>
 
-    <p class="mf-close">Now they have joined The Gathering Silveira.<br>
-    <strong>Welcome aboard. The Navigator has charted the course, and the Captain is
-    ready for you.</strong></p>
+    <p class="mf-close">Now they have joined The Gathering Silveira.</p>
+    <p class="mf-close mf-close-final"><strong>Welcome aboard. The Navigator has charted
+    the course, and the Captain is ready for you.</strong></p>
 
     <div class="mf-sig">✦ Fêfo · Pipo · Zé ✦<br>
       <span>"One will corrupt, two will divide. With three, there is balance."<br>— Galadriel, Lady of Lothlórien</span></div>
