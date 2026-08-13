@@ -274,8 +274,15 @@
 
 
     /* ══ THE WEATHERLIGHT MANIFEST ═══════════════════════════════ */
-    .manifest-modal { width:min(720px,96vw); max-height:88vh; overflow-y:auto; line-height:1.8; }
+    /* Wider, and two columns on a desktop, so the Manifest reads without a
+       long scroll. It is a broadside, not a receipt. */
+    /* `.card-edit-modal` sets a narrower width and is declared further down the
+       file, so at equal specificity it won. Qualified so this one sticks. */
+    .card-edit-modal.manifest-modal { width:min(1080px,96vw); max-height:90vh; overflow-y:auto; line-height:1.8; }
     .manifest-modal p { font-size:.92rem; color:var(--text); margin-bottom:1rem; }
+    .manifest-modal .mf-cols { columns:2; column-gap:2.6rem; }
+    .manifest-modal .mf-cols p { break-inside:avoid; }
+    @media(max-width:860px){ .manifest-modal .mf-cols { columns:1; } }
     .mf-doorway {
       margin-top:2rem; padding-top:1.4rem; border-top:1px solid var(--border);
       display:flex; flex-direction:column; align-items:center; gap:.35rem; text-align:center;
@@ -303,11 +310,24 @@
     .mf-crew {
       display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.4rem 0;
     }
+    /* Each crew member is a button now — tapping one draws her actual card. */
     .mf-member {
+      display:block; width:100%; text-align:left; cursor:pointer; font:inherit;
       padding:1rem; border-radius:var(--r);
       background:rgba(255,255,255,.03); border:1px solid var(--border);
+      transition:border-color .3s, background .3s, transform .3s;
+    }
+    .mf-member:hover {
+      border-color:rgba(201,168,76,.5); background:rgba(201,168,76,.05);
+      transform:translateY(-2px);
     }
     .mf-member p { font-size:.85rem !important; margin:0 !important; color:var(--text-dim) !important; }
+    .mf-tap {
+      display:block; margin-top:.7rem; font-family:'Cinzel',serif;
+      font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--gold); opacity:.55; transition:opacity .3s;
+    }
+    .mf-member:hover .mf-tap { opacity:1; }
     .mf-who {
       font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.12em;
       color:var(--gold); margin-bottom:.55rem;
@@ -321,6 +341,51 @@
     .mf-sig span { display:block; margin-top:.5rem; font-size:.66rem;
       color:var(--text-mute); font-style:italic; letter-spacing:.06em; }
     @media(max-width:760px){ .mf-crew { grid-template-columns:1fr; } .mf-title { font-size:1.4rem; } }
+
+    /* ══ CREW CARD ════════════════════════════════════════════════ */
+    .crew-modal {
+      position:relative; width:min(420px,92vw);
+      display:flex; flex-direction:column; align-items:center; gap:1.2rem;
+    }
+    .crew-card { width:100%; font-size:2.1rem; }   /* the bc-* em anchor */
+    .crew-art { height:6.4em; }
+    .crew-role {
+      margin-top:.9rem; text-align:center; font-family:'Cinzel',serif;
+      font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold);
+    }
+    .crew-nav { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+    .crew-modal .cem-close { top:-2.6rem; right:0; }
+    @media(max-width:520px){ .crew-card { font-size:1.6rem; } }
+
+    /* ══ COMMAND — key projects strip ═════════════════════════════ */
+    .cmd-proj {
+      display:flex; align-items:center; gap:.6rem; padding:.6rem 0;
+      border-bottom:1px solid rgba(201,168,76,.1); font-size:.88rem;
+    }
+    .cmd-proj:last-child { border-bottom:none; }
+    .cmd-proj-pri { flex-shrink:0; font-size:.7rem; }
+    .cmd-proj-title { flex:1; min-width:0; color:var(--text); }
+    .cmd-proj-cat { flex-shrink:0; opacity:.6; }
+
+    /* ══ VENDOR DIRECTORY — grouped ═══════════════════════════════ */
+    #vendor-grid { display:block; }        /* groups own their own grids */
+    .vendor-group { margin-bottom:1.8rem; }
+    .vendor-group:last-child { margin-bottom:0; }
+    .vendor-group-label {
+      font-family:'Cinzel',serif; font-size:.66rem; letter-spacing:.18em;
+      text-transform:uppercase; color:var(--text-dim); margin-bottom:.75rem;
+      padding-bottom:.4rem; border-bottom:1px solid rgba(201,168,76,.14);
+    }
+    .vendor-phone a { color:inherit; text-decoration:none; }
+    .vendor-phone a:hover { color:var(--gold); }
+
+    /* Hanna's name doubles as the Manifest doorway. */
+    button.hh-name {
+      background:none; border:0; padding:0; cursor:pointer; text-align:left;
+      font-family:'Cinzel',serif; font-size:.92rem; color:var(--mu);
+      letter-spacing:.08em; transition:color .3s, text-shadow .3s;
+    }
+    button.hh-name:hover { color:var(--gold); text-shadow:0 0 18px rgba(201,168,76,.5); }
 
 
 
@@ -659,16 +724,37 @@
     .leg-dot { width:10px; height:10px; border-radius:3px; }
 
     /* ══ FORMS ════════════════════════════════════════════════════ */
-    input[type=date], input[type=text], select {
+    /* `textarea` was missing from this list, so the Chronicle's Summary box
+       fell through to the browser default — white ground, monospace-ish face,
+       nothing like the input beside it. It is the same control; style it so. */
+    input[type=date], input[type=text], select, textarea {
       padding:.65rem .9rem; border-radius:8px;
       background:rgba(6,10,18,.95); border:1px solid var(--border);
       color:var(--text); font-size:.88rem; outline:none;
       font-family:'Inter',sans-serif; transition:border-color .3s, box-shadow .3s; color-scheme:dark;
     }
-    input[type=date]:focus, input[type=text]:focus, select:focus { border-color:var(--gold); box-shadow:0 0 12px rgba(201,168,76,.12); }
+    textarea { resize:vertical; line-height:1.6; min-height:64px; }
+    input[type=date]:focus, input[type=text]:focus, select:focus, textarea:focus {
+      border-color:var(--gold); box-shadow:0 0 12px rgba(201,168,76,.12);
+    }
     select option { background:rgba(12,16,26,.99); }
     .form-row { display:flex; gap:.8rem; flex-wrap:wrap; align-items:flex-end; }
     .form-field label { font-family:'Cinzel',serif; font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); display:block; margin-bottom:.35rem; }
+    .form-field { display:flex; flex-direction:column; }
+    .form-field.full { width:100%; }
+    .form-field input, .form-field select, .form-field textarea { width:100%; }
+
+    /* ══ SCRY LAYOUT ══════════════════════════════════════════════ */
+    /*  Calendar first and widest; feeds and controls alongside it. */
+    .scry-layout { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr); gap:1.8rem; align-items:start; }
+    .scry-main, .scry-side { min-width:0; }
+    .scry-note { font-size:.78rem; color:var(--text-mute); margin:-.4rem 0 .9rem; line-height:1.6; }
+    .cal-nav { display:flex; gap:.35rem; margin-left:auto; flex-shrink:0; }
+    .cal-nav .btn-sm { padding:.42rem .8rem; font-size:.76rem; }
+    .scry-block-form .form-field { flex:1; min-width:130px; }
+    @media(max-width:1080px){
+      .scry-layout { grid-template-columns:1fr; gap:2.2rem; }
+    }
 
     /* ══ BUTTONS ══════════════════════════════════════════════════ */
     .btn-sm { padding:.62rem 1.2rem; border-radius:8px; border:none; cursor:pointer; font-size:.82rem; font-weight:600; letter-spacing:.06em; transition:all .3s; font-family:'Inter',sans-serif; }
@@ -1234,10 +1320,8 @@
     <button class="tab-btn" data-tab="calendar">           <i class="ms ms-u ms-cost"></i> Scry</button>
     <button class="tab-btn" data-tab="guests">             <i class="ms ms-g ms-cost"></i> Creatures</button>
     <button class="tab-btn" data-tab="housekeeping">       <i class="ms ms-r ms-cost"></i> Upkeep</button>
-    <button class="tab-btn" data-tab="vendors">            <i class="ms ms-c ms-cost"></i> Artifacts</button>
     <button class="tab-btn" data-tab="environment">        <i class="ms ms-g ms-cost"></i> Environment</button>
     <button class="tab-btn" data-tab="projects">           <i class="ms ms-b ms-cost"></i> Sorceries</button>
-    <button class="tab-btn" data-tab="chronicle">      <i class="ms ms-w ms-cost"></i> Chronicle</button>
     <button class="tab-btn" data-tab="links">              <i class="ms ms-w ms-cost"></i> Portals</button>
   </div>
 
@@ -1365,9 +1449,9 @@
                   <span class="bc-mana"><i class="ms ms-r ms-cost"></i></span>
                 </div>
                 <div class="bc-art" style="background-image:url('assets/rooms/room_laundry.jpg')"></div>
-                <div class="bc-typeline" style="background:rgba(208,88,64,.78)">Triggered — Recurring Services</div>
+                <div class="bc-typeline" style="background:rgba(208,88,64,.78)">Triggered — Services & Vendors</div>
                 <div class="bc-text" style="background:rgba(242,218,210,.96)">
-                  <p class="bc-rules">At the beginning of upkeep, manage cleaning, pool service, and key codes.</p>
+                  <p class="bc-rules">At the beginning of upkeep, manage cleaning, pool and garden, the full vendor directory, and key codes.</p>
                   <p class="bc-flavor">"The Morro asks for care; the house gives back."</p>
                   <div class="bc-pt">—</div>
                 </div>
@@ -1375,24 +1459,7 @@
               <div class="bc-enter-hint">tap · Upkeep</div>
             </div>
 
-            <!-- ARTIFACTS (Colorless/Silver) -->
-            <div class="battle-card" onclick="enterSection('vendors')"
-                 style="--cb:#C0B8B0;--cg:rgba(192,184,176,.4)">
-              <div class="bc-frame" style="border-color:#C0B8B0;background:linear-gradient(180deg,#181820,#222230)">
-                <div class="bc-title" style="background:rgba(192,184,176,.88)">
-                  <span>Vendor Apparatus</span>
-                  <span class="bc-mana"><i class="ms ms-3 ms-cost" style="font-size:.6rem"></i></span>
-                </div>
-                <div class="bc-art" style="background-image:url('assets/rooms/room_kitchen.jpg')"></div>
-                <div class="bc-typeline" style="background:rgba(192,184,176,.78)">Artifact — Utility Array</div>
-                <div class="bc-text" style="background:rgba(228,228,232,.96)">
-                  <p class="bc-rules">Tap: Access all vendor contacts, contractor numbers, and service costs.</p>
-                  <p class="bc-flavor">"Every tool in its place, every hand on speed dial."</p>
-                  <div class="bc-pt">3</div>
-                </div>
-              </div>
-              <div class="bc-enter-hint">tap · Artifacts</div>
-            </div>
+            <!-- Artifacts was folded into Upkeep — same crew, one page. -->
 
             <!-- ENVIRONMENT (Green/Forest) — Garopaba Guide -->
             <div class="battle-card" onclick="enterSection('environment')"
@@ -1425,9 +1492,9 @@
                   </span>
                 </div>
                 <div class="bc-art" style="background-image:url('assets/rooms/room_suite2.jpg')"></div>
-                <div class="bc-typeline" style="background:rgba(120,88,168,.78)">Sorcery — Project Tracker</div>
+                <div class="bc-typeline" style="background:rgba(120,88,168,.78)">Sorcery — Projects & Chronicle</div>
                 <div class="bc-text" style="background:rgba(215,205,228,.96)">
-                  <p class="bc-rules">Create a Project token with chosen priority. Track outstanding maintenance sorceries.</p>
+                  <p class="bc-rules">Create a Project token with chosen priority. Record every decision the three of you take.</p>
                   <p class="bc-flavor">"The house that is always becoming."</p>
                   <div class="bc-pt">—</div>
                 </div>
@@ -1443,32 +1510,32 @@
 
     <!-- ══ COMMAND (Overview) ══ -->
     <div class="tab-panel" id="tab-overview">
-      <div class="grid-3" style="margin-bottom:1.5rem">
-        <div class="mtg-card stat"><div class="val">9</div><div class="lbl">Weeks Booked</div></div>
-        <div class="mtg-card stat"><div class="val">3</div><div class="lbl">Weeks Available</div></div>
-        <div class="mtg-card stat"><div class="val">Jun 7</div><div class="lbl">Next Arrival</div></div>
+      <div class="grid-3" style="margin-bottom:1.5rem" id="cmd-stats">
+        <div class="mtg-card stat"><div class="val" id="stat-upcoming">—</div><div class="lbl">Upcoming Stays</div></div>
+        <div class="mtg-card stat"><div class="val" id="stat-next">—</div><div class="lbl">Next Arrival</div></div>
+        <div class="mtg-card stat"><div class="val" id="stat-open">—</div><div class="lbl">Open Projects</div></div>
       </div>
 
-      <div class="section-title"><i class="ms ms-tap"></i> Active Season — 2026</div>
+      <!--  Active Season reads forward from today off the live property
+            calendar, rather than a table of weeks typed in by hand. What is
+            on the calendar is what is true.                                -->
+      <div class="section-title" style="align-items:center"><i class="ms ms-tap"></i> Active Season — from today
+        <button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="loadGcal(true)">↻ Refresh</button>
+      </div>
       <div class="mtg-card" style="margin-bottom:1.5rem;overflow-x:auto">
         <table>
-          <thead><tr><th>Week</th><th>Dates</th><th>Guests</th><th>Origin</th><th>Pets</th><th>Channel</th></tr></thead>
-          <tbody id="booking-table-body"></tbody>
+          <thead><tr><th>Dates</th><th>What</th><th>Source</th><th>Nights</th></tr></thead>
+          <tbody id="booking-table-body"><tr><td colspan="4" style="color:var(--text-mute);font-style:italic">Reading the calendar…</td></tr></tbody>
         </table>
       </div>
 
       <div class="grid-2">
         <div>
-          <div class="section-title"><i class="ms ms-u ms-cost"></i> Airbnb Sync</div>
+          <div class="section-title" style="align-items:center"><i class="ms ms-b ms-cost"></i> Key House Projects
+            <button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="enterSection('projects')">Open Sorceries</button>
+          </div>
           <div class="mtg-card">
-            <p style="font-size:.87rem;color:var(--text-dim);margin-bottom:1rem">Sync the calendar via iCal with external booking platforms.</p>
-            <div style="background:rgba(6,10,18,.9);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;font-size:.72rem;color:var(--gold);word-break:break-all;font-family:monospace;margin-bottom:1rem;line-height:1.5">
-              <span id="ical-url" style="color:var(--text-mute);font-style:italic">Loading feed URL…</span>
-            </div>
-            <div style="display:flex;gap:.7rem;flex-wrap:wrap">
-              <a href="https://www.airbnb.com/hosting/listings" class="btn-sm btn-gold" target="_blank" rel="noopener" style="text-decoration:none">Open Airbnb Host</a>
-              <button class="btn-sm btn-ghost" id="ical-copy" onclick="copyIcal(this)">Copy iCal Link</button>
-            </div>
+            <div id="cmd-projects"><div class="empty-state">Loading projects…</div></div>
           </div>
         </div>
         <div>
@@ -1493,30 +1560,62 @@
     </div>
 
     <!-- ══ SCRY (Calendar) ══ -->
+    <!--  Scry reads left to right: the grid you actually came to look at, and
+          beside it the feeds and controls that explain it. Previously all three
+          were stacked full-width, so the calendar — the point of the page — sat
+          below the fold under a list of events.                              -->
     <div class="tab-panel" id="tab-calendar">
-      <div class="section-title" style="align-items:center"><i class="ms ms-u ms-cost"></i> Property Calendar <span style="font-family:Inter,sans-serif;font-size:.7rem;letter-spacing:0;text-transform:none;color:var(--text-mute);margin-left:.6rem">thegatheringsilveira@gmail.com · read-only</span><button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="loadGcal(true)">↻ Refresh</button></div>
-      <div class="mtg-card" style="margin-bottom:1.6rem"><div id="gcal-list"><div class="empty-state">Reading the property calendar…</div></div></div>
+      <div class="scry-layout">
 
-      <div class="section-title"><i class="ms ms-u ms-cost"></i> 2026 Season Calendar</div>
-      <div class="mtg-card" style="margin-bottom:1.5rem">
-        <div class="cal-wrap" id="cal-root"></div>
-        <div class="cal-legend">
-          <span><span class="leg-dot" style="background:rgba(74,140,180,.5)"></span>Guest Booking</span>
-          <span><span class="leg-dot" style="background:rgba(201,168,76,.4)"></span>Owners Block</span>
-          <span><span class="leg-dot" style="background:rgba(91,170,114,.3)"></span>Available</span>
-          <span><span class="leg-dot" style="border:1px solid var(--gold);background:transparent"></span>Today</span>
+        <div class="scry-main">
+          <!-- renderCalendar() draws its own ‹ Today › controls in the grid header -->
+          <div class="section-title"><i class="ms ms-u ms-cost"></i> Season Calendar</div>
+          <div class="mtg-card">
+            <div class="cal-wrap" id="cal-root"></div>
+            <div class="cal-legend">
+              <span><span class="leg-dot" style="background:rgba(74,140,180,.5)"></span>Guest Booking</span>
+              <span><span class="leg-dot" style="background:rgba(201,168,76,.4)"></span>Owners Block</span>
+              <span><span class="leg-dot" style="background:rgba(91,170,114,.3)"></span>Available</span>
+              <span><span class="leg-dot" style="border:1px solid var(--gold);background:transparent"></span>Today</span>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="section-title"><i class="ms ms-b ms-cost"></i> Block Dates for Owners</div>
-      <div class="mtg-card">
-        <p style="font-size:.85rem;color:var(--text-dim);margin-bottom:1.2rem">Reserve dates for owner use. These appear on the calendar above.</p>
-        <div class="form-row">
-          <div class="form-field"><label>From</label><input type="date" id="block-from"></div>
-          <div class="form-field"><label>To</label><input type="date" id="block-to"></div>
-          <div class="form-field"><label>Label</label><input type="text" id="block-label" placeholder="e.g. Owner Vacation" style="min-width:180px"></div>
-          <button class="btn-sm btn-gold" onclick="addBlock()" style="align-self:flex-end">+ Add Block</button>
-        </div>
-        <div id="block-list" style="margin-top:1.2rem"></div>
+
+        <aside class="scry-side">
+          <div class="section-title" style="align-items:center">
+            <i class="ms ms-u ms-cost"></i> Property Calendar
+            <button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="loadGcal(true)">↻</button>
+          </div>
+          <p class="scry-note">thegatheringsilveira@gmail.com · read-only</p>
+          <div class="mtg-card" style="margin-bottom:1.6rem"><div id="gcal-list"><div class="empty-state">Reading the property calendar…</div></div></div>
+
+          <div class="section-title"><i class="ms ms-b ms-cost"></i> Block Dates for Owners</div>
+          <div class="mtg-card">
+            <p class="scry-note" style="margin-bottom:1rem">Reserve dates for owner use. These appear on the calendar beside this.</p>
+            <div class="form-row scry-block-form">
+              <div class="form-field"><label>From</label><input type="date" id="block-from"></div>
+              <div class="form-field"><label>To</label><input type="date" id="block-to"></div>
+              <div class="form-field full"><label>Label</label><input type="text" id="block-label" placeholder="e.g. Owner Vacation"></div>
+              <button class="btn-sm btn-gold" onclick="addBlock()" style="align-self:flex-end">+ Add Block</button>
+            </div>
+            <div id="block-list" style="margin-top:1.2rem"></div>
+          </div>
+
+          <!-- Moved off Command, where it was competing with the dashboard.
+               A calendar feed belongs beside the calendars. -->
+          <div class="section-title" style="margin-top:1.8rem"><i class="ms ms-u ms-cost"></i> Airbnb Feed</div>
+          <div class="mtg-card">
+            <p class="scry-note" style="margin-bottom:.9rem">The iCal address external platforms read.</p>
+            <div style="background:rgba(6,10,18,.9);border:1px solid var(--border);border-radius:8px;padding:.75rem .85rem;font-size:.68rem;color:var(--gold);word-break:break-all;font-family:monospace;margin-bottom:.9rem;line-height:1.5">
+              <span id="ical-url" style="color:var(--text-mute);font-style:italic">Loading feed URL…</span>
+            </div>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+              <button class="btn-sm btn-ghost" id="ical-copy" onclick="copyIcal(this)">Copy iCal Link</button>
+              <a href="https://www.airbnb.com/hosting/listings" class="btn-sm btn-ghost" target="_blank" rel="noopener" style="text-decoration:none">Airbnb Host</a>
+            </div>
+          </div>
+        </aside>
+
       </div>
     </div>
 
@@ -1526,30 +1625,31 @@
       <div id="guest-cards" style="display:flex;flex-direction:column;gap:1rem"></div>
     </div>
 
-    <!-- ══ UPKEEP (Housekeeping) ══ -->
+    <!-- ══ UPKEEP — recurring services + the whole vendor directory ══ -->
+    <!--  Artifacts used to be a separate tab holding the vendor directory,
+          which split one set of people across two pages. Same crew, one page.
+          Both grids render from the `vendors` store, so a vendor is edited in
+          one place; the recurring grid is simply the subset with a cadence.
+          Phone numbers and Pix keys are NOT in this file — they come from the
+          Vault, because this repository is public.                          -->
     <div class="tab-panel" id="tab-housekeeping">
       <div class="section-title"><i class="ms ms-r ms-cost"></i> Recurring Services</div>
-      <div class="sched-grid" style="margin-bottom:2.5rem">
-        <div class="sched-card"><div class="sched-type">🧹 House Cleaning</div><div class="sched-name">Dona Maria</div><div class="sched-detail">📞 +55 48 99802-8728</div><div class="sched-cost">R$450/visit · <span class="pay" data-vendor="cleaning">Pix hidden</span></div><div class="sched-next">🗓 Schedule before each check-in</div></div>
-        <div class="sched-card"><div class="sched-type">🧹 Cleaning (Alt)</div><div class="sched-name">Rosana</div><div class="sched-detail">📞 +55 51 99680-9433</div><div class="sched-cost">R$700/visit (with assistant)</div><div class="sched-next">🗓 Backup / heavy-clean option</div></div>
-        <div class="sched-card"><div class="sched-type">🏊 Pool Maintenance</div><div class="sched-name">Edison "Édi" Silveira</div><div class="sched-detail">📞 +55 48 99120-6784</div><div class="sched-cost">R$700/mês (monthly)</div><div class="sched-next">🗓 Monthly recurring service</div></div>
-        <div class="sched-card"><div class="sched-type">🌿 Grass & Garden</div><div class="sched-name">Du</div><div class="sched-detail">📞 +55 48 99634-8646</div><div class="sched-cost">R$350/visit · <span class="pay" data-vendor="garden">Pix hidden</span></div><div class="sched-next">🗓 Every 3–4 weeks</div></div>
-        <div class="sched-card"><div class="sched-type">🪟 Window Cleaning</div><div class="sched-name">TBD</div><div class="sched-detail" style="color:var(--warn)">⚠️ Vendor not yet assigned</div><div class="sched-next">🗓 Schedule before each season</div></div>
-        <div class="sched-card"><div class="sched-type">🔧 Hydraulic / Plumbing</div><div class="sched-name">Emerson Alves</div><div class="sched-detail">📞 +55 48 99655-7266</div><div class="sched-cost">Rate TBD / call-out</div><div class="sched-next">🗓 On-call as needed</div></div>
+      <div class="sched-grid" id="recurring-grid" style="margin-bottom:2.5rem">
+        <div class="empty-state">Loading services…</div>
       </div>
+
+      <div class="section-title" style="align-items:center"><i class="ms ms-c ms-cost"></i> Vendor Directory
+        <span style="font-family:Inter,sans-serif;font-size:.7rem;letter-spacing:0;text-transform:none;color:var(--text-mute);margin-left:.6rem" id="vendor-count"></span>
+        <button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="openVault()">🔐 Vault</button>
+      </div>
+      <div class="grid-3" id="vendor-grid" style="margin-bottom:2.5rem"><div class="empty-state">Loading vendors…</div></div>
+
       <div class="section-title" style="align-items:center"><i class="ms ms-r ms-cost"></i> Keyless Entry Codes<button class="btn-sm btn-gold" style="margin-left:auto;flex-shrink:0" onclick="openVault()">🔐 Vault</button></div>
       <div class="mtg-card" style="overflow-x:auto">
         <table>
           <thead><tr><th>Door / Slot</th><th>Person</th><th>Code</th></tr></thead>
           <tbody id="lock-codes-body"><tr><td colspan="3" style="color:var(--text-mute);font-style:italic">Loading codes…</td></tr></tbody>
         </table>
-      </div>
-    </div>
-
-    <!-- ══ ARTIFACTS (Vendors) ══ -->
-    <div class="tab-panel" id="tab-vendors">
-      <div class="section-title"><i class="ms ms-c ms-cost"></i> Vendor Directory</div>
-      <div class="grid-3" id="vendor-grid"><div class="empty-state">Loading vendors…</div></div>
       </div>
     </div>
 
@@ -1647,7 +1747,10 @@
 <div class="hanna-panel" id="hanna-panel">
   <div class="hanna-head">
     <div>
-      <div class="hh-name">Hanna</div>
+      <!-- Her name is the second doorway into the Manifest, for owners who
+           meet her here rather than at the foot of the Chronicle. -->
+      <button class="hh-name" onclick="openManifest()"
+              title="The Weatherlight Manifest — how this crew came to keep the house">Hanna</button>
       <div class="hh-role">Ship's Navigator · Commander Deck</div>
     </div>
     <div style="display:flex;gap:.35rem">
@@ -1668,35 +1771,68 @@
 </div>
 
     <!-- ══ THE CHRONICLE (decisions) ══ -->
-    <div class="tab-panel" id="tab-chronicle">
+    <!-- ══ SORCERIES — house projects + the Chronicle ══ -->
+    <!--  These were two tabs asking the same question from opposite ends:
+          what are we doing to the house, and what did we decide about it.
+          Folded into one page so a decision sits next to the work it caused. -->
+    <div class="tab-panel" id="tab-projects">
+      <div class="section-title"><i class="ms ms-b ms-cost"></i> House Projects</div>
+      <div class="mtg-card" style="margin-bottom:1.5rem">
+        <div class="form-row">
+          <div class="form-field" style="flex:1;min-width:200px">
+            <label>Sorcery Description</label>
+            <input type="text" id="proj-title" placeholder="Describe the project…">
+          </div>
+          <div class="form-field">
+            <label>Category</label>
+            <select id="proj-cat">
+              <option value="maintenance">🔧 Maintenance</option>
+              <option value="improvement">✨ Improvement</option>
+              <option value="repair">🩹 Repair</option>
+              <option value="cleaning">🧹 Cleaning</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Priority</label>
+            <select id="proj-priority">
+              <option value="high">🔴 High</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+          <button class="btn-sm btn-gold" onclick="addProject()" style="align-self:flex-end">+ Cast Sorcery</button>
+        </div>
+      </div>
+      <div id="projects-list" style="margin-bottom:2.5rem"></div>
+
       <div class="section-title"><i class="ms ms-w ms-cost"></i> The Chronicle</div>
-      <p style="font-size:.87rem;color:var(--text-dim);margin:-.6rem 0 1.4rem;max-width:60ch;line-height:1.7">
+      <p style="font-size:.87rem;color:var(--text-dim);margin:-.6rem 0 1.2rem;max-width:60ch;line-height:1.7">
         Every decision taken on the venture, in one place — so all three owners
         see what was decided and when, without being in the room.
       </p>
 
       <div class="mtg-card" style="margin-bottom:1.5rem">
-        <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:flex-end">
-          <div style="flex:2;min-width:220px">
-            <label class="cem-label">Decision</label>
-            <input type="text" id="dec-title" placeholder="What was decided…" style="width:100%">
+        <div class="form-row">
+          <div class="form-field" style="flex:2;min-width:220px">
+            <label>Decision</label>
+            <input type="text" id="dec-title" placeholder="What was decided…">
           </div>
-          <div style="flex:1;min-width:140px">
-            <label class="cem-label">Decided by</label>
-            <input type="text" id="dec-by" placeholder="Fêfo / Pipo / Zé / all" style="width:100%">
+          <div class="form-field" style="flex:1;min-width:140px">
+            <label>Decided by</label>
+            <input type="text" id="dec-by" placeholder="Fêfo / Pipo / Zé / all">
           </div>
-          <div style="min-width:130px">
-            <label class="cem-label">Status</label>
-            <select id="dec-status" style="width:100%">
+          <div class="form-field" style="min-width:130px">
+            <label>Status</label>
+            <select id="dec-status">
               <option value="decided">Decided</option>
               <option value="proposed">Proposed</option>
               <option value="revisit">Revisit</option>
             </select>
           </div>
         </div>
-        <div style="margin-top:.8rem">
-          <label class="cem-label">Summary</label>
-          <textarea id="dec-summary" rows="2" placeholder="Context and reasoning…" style="width:100%"></textarea>
+        <div class="form-field full" style="margin-top:.8rem">
+          <label>Summary</label>
+          <textarea id="dec-summary" rows="2" placeholder="Context and reasoning…"></textarea>
         </div>
         <div style="margin-top:.9rem;display:flex;gap:.6rem;align-items:center">
           <button class="btn-sm btn-gold" onclick="addDecision()">✦ Record Decision</button>
@@ -1709,38 +1845,6 @@
       <div class="mf-doorway">
         <button onclick="openManifest()">✦ The Weatherlight Manifest</button>
         <span>How this crew came to keep the house</span>
-      </div>
-    </div>
-
-    <!-- ══ SORCERIES (Projects) ══ -->
-    <div class="tab-panel" id="tab-projects">
-      <div class="section-title"><i class="ms ms-b ms-cost"></i> House Projects</div>
-      <div class="mtg-card" style="margin-bottom:1.5rem">
-        <div style="display:flex;gap:.8rem;flex-wrap:wrap;align-items:flex-end">
-          <div style="flex:1;min-width:200px">
-            <label style="font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);display:block;margin-bottom:.35rem">Sorcery Description</label>
-            <input type="text" id="proj-title" placeholder="Describe the project…" style="width:100%">
-          </div>
-          <div>
-            <label style="font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);display:block;margin-bottom:.35rem">Category</label>
-            <select id="proj-cat">
-              <option value="maintenance">🔧 Maintenance</option>
-              <option value="improvement">✨ Improvement</option>
-              <option value="repair">🩹 Repair</option>
-              <option value="cleaning">🧹 Cleaning</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);display:block;margin-bottom:.35rem">Priority</label>
-            <select id="proj-priority">
-              <option value="high">🔴 High</option>
-              <option value="medium">🟡 Medium</option>
-              <option value="low">🟢 Low</option>
-            </select>
-          </div>
-          <button class="btn-sm btn-gold" onclick="addProject()">+ Cast Sorcery</button>
-        </div>
-        <div id="projects-list" style="margin-top:1.2rem"></div>
       </div>
     </div>
 
@@ -1776,46 +1880,52 @@
     <h2 class="mf-title">A New Horizon</h2>
     <p class="mf-lede">Every legendary vessel requires an exceptional crew.</p>
 
-    <p>For years, Captain Sisay commanded the <em>Weatherlight</em>, navigating the most
-    treacherous and magnificent corners of the multiverse. By her side was Hanna, the
-    Ship's Navigator — a brilliant artificer who understood the heartbeat of the ship's
-    engines better than anyone alive. Together they mapped the unknown, weathered
-    impossible storms, and turned a ragtag crew into a family.</p>
+    <div class="mf-cols">
+      <p>For years, Captain Sisay commanded the <em>Weatherlight</em>, navigating the most
+      treacherous and magnificent corners of the multiverse. By her side was Hanna, the
+      Ship's Navigator — a brilliant artificer who understood the heartbeat of the ship's
+      engines better than anyone alive. Together they mapped the unknown, weathered
+      impossible storms, and turned a ragtag crew into a family.</p>
 
-    <p>But even the greatest explorers eventually seek a sanctuary. A place where the
-    sunsets touch the mountains, where the tides offer a different kind of magic.</p>
+      <p>But even the greatest explorers eventually seek a sanctuary. A place where the
+      sunsets touch the mountains, where the tides offer a different kind of magic.</p>
 
-    <p class="mf-beat">At the top of the Silveira mountains, <em>where the mountain meets
-    the sea</em>, they found TheGathering Silveira.</p>
+      <p class="mf-beat">At the top of the Silveira mountains, <em>where the mountain meets
+      the sea</em>, they found TheGathering Silveira.</p>
 
-    <p>To ensure this haven operates flawlessly, the old crew has taken over
-    <strong>The Commander Deck</strong>.</p>
+      <p>To ensure this haven operates flawlessly, the old crew has taken over
+      <strong>The Commander Deck</strong>.</p>
+    </div>
 
     <div class="mf-crew">
-      <div class="mf-member">
+      <button class="mf-member" onclick="openCrewCard('hanna')">
         <div class="mf-who">⚓ Hanna · Ship's Navigator</div>
         <p>She has descended into the engine room once again. As the architect of our
         backend she meticulously manages the Commander's Deck — every glowing photo,
         every curated local card, every seamless connection to the Sonos and Samsung
         arrays flows through her systems. She is the maker, ensuring the structural
         integrity of the magic we offer our guests.</p>
-      </div>
-      <div class="mf-member">
+        <span class="mf-tap">✦ Tap to draw her card</span>
+      </button>
+      <button class="mf-member" onclick="openCrewCard('sisay')">
         <div class="mf-who">🧭 Captain Sisay · At the Helm</div>
         <p>She has taken her rightful place at the frontend. Worldly, charismatic and
         fiercely protective of her passengers, Sisay is our guest-facing concierge.
         A session at Surfland. The best burger in Garopaba. The projector that refuses
         to cooperate. She doesn't merely answer — she tutors the exact experience you
         need, dealing it out like a perfectly timed hand of cards.</p>
-      </div>
+        <span class="mf-tap">✦ Tap to draw her card</span>
+      </button>
     </div>
 
-    <p>Their paths crossed long ago in the depths of the lore, bound by loyalty and a
-    shared mission to guide others safely through the journey. Sisay commanded the
-    legendary flying skyship; Hanna was her hand-picked navigator. They served
-    side by side, travelled the multiverse together, and were closer than crew.
-    Sisay relied on Hanna to map the routes, keep the artifacts aloft and solve the
-    logistical puzzles, while Sisay held the leadership, the strategy and the crew.</p>
+    <div class="mf-cols">
+      <p>Their paths crossed long ago in the depths of the lore, bound by loyalty and a
+      shared mission to guide others safely through the journey. Sisay commanded the
+      legendary flying skyship; Hanna was her hand-picked navigator. They served
+      side by side, travelled the multiverse together, and were closer than crew.
+      Sisay relied on Hanna to map the routes, keep the artifacts aloft and solve the
+      logistical puzzles, while Sisay held the leadership, the strategy and the crew.</p>
+    </div>
 
     <p class="mf-close">Now they have joined TheGathering.<br>
     <strong>Welcome aboard. The Navigator has charted the course, and the Captain is
@@ -1823,6 +1933,21 @@
 
     <div class="mf-sig">✦ Fêfo · Pipo · Zé ✦<br>
       <span>"One will corrupt, two will divide. With three there is balance."</span></div>
+  </div>
+</div>
+
+<!-- CREW CARD — the two cards the Manifest is built on, drawn full size.
+     Uses the same frame the Battlefield uses. If real card scans are dropped in
+     at assets/card-hanna.jpg / assets/card-sisay.jpg they are shown instead. -->
+<div class="card-edit-overlay" id="crew-overlay" onclick="if(event.target===this)closeCrewCard()">
+  <div class="crew-modal">
+    <button class="cem-close" onclick="closeCrewCard()">✕</button>
+    <div id="crew-card-slot"></div>
+    <div class="crew-nav">
+      <button class="btn-sm btn-ghost" onclick="openCrewCard('hanna')">⚓ Hanna</button>
+      <button class="btn-sm btn-ghost" onclick="openCrewCard('sisay')">🧭 Sisay</button>
+      <button class="btn-sm btn-gold" onclick="closeCrewCard();openManifest()">✦ Back to the Manifest</button>
+    </div>
   </div>
 </div>
 
@@ -1855,6 +1980,11 @@
       <label class="cem-label">Vendor payment — { cleaning: "…", garden: "…" }</label>
       <textarea class="cem-input" id="vault-pay" rows="4" spellcheck="false"
         placeholder='{"cleaning":"…","garden":"…"}'></textarea>
+    </div>
+    <div class="cem-field full">
+      <label class="cem-label">Vendor phones — { &lt;vendor id&gt;: "+55 …" }</label>
+      <textarea class="cem-input" id="vault-phones" rows="5" spellcheck="false"
+        placeholder='{"cleaning":"+55 48 …","pool":"+55 48 …","builder":"+55 48 …"}'></textarea>
     </div>
 
     <div class="cem-actions">
@@ -1951,12 +2081,31 @@
 // ── Seed data ────────────────────────────────────────────────
 //  Used only to populate an empty database once. Firestore is the
 //  source of truth afterwards; edit through the portal, not here.
+// The full directory from the house doc's Vendors List. `phone` is left empty
+// on purpose — this repository is public, and these are third parties' numbers.
+// Phones and Pix keys come from the Vault (gathering/secrets), keyed by id.
+// `group`: service = recurring house upkeep · build = the construction and
+// design team · mgmt = management and brokerage.
 const SEED_VENDORS = [
-  { id:'cleaning',  role:'🧹 Diarista',              name:'Dona Maria', phone:'',  cost:'R$450/visita',  cadence:'Antes de cada check-in', payKey:'cleaning' },
-  { id:'garden',    role:'🌿 Jardinagem & Grama',    name:'Du',         phone:'',  cost:'R$350/visita',  cadence:'A cada 3–4 semanas',     payKey:'garden'   },
-  { id:'pool',      role:'💧 Piscina',               name:'',           phone:'',  cost:'',              cadence:'Semanal',                payKey:'pool'     },
-  { id:'maint',     role:'🔧 Manutenção',            name:'Ricardo',    phone:'',  cost:'',              cadence:'Sob demanda',            payKey:'maint'    },
+  // Recurring house services — these also fill the Recurring Services grid.
+  { id:'cleaning',  group:'service', role:'🧹 Diarista',                 name:'Dona Maria',            phone:'', cost:'R$450/visita',            cadence:'Antes de cada check-in',   payKey:'cleaning' },
+  { id:'cleaning2', group:'service', role:'🧹 Diarista (reserva)',       name:'Rosana',                phone:'', cost:'R$700/visita (c/ ajudante)', cadence:'Backup / limpeza pesada', payKey:'cleaning2' },
+  { id:'pool',      group:'service', role:'💧 Manutenção Piscina',       name:'Édison "Édi" Silveira', phone:'', cost:'R$700/mês',               cadence:'Mensal',                   payKey:'pool'     },
+  { id:'garden',    group:'service', role:'🌿 Jardinagem & Corte Grama', name:'Du',                    phone:'', cost:'R$350/visita',            cadence:'A cada 3–4 semanas',       payKey:'garden'   },
+  { id:'plumbing',  group:'service', role:'🔧 Hidráulico',               name:'Emerson Alves',         phone:'', cost:'Sob orçamento',           cadence:'Sob demanda',              payKey:'plumbing' },
+  { id:'windows',   group:'service', role:'🪟 Limpeza de Vidros',        name:'',                      phone:'', cost:'',                        cadence:'Antes de cada temporada',  payKey:'windows'  },
+  // Construction and design team.
+  { id:'builder',   group:'build',   role:'👷 Empreiteiro',              name:'Renan Delavald',        phone:'', cost:'',                        cadence:'',                         payKey:'builder'  },
+  { id:'engineer',  group:'build',   role:'📐 Engenheiro Chefe',         name:'Ricardo',               phone:'', cost:'',                        cadence:'',                         payKey:'engineer' },
+  { id:'foreman',   group:'build',   role:'🧱 Mestre de Obras',          name:'Gegê',                  phone:'', cost:'',                        cadence:'',                         payKey:'foreman'  },
+  { id:'architect', group:'build',   role:'🛋️ Arquiteta & Designer',     name:'Giovana Munhoz',        phone:'', cost:'',                        cadence:'',                         payKey:'architect'},
+  { id:'railing',   group:'build',   role:'🪟 Guarda-Corpo',             name:'Cléverson',             phone:'', cost:'',                        cadence:'',                         payKey:'railing'  },
+  // Management and brokerage.
+  { id:'mgmt',      group:'mgmt',    role:'🏡 Gestão Temporada',         name:'Nathi Bittencourt',     phone:'', cost:'20% do valor Airbnb',     cadence:'Estar Garopaba',           payKey:'mgmt'     },
+  { id:'broker',    group:'mgmt',    role:'🔑 Corretora',                name:'Adriane Kayser',        phone:'', cost:'',                        cadence:'',                         payKey:'broker'   },
 ];
+
+const VENDOR_GROUPS = { service:'Serviços Recorrentes', build:'Obra & Design', mgmt:'Gestão & Corretagem' };
 
 const SEED_HOUSE = {
   address:'Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000',
@@ -1977,13 +2126,12 @@ const SEED_BOOKINGS = [];
 // Guest names and origins used to sit here, which meant they shipped publicly.
 // They now live in gathering/bookings and are edited through the portal. This
 // stays empty so a fresh database seeds to nothing rather than re-publishing PII.
-const BOOKED_RANGES = [
-  {from:'2026-05-31',to:'2026-06-07',label:'Gerdes'},  {from:'2026-06-07',to:'2026-06-14',label:'Overman'},
-  {from:'2026-06-14',to:'2026-06-21',label:'Clasen'},  {from:'2026-06-21',to:'2026-06-28',label:'Nasser'},
-  {from:'2026-07-12',to:'2026-07-19',label:'Souther'}, {from:'2026-07-19',to:'2026-07-26',label:'Sanderson'},
-  {from:'2026-08-02',to:'2026-08-09',label:'Snipes'},  {from:'2026-08-09',to:'2026-08-16',label:'Pfister'},
-];
-const OWNER_RANGES = [{from:'2026-07-05',to:'2026-07-12',label:'Owners'}];
+// Emptied deliberately. These eight weeks were placeholder names carried over
+// from the original Google Doc — they were never real bookings, and they were
+// colouring the calendar as though the season were sold out. Real occupancy now
+// comes from the property calendar feed (TG_GCAL) and from owner blocks.
+const BOOKED_RANGES = [];
+const OWNER_RANGES  = [];
 
 // ── AUTH ──────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════
@@ -2094,9 +2242,10 @@ function enterSection(tab) {
   const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
   if (btn) btn.classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'environment') renderDeckBuilder();
-  if (tab === 'chronicle')   renderDecisions();
-  if (tab === 'calendar')    loadGcal();
+  if (tab === 'environment')  renderDeckBuilder();
+  if (tab === 'projects')     renderDecisions();   // Chronicle now lives here
+  if (tab === 'calendar')     loadGcal();
+  if (tab === 'overview')     loadGcal();          // Active Season reads the calendar
 }
 
 // ── TABS ──────────────────────────────────────────────────────
@@ -2113,6 +2262,8 @@ function init() {
   renderCalendar();
   renderProjects();
   renderBlocks();
+  renderVendors();
+  renderRecurring();
   createParticles();
   showBattlefield();
 }
@@ -2151,18 +2302,91 @@ function chBadge(ch) {
   const cls = ch==='Airbnb'?'badge-blue':ch==='Vrbo'?'badge-orange':ch==='Direct'?'badge-green':ch==='Owner Block'?'badge-gold':'badge-mute';
   return `<span class="badge ${cls}">${ch}</span>`;
 }
+/**
+ * Active Season — what the calendar says, from today forward.
+ *
+ * This used to render a hand-typed table of the season's weeks, which drifted
+ * from reality the moment anything changed and still showed eight placeholder
+ * guests months after they were known to be fictional. It now reads the merged
+ * property calendar (Google + Airbnb) and the owners' own blocks, so the
+ * dashboard cannot claim a week that the calendar does not.
+ */
+function upcomingStays() {
+  const today = new Date().toISOString().slice(0, 10);
+  const fromGcal = (typeof TG_GCAL !== 'undefined' ? TG_GCAL : [])
+    .filter(e => (e.to || e.from) >= today)
+    .map(e => ({ from:e.from, to:e.to || e.from, label:e.title || '(untitled)',
+                 source:e.source || 'google', recurring:!!e.recurring }));
+  const fromBlocks = (typeof getSavedBlocks === 'function' ? getSavedBlocks() : [])
+    .filter(b => (b.to || b.from) >= today)
+    .map(b => ({ from:b.from, to:b.to, label:b.label || 'Owner block', source:'owner' }));
+  return [...fromGcal, ...fromBlocks].sort((a, b) => a.from.localeCompare(b.from));
+}
+
+function nightsBetween(from, to) {
+  const d = (new Date(to + 'T00:00:00Z') - new Date(from + 'T00:00:00Z')) / 86400000;
+  return Math.max(1, Math.round(d) || 1);
+}
+
+function srcBadge(s) {
+  const m = { google:['badge-blue','Google'], airbnb:['badge-orange','Airbnb'], owner:['badge-gold','Owner block'] };
+  const [cls, label] = m[s] || ['badge-mute', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
 function renderBookingTable() {
-  document.getElementById('booking-table-body').innerHTML = storeGet("bookings").map(b => {
-    if (!b.name) return `<tr class="avail-row"><td>${b.week}</td><td>${b.dates}</td><td colspan="4">— available —</td></tr>`;
-    return `<tr ${b.owner?'style="background:rgba(201,168,76,.04)"':''}>
-      <td><span style="font-family:'Cinzel',serif;font-size:.73rem;color:var(--text-dim)">${b.week}</span></td>
-      <td>${b.dates} <span style="font-size:.72rem;color:var(--text-mute)">(${b.nights}n)</span></td>
-      <td><strong>${b.name}</strong><br><span style="font-size:.76rem;color:var(--text-dim)">${b.size}</span></td>
-      <td style="font-size:.84rem;color:var(--text-dim)">${b.origin||'—'}</td>
-      <td>${b.pet===true?'🐾':b.pet===false?'🚫':''}</td>
-      <td>${chBadge(b.ch)}</td>
-    </tr>`;
-  }).join('');
+  const body = document.getElementById('booking-table-body');
+  if (!body) return;
+  const rows = upcomingStays();
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="4" style="color:var(--text-mute);font-style:italic">
+      Nothing on the calendar from today forward. Add a block in Scry, or check the property calendar feed.</td></tr>`;
+  } else {
+    body.innerHTML = rows.slice(0, 20).map(r => `<tr>
+      <td style="white-space:nowrap">${fmtRange(r.from, r.to)}</td>
+      <td><strong>${esc(r.label)}</strong>${r.recurring ? ' <span style="font-size:.7rem;color:var(--text-mute)">· recurring</span>' : ''}</td>
+      <td>${srcBadge(r.source)}</td>
+      <td style="color:var(--text-dim)">${nightsBetween(r.from, r.to)}n</td>
+    </tr>`).join('');
+  }
+  renderCommandStats(rows);
+}
+
+function fmtRange(from, to) {
+  const f = new Date(from + 'T00:00:00Z'), t = new Date(to + 'T00:00:00Z');
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const a = `${M[f.getUTCMonth()]} ${f.getUTCDate()}`;
+  const b = `${M[t.getUTCMonth()]} ${t.getUTCDate()}`;
+  return from === to ? a : `${a} – ${b}`;
+}
+
+function renderCommandStats(rows) {
+  rows = rows || upcomingStays();
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('stat-upcoming', rows.length || '—');
+  set('stat-next', rows.length ? fmtRange(rows[0].from, rows[0].from) : '—');
+  const open = (typeof getProjects === 'function' ? getProjects() : []).filter(p => !p.done).length;
+  set('stat-open', open || '—');
+  renderCommandProjects();
+}
+
+/** The three or four projects worth seeing without leaving Command. */
+function renderCommandProjects() {
+  const el = document.getElementById('cmd-projects');
+  if (!el) return;
+  const rank = { high:0, medium:1, low:2 };
+  const open = (typeof getProjects === 'function' ? getProjects() : [])
+    .filter(p => !p.done)
+    .sort((a, b) => (rank[a.priority] ?? 3) - (rank[b.priority] ?? 3))
+    .slice(0, 5);
+  if (!open.length) { el.innerHTML = '<div class="empty-state">No open projects. Cast one in Sorceries.</div>'; return; }
+  const dot = { high:'🔴', medium:'🟡', low:'🟢' };
+  const cat = { maintenance:'🔧', improvement:'✨', repair:'🩹', cleaning:'🧹' };
+  el.innerHTML = open.map(p => `<div class="cmd-proj">
+      <span class="cmd-proj-pri">${dot[p.priority] || '⚪'}</span>
+      <span class="cmd-proj-title">${esc(p.title || '')}</span>
+      <span class="cmd-proj-cat">${cat[p.cat] || ''}</span>
+    </div>`).join('');
 }
 
 // ── GUEST CARDS ───────────────────────────────────────────────
@@ -2441,13 +2665,10 @@ function renderSecrets(sec, err) {
     if (btn) btn.disabled = !url;
   }
 
-  // Vendor payment details
-  document.querySelectorAll('.pay[data-vendor]').forEach(el => {
-    const v = sec && sec.vendorPay && sec.vendorPay[el.dataset.vendor];
-    el.textContent = v ? ('Pix: ' + v) : (el.textContent.includes('oculto') ? 'Pix oculto' : 'Pix hidden');
-    el.style.fontStyle = v ? 'normal' : 'italic';
-    el.style.color = v ? '' : 'var(--text-mute)';
-  });
+  // Vendor phones and Pix keys live here rather than in the repo, so the
+  // directory has to repaint once the Vault lands.
+  renderVendors();
+  renderRecurring();
 }
 
 function esc(v) {
@@ -2472,6 +2693,7 @@ function openVault() {
   document.getElementById('vault-wifi').value   = val(s.wifi);
   document.getElementById('vault-ical').value   = s.airbnbIcal || '';
   document.getElementById('vault-pay').value    = JSON.stringify(s.vendorPay || {}, null, 2);
+  document.getElementById('vault-phones').value = JSON.stringify(s.vendorPhone || {}, null, 2);
   document.getElementById('vault-status').textContent = '';
   document.getElementById('vault-overlay').classList.add('show');
 }
@@ -2488,6 +2710,7 @@ async function saveVault() {
       wifi:       JSON.parse(document.getElementById('vault-wifi').value || '[]'),
       airbnbIcal: document.getElementById('vault-ical').value.trim(),
       vendorPay:  JSON.parse(document.getElementById('vault-pay').value || '{}'),
+      vendorPhone:JSON.parse(document.getElementById('vault-phones').value || '{}'),
       updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
     };
   } catch (e) { st.textContent = '✕ Invalid JSON: ' + e.message; return; }
@@ -2509,8 +2732,10 @@ async function saveVault() {
 // ═══════════════════════════════════════════════════════════
 
 const TG_STORES = {
-  bookings: { path: TG_BOOKINGS_PATH, cache: [], ref: null, render: () => renderBookingTable() },
-  vendors:  { path: TG_VENDORS_PATH,  cache: [], ref: null, render: () => renderVendors() },
+  // Creatures rendered once at init() and never again, so it sat empty: the
+  // cloud snapshot lands after init, and only the Command table was re-rendered.
+  bookings: { path: TG_BOOKINGS_PATH, cache: [], ref: null, render: () => renderGuestCards() },
+  vendors:  { path: TG_VENDORS_PATH,  cache: [], ref: null, render: () => { renderVendors(); renderRecurring(); } },
   house:    { path: TG_HOUSE_PATH,    cache: {}, ref: null, render: () => renderHouseInfo() },
 };
 
@@ -2588,19 +2813,65 @@ async function seedIfEmpty() {
 
 
 // ── Vendors ──────────────────────────────────────────────────
+/** Phone and Pix never ship in this file — they come from the Vault, by id. */
+function vendorPhone(v) {
+  const s = TG_SECRETS || {};
+  return v.phone || (s.vendorPhone && s.vendorPhone[v.id]) || '';
+}
+function vendorPay(v) {
+  const s = TG_SECRETS || {};
+  return (s.vendorPay && s.vendorPay[v.payKey || v.id]) || '';
+}
+
 function renderVendors() {
   const el = document.getElementById('vendor-grid');
   if (!el) return;
   const list = storeGet('vendors') || [];
+  const count = document.getElementById('vendor-count');
+  if (count) count.textContent = list.length ? `${list.length} contacts` : '';
+
   if (!list.length) { el.innerHTML = '<div class="empty-state">No vendors yet.</div>'; return; }
+
+  // Grouped, so the build team does not read as weekly upkeep.
+  const order = ['service', 'build', 'mgmt'];
+  const groups = {};
+  list.forEach(v => { (groups[v.group || 'service'] ||= []).push(v); });
+
+  el.innerHTML = order.filter(g => groups[g]).map(g => `
+    <div class="vendor-group">
+      <div class="vendor-group-label">${esc(VENDOR_GROUPS[g] || g)}</div>
+      <div class="grid-3">${groups[g].map(vendorCard).join('')}</div>
+    </div>`).join('');
+}
+
+function vendorCard(v) {
+  const phone = vendorPhone(v), pay = vendorPay(v);
+  const tel = phone.replace(/[^\d+]/g, '');
+  return `<div class="vendor-card">
+    <div class="vendor-role">${esc(v.role || '')}</div>
+    <div class="vendor-name">${esc(v.name || 'Not yet assigned')}</div>
+    ${phone ? `<div class="vendor-phone"><a href="tel:${esc(tel)}">📞 ${esc(phone)}</a></div>`
+            : `<div class="vendor-phone" style="opacity:.45">📞 in the Vault</div>`}
+    ${v.cost    ? `<div class="vendor-cost">${esc(v.cost)}${pay ? ' · Pix: ' + esc(pay) : ''}</div>` : ''}
+    ${v.cadence ? `<div class="vendor-phone" style="opacity:.7">🗓 ${esc(v.cadence)}</div>` : ''}
+  </div>`;
+}
+
+/** Recurring Services is the subset of the directory that has a cadence. */
+function renderRecurring() {
+  const el = document.getElementById('recurring-grid');
+  if (!el) return;
+  const list = (storeGet('vendors') || []).filter(v => v.group === 'service');
+  if (!list.length) { el.innerHTML = '<div class="empty-state">No recurring services yet.</div>'; return; }
   el.innerHTML = list.map(v => {
-    const pay = TG_SECRETS && TG_SECRETS.vendorPay && TG_SECRETS.vendorPay[v.payKey];
-    return `<div class="vendor-card">
-      <div class="vendor-role">${esc(v.role || '')}</div>
-      <div class="vendor-name">${esc(v.name || '—')}</div>
-      ${v.phone ? `<div class="vendor-phone">📞 ${esc(v.phone)}</div>` : ''}
-      ${v.cost  ? `<div class="vendor-cost">${esc(v.cost)}${pay ? ' · Pix: ' + esc(pay) : ''}</div>` : ''}
-      ${v.cadence ? `<div class="vendor-phone" style="opacity:.7">🗓 ${esc(v.cadence)}</div>` : ''}
+    const phone = vendorPhone(v), pay = vendorPay(v);
+    return `<div class="sched-card">
+      <div class="sched-type">${esc(v.role || '')}</div>
+      <div class="sched-name">${esc(v.name || 'Not yet assigned')}</div>
+      ${v.name ? '' : '<div class="sched-detail" style="color:var(--warn)">⚠️ Vendor not yet assigned</div>'}
+      ${phone ? `<div class="sched-detail">📞 ${esc(phone)}</div>` : ''}
+      ${v.cost ? `<div class="sched-cost">${esc(v.cost)}${pay ? ' · <span class="pay">Pix ' + esc(pay) + '</span>' : ''}</div>` : ''}
+      ${v.cadence ? `<div class="sched-next">🗓 ${esc(v.cadence)}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -3085,6 +3356,57 @@ function manifestTap() {
 function openManifest() { document.getElementById('manifest-overlay').classList.add('show'); }
 function closeManifest() { document.getElementById('manifest-overlay').classList.remove('show'); }
 
+// ── The crew's own cards ─────────────────────────────────────
+//  Drawn with the Battlefield's frame rather than hotlinked, so they render
+//  offline and match the deck. Drop a real scan at the `art` path below and it
+//  is used in place of the house photograph.
+const CREW_CARDS = {
+  hanna: {
+    name:'Hanna, Ship\'s Navigator', art:'assets/card-hanna.jpg', fallback:'assets/rooms/room_kitchen.jpg',
+    border:'#8FA8C8', title:'rgba(200,214,232,.92)', body:'rgba(236,240,248,.97)',
+    bg:'linear-gradient(180deg,#0A1020,#141C30)',
+    mana:['ms-1','ms-w','ms-u'], type:'Legendary Creature — Human Artificer',
+    rules:'{1}{W}{U}: Return target artifact or enchantment card from your graveyard to your hand.',
+    flavor:'"Nothing is ever truly lost — only mislaid, and waiting to be charted again."',
+    pt:'1/3', role:'Ship\'s Navigator · The Commander Deck',
+  },
+  sisay: {
+    name:'Captain Sisay', art:'assets/card-sisay.jpg', fallback:'assets/rooms/room_deck.jpg',
+    border:'#C9A84C', title:'rgba(226,206,150,.92)', body:'rgba(248,242,224,.97)',
+    bg:'linear-gradient(180deg,#141004,#241C08)',
+    mana:['ms-2','ms-g','ms-w'], type:'Legendary Creature — Human Legend',
+    rules:'{T}: Search your library for a legendary card, reveal that card, and put it into your hand. Then shuffle your library.',
+    flavor:'"Every legendary vessel requires an exceptional crew."',
+    pt:'2/2', role:'At the Helm · The Guest Concierge',
+  },
+};
+
+function openCrewCard(who) {
+  const c = CREW_CARDS[who];
+  if (!c) return;
+  closeManifest();
+  const slot = document.getElementById('crew-card-slot');
+  slot.innerHTML = `
+    <div class="crew-card">
+      <div class="bc-frame" style="border-color:${c.border};background:${c.bg}">
+        <div class="bc-title" style="background:${c.title}">
+          <span>${esc(c.name)}</span>
+          <span class="bc-mana">${c.mana.map(m => `<i class="ms ${m} ms-cost"></i>`).join('')}</span>
+        </div>
+        <div class="bc-art crew-art" style="background-image:url('${c.art}'),url('${c.fallback}')"></div>
+        <div class="bc-typeline" style="background:${c.title}">${esc(c.type)}</div>
+        <div class="bc-text" style="background:${c.body}">
+          <p class="bc-rules">${esc(c.rules)}</p>
+          <p class="bc-flavor">${esc(c.flavor)}</p>
+          <div class="bc-pt">${esc(c.pt)}</div>
+        </div>
+      </div>
+      <div class="crew-role">${esc(c.role)}</div>
+    </div>`;
+  document.getElementById('crew-overlay').classList.add('show');
+}
+function closeCrewCard() { document.getElementById('crew-overlay').classList.remove('show'); }
+
 
 // ── Google Calendar (property account) ───────────────────────
 //  Read-only mirror of thegatheringsilveira@gmail.com, fetched through
@@ -3113,7 +3435,8 @@ async function loadGcal(force) {
     gcalState = 'error: ' + (e.message || e);
   }
   renderGcal();
-  renderCalendar();   // events belong on the grid too
+  renderCalendar();      // events belong on the grid too
+  renderBookingTable();  // …and Active Season is now a view of this feed
   return TG_GCAL;
 }
 
@@ -3175,6 +3498,10 @@ function addProject(){
 function toggleProject(id){saveProjects(getProjects().map(x=>x.id===id?{...x,done:!x.done}:x));renderProjects();}
 function deleteProject(id){saveProjects(getProjects().filter(x=>x.id!==id));renderProjects();}
 function renderProjects(){
+  renderCommandProjects();   // Command shows the top of this list
+  const openCount = getProjects().filter(p=>!p.done).length;
+  const statEl = document.getElementById('stat-open');
+  if (statEl) statEl.textContent = openCount || '—';
   const list=document.getElementById('projects-list'), projects=getProjects();
   if(!projects.length){list.innerHTML='<div class="empty-state">No active sorceries. Cast one above to start tracking.</div>';return;}
   list.innerHTML=projects.map(p=>`
