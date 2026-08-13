@@ -1395,7 +1395,6 @@
 
           <!-- ── BACK ROW (3 cards) ── -->
           <div class="cards-row cards-back-row">
-
             <!-- COMMAND (Gold/Artifact) -->
             <div class="battle-card" onclick="enterSection('overview')"
                  style="--cb:#C9A84C;--cg:rgba(201,168,76,.55)">
@@ -1414,7 +1413,6 @@
               </div>
               <div class="bc-enter-hint">tap · Command</div>
             </div>
-
             <!-- SCRY (Blue/Island) -->
             <div class="battle-card" onclick="enterSection('calendar')"
                  style="--cb:#5BAAD4;--cg:rgba(91,170,212,.55)">
@@ -1436,29 +1434,6 @@
               </div>
               <div class="bc-enter-hint">tap · Scry</div>
             </div>
-
-            <!-- PORTALS (White/Plains) -->
-            <div class="battle-card" onclick="enterSection('links')"
-                 style="--cb:#D4CC88;--cg:rgba(212,204,136,.5)">
-              <div class="bc-frame" style="border-color:#D4CC88;background:linear-gradient(180deg,#1E1C10,#2E2A14)">
-                <div class="bc-title" style="background:rgba(232,228,168,.88)">
-                  <span>Open Portals</span>
-                  <span class="bc-mana">
-                    <i class="ms ms-w ms-cost"></i>
-                    <i class="ms ms-w ms-cost"></i>
-                  </span>
-                </div>
-                <div class="bc-art" style="background-image:url('assets/rooms/room_lavabo.jpg')"></div>
-                <div class="bc-typeline" style="background:rgba(232,228,168,.78)">Enchantment — Quick Links</div>
-                <div class="bc-text" style="background:rgba(252,248,228,.96)">
-                  <p class="bc-rules">Tap: Connect to Airbnb, Instagram, Eufy cameras, or any portal in the network.</p>
-                  <p class="bc-flavor">"Connect to anywhere from atop the hill."</p>
-                  <div class="bc-pt">7</div>
-                </div>
-              </div>
-              <div class="bc-enter-hint">tap · Portals</div>
-            </div>
-
             <!-- CREATURES (Green/Forest) — promoted to top row -->
             <div class="battle-card" onclick="enterSection('guests')"
                  style="--cb:#4A9040;--cg:rgba(74,144,64,.55)">
@@ -1477,15 +1452,6 @@
               </div>
               <div class="bc-enter-hint">tap · Creatures</div>
             </div>
-
-          </div><!-- /back row -->
-
-          <!-- Row divider -->
-          <div class="mat-divider"></div>
-
-          <!-- ── FRONT ROW (3 cards) ── -->
-          <div class="cards-row cards-front-row">
-
             <!-- UPKEEP (Red/Mountain) -->
             <div class="battle-card" onclick="enterSection('housekeeping')"
                  style="--cb:#D05840;--cg:rgba(208,88,64,.55)">
@@ -1504,9 +1470,13 @@
               </div>
               <div class="bc-enter-hint">tap · Upkeep</div>
             </div>
+          </div><!-- /back row -->
 
-            <!-- Artifacts was folded into Upkeep — same crew, one page. -->
+          <!-- Row divider -->
+          <div class="mat-divider"></div>
 
+          <!-- ── FRONT ROW (3 cards) ── -->
+          <div class="cards-row cards-front-row">
             <!-- SORCERIES (Black/Swamp) -->
             <div class="battle-card" onclick="enterSection('projects')"
                  style="--cb:#7858A8;--cg:rgba(120,88,168,.55)">
@@ -1528,7 +1498,27 @@
               </div>
               <div class="bc-enter-hint">tap · Sorceries</div>
             </div>
-
+            <!-- PORTALS (White/Plains) -->
+            <div class="battle-card" onclick="enterSection('links')"
+                 style="--cb:#D4CC88;--cg:rgba(212,204,136,.5)">
+              <div class="bc-frame" style="border-color:#D4CC88;background:linear-gradient(180deg,#1E1C10,#2E2A14)">
+                <div class="bc-title" style="background:rgba(232,228,168,.88)">
+                  <span>Open Portals</span>
+                  <span class="bc-mana">
+                    <i class="ms ms-w ms-cost"></i>
+                    <i class="ms ms-w ms-cost"></i>
+                  </span>
+                </div>
+                <div class="bc-art" style="background-image:url('assets/rooms/room_lavabo.jpg')"></div>
+                <div class="bc-typeline" style="background:rgba(232,228,168,.78)">Enchantment — Quick Links</div>
+                <div class="bc-text" style="background:rgba(252,248,228,.96)">
+                  <p class="bc-rules">Tap: Connect to Airbnb, Instagram, Eufy cameras, or any portal in the network.</p>
+                  <p class="bc-flavor">"Connect to anywhere from atop the hill."</p>
+                  <div class="bc-pt">7</div>
+                </div>
+              </div>
+              <div class="bc-enter-hint">tap · Portals</div>
+            </div>
             <!-- ARTIFACTS (Colorless) — the Garopaba Guide deck builder.
                  Was Environment in forest green; a deck of cards you tap and
                  publish reads as an artifact, not a land. -->
@@ -1549,7 +1539,6 @@
               </div>
               <div class="bc-enter-hint">tap · Artifacts</div>
             </div>
-
           </div><!-- /front row -->
 
         </div><!-- /cards-rows-wrap -->
