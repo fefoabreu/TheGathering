@@ -274,15 +274,13 @@
 
 
     /* ══ THE WEATHERLIGHT MANIFEST ═══════════════════════════════ */
-    /* Wider, and two columns on a desktop, so the Manifest reads without a
-       long scroll. It is a broadside, not a receipt. */
-    /* `.card-edit-modal` sets a narrower width and is declared further down the
-       file, so at equal specificity it won. Qualified so this one sticks. */
-    .card-edit-modal.manifest-modal { width:min(1080px,96vw); max-height:90vh; overflow-y:auto; line-height:1.8; }
+    /* Sized by the crew tiles, not by the prose: two real cards side by side
+       at 300px each, plus the gap and the modal's own padding. Scrolling the
+       story is fine — cramping the cards is not.
+       `.card-edit-modal` is declared further down the file, so at equal
+       specificity it won; qualified so this width sticks. */
+    .card-edit-modal.manifest-modal { width:min(748px,96vw); max-height:90vh; overflow-y:auto; line-height:1.8; }
     .manifest-modal p { font-size:.92rem; color:var(--text); margin-bottom:1rem; }
-    .manifest-modal .mf-cols { columns:2; column-gap:2.6rem; }
-    .manifest-modal .mf-cols p { break-inside:avoid; }
-    @media(max-width:860px){ .manifest-modal .mf-cols { columns:1; } }
     .mf-doorway {
       margin-top:2rem; padding-top:1.4rem; border-top:1px solid var(--border);
       display:flex; flex-direction:column; align-items:center; gap:.35rem; text-align:center;
@@ -307,27 +305,73 @@
       font-family:'Cinzel',serif; font-size:1rem !important; color:var(--gold) !important;
       text-align:center; margin:1.4rem 0 !important; line-height:1.7;
     }
-    .mf-crew {
-      display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.4rem 0;
-    }
-    /* Each crew member is a button now — tapping one draws her actual card. */
+    /*  Each crew member is a card-shaped tile that flips to her actual card —
+        same idiom as the guest-side tiles. The tile carries the card's true
+        proportions (1000×1396) so the reveal fills the face exactly rather
+        than letterboxing inside a text box. */
+    .mf-crew { display:grid; grid-template-columns:1fr 1fr; gap:1.4rem; margin:1.6rem 0; }
     .mf-member {
-      display:block; width:100%; text-align:left; cursor:pointer; font:inherit;
-      padding:1rem; border-radius:var(--r);
-      background:rgba(255,255,255,.03); border:1px solid var(--border);
-      transition:border-color .3s, background .3s, transform .3s;
+      perspective:1500px; cursor:pointer; aspect-ratio:1000/1396;
+      background:none; border:0; padding:0; font:inherit; text-align:left;
+      -webkit-tap-highlight-color:transparent;
     }
-    .mf-member:hover {
-      border-color:rgba(201,168,76,.5); background:rgba(201,168,76,.05);
-      transform:translateY(-2px);
+    .mf-inner {
+      position:relative; width:100%; height:100%; transform-style:preserve-3d;
+      transition:transform .78s cubic-bezier(.23,1,.32,1);
     }
-    .mf-member p { font-size:.85rem !important; margin:0 !important; color:var(--text-dim) !important; }
+    .mf-member.flipped .mf-inner { transform:rotateY(180deg); }
+    .mf-face {
+      position:absolute; inset:0; border-radius:14px; overflow:hidden;
+      backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    }
+    .mf-front {
+      display:flex; flex-direction:column; padding:1.15rem 1.1rem;
+      background:linear-gradient(165deg,rgba(255,255,255,.055),rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      transition:border-color .35s, box-shadow .35s;
+    }
+    .mf-member:hover .mf-front {
+      border-color:rgba(201,168,76,.5);
+      box-shadow:0 12px 34px rgba(0,0,0,.5), 0 0 22px rgba(201,168,76,.12);
+    }
+    .mf-member p { font-size:.82rem !important; line-height:1.62 !important; margin:0 !important; color:var(--text-dim) !important; }
+    /* Real cards carry a faint set watermark behind the text box; the tiles
+       borrow the idea so the space below the copy reads as deliberate. */
+    .mf-front::after {
+      content:attr(data-mark); position:absolute; left:50%; bottom:16%;
+      transform:translateX(-50%); font-size:5.4rem; line-height:1;
+      opacity:.06; filter:grayscale(1); pointer-events:none; user-select:none;
+    }
     .mf-tap {
-      display:block; margin-top:.7rem; font-family:'Cinzel',serif;
+      position:relative; z-index:1;
+      display:block; margin-top:auto; padding-top:.8rem; font-family:'Cinzel',serif;
       font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
-      color:var(--gold); opacity:.55; transition:opacity .3s;
+      color:var(--gold); opacity:.6; transition:opacity .3s;
     }
     .mf-member:hover .mf-tap { opacity:1; }
+
+    /* The reveal. Card fills the face; the sheen sweeps once on the flip. */
+    .mf-back { transform:rotateY(180deg); background:#05070C; }
+    .mf-back img { width:100%; height:100%; object-fit:cover; display:block; }
+    .mf-back::after {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.42) 47%,
+                                 rgba(255,255,255,.14) 55%, transparent 70%);
+      transform:translateX(-130%); opacity:0;
+    }
+    .mf-member.flipped .mf-back::after { animation:mf-sheen 1.15s ease-out .34s 1; }
+    @keyframes mf-sheen {
+      0%   { transform:translateX(-130%); opacity:0; }
+      18%  { opacity:1; }
+      100% { transform:translateX(130%);  opacity:0; }
+    }
+    .mf-member.flipped .mf-back {
+      box-shadow:0 16px 44px rgba(0,0,0,.6), 0 0 26px rgba(201,168,76,.3);
+    }
+    @media(prefers-reduced-motion: reduce){
+      .mf-inner { transition:none; }
+      .mf-member.flipped .mf-back::after { animation:none; }
+    }
     .mf-who {
       font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:.12em;
       color:var(--gold); margin-bottom:.55rem;
@@ -341,21 +385,6 @@
     .mf-sig span { display:block; margin-top:.5rem; font-size:.66rem;
       color:var(--text-mute); font-style:italic; letter-spacing:.06em; }
     @media(max-width:760px){ .mf-crew { grid-template-columns:1fr; } .mf-title { font-size:1.4rem; } }
-
-    /* ══ CREW CARD ════════════════════════════════════════════════ */
-    .crew-modal {
-      position:relative; width:min(420px,92vw);
-      display:flex; flex-direction:column; align-items:center; gap:1.2rem;
-    }
-    .crew-card { width:100%; font-size:2.1rem; }   /* the bc-* em anchor */
-    .crew-art { height:6.4em; }
-    .crew-role {
-      margin-top:.9rem; text-align:center; font-family:'Cinzel',serif;
-      font-size:.68rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold);
-    }
-    .crew-nav { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
-    .crew-modal .cem-close { top:-2.6rem; right:0; }
-    @media(max-width:520px){ .crew-card { font-size:1.6rem; } }
 
     /* ══ COMMAND — key projects strip ═════════════════════════════ */
     .cmd-proj {
@@ -1887,8 +1916,6 @@
     <div class="mf-eyebrow">The Weatherlight Manifest</div>
     <h2 class="mf-title">A New Horizon</h2>
     <p class="mf-lede">Every legendary vessel requires an exceptional crew.</p>
-
-    <div class="mf-cols">
       <p>For years, Captain Sisay commanded the <em>Weatherlight</em>, navigating the most
       treacherous and magnificent corners of the multiverse. By her side was Hanna, the
       Ship's Navigator — a brilliant artificer who understood the heartbeat of the ship's
@@ -1901,39 +1928,52 @@
       <p class="mf-beat">At the top of the Silveira mountains, <em>where the mountain meets
       the sea</em>, they found TheGathering Silveira.</p>
 
-      <p>To ensure this haven operates flawlessly, the old crew has taken over
-      <strong>The Commander Deck</strong>.</p>
-    </div>
+    <p>To ensure this haven operates flawlessly, the old crew has taken over
+    <strong>The Commander Deck</strong>.</p>
 
     <div class="mf-crew">
-      <button class="mf-member" onclick="openCrewCard('hanna')">
-        <div class="mf-who">⚓ Hanna · Ship's Navigator</div>
-        <p>She has descended into the engine room once again. As the architect of our
-        backend she meticulously manages the Commander's Deck — every glowing photo,
-        every curated local card, every seamless connection to the Sonos and Samsung
-        arrays flows through her systems. She is the maker, ensuring the structural
-        integrity of the magic we offer our guests.</p>
-        <span class="mf-tap">✦ Tap to draw her card</span>
+      <button class="mf-member" onclick="this.classList.toggle('flipped')"
+              aria-label="Hanna, Ship's Navigator — tap to draw her card">
+        <div class="mf-inner">
+          <div class="mf-face mf-front" data-mark="⚓">
+            <div class="mf-who">⚓ Hanna · Ship's Navigator</div>
+            <p>She has descended into the engine room once again. As the architect of
+            our backend she meticulously manages the Commander's Deck — every glowing
+            photo, every curated local card, every seamless connection to the Sonos
+            and Samsung arrays flows through her systems. She is the maker, ensuring
+            the structural integrity of the magic we offer our guests.</p>
+            <span class="mf-tap">✦ Tap to draw her card</span>
+          </div>
+          <div class="mf-face mf-back">
+            <img data-src="assets/card-hanna.webp" alt="Hanna, Ship's Navigator">
+          </div>
+        </div>
       </button>
-      <button class="mf-member" onclick="openCrewCard('sisay')">
-        <div class="mf-who">🧭 Captain Sisay · At the Helm</div>
-        <p>She has taken her rightful place at the frontend. Worldly, charismatic and
-        fiercely protective of her passengers, Sisay is our guest-facing concierge.
-        A session at Surfland. The best burger in Garopaba. The projector that refuses
-        to cooperate. She doesn't merely answer — she tutors the exact experience you
-        need, dealing it out like a perfectly timed hand of cards.</p>
-        <span class="mf-tap">✦ Tap to draw her card</span>
+      <button class="mf-member" onclick="this.classList.toggle('flipped')"
+              aria-label="Captain Sisay — tap to draw her card">
+        <div class="mf-inner">
+          <div class="mf-face mf-front" data-mark="🧭">
+            <div class="mf-who">🧭 Captain Sisay · At the Helm</div>
+            <p>She has taken her rightful place at the frontend. Worldly, charismatic
+            and fiercely protective of her passengers, Sisay is our guest-facing
+            concierge. A session at Surfland. The best burger in Garopaba. The
+            projector that refuses to cooperate. She doesn't merely answer — she
+            tutors the exact experience you need, dealing it out like a perfectly
+            timed hand of cards.</p>
+            <span class="mf-tap">✦ Tap to draw her card</span>
+          </div>
+          <div class="mf-face mf-back">
+            <img data-src="assets/card-sisay.webp" alt="Sisay, Weatherlight Captain">
+          </div>
+        </div>
       </button>
     </div>
-
-    <div class="mf-cols">
       <p>Their paths crossed long ago in the depths of the lore, bound by loyalty and a
       shared mission to guide others safely through the journey. Sisay commanded the
       legendary flying skyship; Hanna was her hand-picked navigator. They served
       side by side, travelled the multiverse together, and were closer than crew.
       Sisay relied on Hanna to map the routes, keep the artifacts aloft and solve the
-      logistical puzzles, while Sisay held the leadership, the strategy and the crew.</p>
-    </div>
+    logistical puzzles, while Sisay held the leadership, the strategy and the crew.</p>
 
     <p class="mf-close">Now they have joined TheGathering.<br>
     <strong>Welcome aboard. The Navigator has charted the course, and the Captain is
@@ -1941,21 +1981,6 @@
 
     <div class="mf-sig">✦ Fêfo · Pipo · Zé ✦<br>
       <span>"One will corrupt, two will divide. With three there is balance."</span></div>
-  </div>
-</div>
-
-<!-- CREW CARD — the two cards the Manifest is built on, drawn full size.
-     Uses the same frame the Battlefield uses. If real card scans are dropped in
-     at assets/card-hanna.jpg / assets/card-sisay.jpg they are shown instead. -->
-<div class="card-edit-overlay" id="crew-overlay" onclick="if(event.target===this)closeCrewCard()">
-  <div class="crew-modal">
-    <button class="cem-close" onclick="closeCrewCard()">✕</button>
-    <div id="crew-card-slot"></div>
-    <div class="crew-nav">
-      <button class="btn-sm btn-ghost" onclick="openCrewCard('hanna')">⚓ Hanna</button>
-      <button class="btn-sm btn-ghost" onclick="openCrewCard('sisay')">🧭 Sisay</button>
-      <button class="btn-sm btn-gold" onclick="closeCrewCard();openManifest()">✦ Back to the Manifest</button>
-    </div>
   </div>
 </div>
 
@@ -3384,59 +3409,17 @@ function manifestTap() {
   mfTimer = setTimeout(() => { mfTaps = 0; }, 900);
   if (mfTaps >= 3) { mfTaps = 0; openManifest(); }
 }
-function openManifest() { document.getElementById('manifest-overlay').classList.add('show'); }
+function openManifest() {
+  // The crew cards are ~400KB. They are deferred to here rather than shipped on
+  // every page load — and `loading="lazy"` cannot do this job, because a face
+  // rotated away from the viewer never counts as approaching the viewport.
+  document.querySelectorAll('.mf-back img[data-src]').forEach(img => {
+    img.src = img.dataset.src; img.removeAttribute('data-src');
+  });
+  document.getElementById('manifest-overlay').classList.add('show');
+}
 function closeManifest() { document.getElementById('manifest-overlay').classList.remove('show'); }
 
-// ── The crew's own cards ─────────────────────────────────────
-//  Drawn with the Battlefield's frame rather than hotlinked, so they render
-//  offline and match the deck. Drop a real scan at the `art` path below and it
-//  is used in place of the house photograph.
-const CREW_CARDS = {
-  hanna: {
-    name:'Hanna, Ship\'s Navigator', art:'assets/card-hanna.jpg', fallback:'assets/rooms/room_kitchen.jpg',
-    border:'#8FA8C8', title:'rgba(200,214,232,.92)', body:'rgba(236,240,248,.97)',
-    bg:'linear-gradient(180deg,#0A1020,#141C30)',
-    mana:['ms-1','ms-w','ms-u'], type:'Legendary Creature — Human Artificer',
-    rules:'{1}{W}{U}: Return target artifact or enchantment card from your graveyard to your hand.',
-    flavor:'"Nothing is ever truly lost — only mislaid, and waiting to be charted again."',
-    pt:'1/3', role:'Ship\'s Navigator · The Commander Deck',
-  },
-  sisay: {
-    name:'Captain Sisay', art:'assets/card-sisay.jpg', fallback:'assets/rooms/room_deck.jpg',
-    border:'#C9A84C', title:'rgba(226,206,150,.92)', body:'rgba(248,242,224,.97)',
-    bg:'linear-gradient(180deg,#141004,#241C08)',
-    mana:['ms-2','ms-g','ms-w'], type:'Legendary Creature — Human Legend',
-    rules:'{T}: Search your library for a legendary card, reveal that card, and put it into your hand. Then shuffle your library.',
-    flavor:'"Every legendary vessel requires an exceptional crew."',
-    pt:'2/2', role:'At the Helm · The Guest Concierge',
-  },
-};
-
-function openCrewCard(who) {
-  const c = CREW_CARDS[who];
-  if (!c) return;
-  closeManifest();
-  const slot = document.getElementById('crew-card-slot');
-  slot.innerHTML = `
-    <div class="crew-card">
-      <div class="bc-frame" style="border-color:${c.border};background:${c.bg}">
-        <div class="bc-title" style="background:${c.title}">
-          <span>${esc(c.name)}</span>
-          <span class="bc-mana">${c.mana.map(m => `<i class="ms ${m} ms-cost"></i>`).join('')}</span>
-        </div>
-        <div class="bc-art crew-art" style="background-image:url('${c.art}'),url('${c.fallback}')"></div>
-        <div class="bc-typeline" style="background:${c.title}">${esc(c.type)}</div>
-        <div class="bc-text" style="background:${c.body}">
-          <p class="bc-rules">${esc(c.rules)}</p>
-          <p class="bc-flavor">${esc(c.flavor)}</p>
-          <div class="bc-pt">${esc(c.pt)}</div>
-        </div>
-      </div>
-      <div class="crew-role">${esc(c.role)}</div>
-    </div>`;
-  document.getElementById('crew-overlay').classList.add('show');
-}
-function closeCrewCard() { document.getElementById('crew-overlay').classList.remove('show'); }
 
 
 // ── Google Calendar (property account) ───────────────────────

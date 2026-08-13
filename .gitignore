@@ -5,3 +5,8 @@ assets/rooms/all_*.jpg
 # Hanna's property knowledge pack, distilled from the owners' Drive folder.
 # It lives in Cloudflare KV, never in this repo — the repo is public.
 worker/knowledge.local.json
+
+# Raw card uploads. Only the processed assets/card-*.webp are committed —
+# rebuild them with tools/build-crew-cards.py
+assets/Hanna MTG Card
+assets/Sisay MTG Card
