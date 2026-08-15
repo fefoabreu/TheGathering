@@ -233,6 +233,37 @@
     .btn-outline-light { background:transparent; color:var(--text-light); padding:.9rem 2.2rem; border:1.5px solid rgba(249,244,236,.45); }
     .btn-outline-light:hover { border-color:var(--text-light); background:rgba(249,244,236,.1); transform:translateY(-2px); }
 
+    /* ══ HOUSE SOUNDTRACK ═════════════════════════════════════════
+       A signature touch, so it gets its own strip under the amenities
+       rather than a chip in the grid. Links are injected from
+       TG_SOUNDTRACK — the same object both agents read. */
+    .track-strip {
+      margin-top:2.6rem; padding:1.6rem 1.8rem; border-radius:var(--r);
+      display:flex; align-items:center; gap:1.6rem; flex-wrap:wrap;
+      background:linear-gradient(110deg, rgba(224,120,64,.10), rgba(196,80,112,.08));
+      border:1px solid rgba(224,120,64,.22);
+    }
+    .track-mark { font-size:1.9rem; line-height:1; flex-shrink:0; }
+    .track-copy { flex:1; min-width:220px; }
+    .track-name {
+      font-family:'Cinzel',serif; font-size:1.02rem; color:var(--ocean-deep);
+      letter-spacing:.03em; margin-bottom:.2rem;
+    }
+    .track-sub { font-size:.87rem; color:var(--text-mid); line-height:1.6; }
+    .track-links { display:flex; gap:.6rem; flex-wrap:wrap; flex-shrink:0; }
+    .track-btn {
+      display:inline-flex; align-items:center; gap:.45rem; text-decoration:none;
+      padding:.62rem 1.15rem; border-radius:50px; font-size:.84rem; font-weight:600;
+      background:#fff; color:var(--ocean-deep); border:1px solid rgba(13,33,55,.14);
+      box-shadow:var(--sh-sm); transition:var(--ease);
+    }
+    .track-btn:hover { transform:translateY(-2px); box-shadow:var(--sh-md); border-color:var(--sunset); }
+    @media(max-width:650px){
+      .track-strip { padding:1.2rem; gap:1rem; }
+      .track-links { width:100%; }
+      .track-btn { flex:1; justify-content:center; }
+    }
+
     .scroll-line {
       position:absolute; bottom:110px; left:50%; transform:translateX(-50%);
       z-index:4; display:flex; flex-direction:column; align-items:center; gap:.5rem;
@@ -2060,6 +2091,18 @@
       <div class="chip"><span class="ci">🌊</span> Garopaba Bay View</div>
       <div class="chip"><span class="ci">🎲</span> Game night &amp; Movie Night</div>
     </div>
+    <!-- Populated from TG_SOUNDTRACK so the site, Hanna and Sisay never drift apart -->
+    <div class="track-strip fu" id="track-strip" hidden>
+      <span class="track-mark">🎧</span>
+      <div class="track-copy">
+        <div class="track-name" id="track-name"></div>
+        <div class="track-sub" id="track-sub"></div>
+      </div>
+      <div class="track-links">
+        <a class="track-btn" id="track-spotify" target="_blank" rel="noopener">Spotify</a>
+        <a class="track-btn" id="track-apple" target="_blank" rel="noopener">Apple Music</a>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2367,6 +2410,8 @@
     "🌿 Forest View": "🌿 Vista da Mata",
     "🌴 Suite Floresta": "🌴 Suíte Floresta",
     "Flex Bunks · 13.6 m² · tap to go back": "Beliches Flexíveis · 13,6 m² · toque para voltar",
+    "The house's official trilha sonora, curated by the three owners — MPB and Brazilian sounds with sunset beach-house energy, meant to match the place.":
+      "A trilha sonora oficial da casa, garimpada pelos três donos — MPB e som brasileiro com energia de fim de tarde na praia, feita para combinar com o lugar.",
     "The House": "A Casa",
     "Every Detail,": "Cada Detalhe,",
     "Considered.": "Pensado.",
@@ -2524,11 +2569,30 @@ let SISAY_MANUAL = {
   checkin:   'Managed by Estar Garopaba. They send check-in details, door codes and arrival instructions before your stay.',
 };
 
+// The soundtrack is DATA, shared with Hanna via firebase-config.js rather than
+// written into either system prompt — one definition, two agents.
+if (typeof TG_SOUNDTRACK !== 'undefined') SISAY_MANUAL.soundtrack = TG_SOUNDTRACK;
+
+// Paint the soundtrack strip from the same object. Hidden if unset, so the
+// section never renders an empty box.
+(function renderSoundtrack() {
+  if (typeof TG_SOUNDTRACK === 'undefined' || !TG_SOUNDTRACK.spotify) return;
+  const el = document.getElementById('track-strip');
+  if (!el) return;
+  document.getElementById('track-name').textContent = TG_SOUNDTRACK.name;
+  document.getElementById('track-sub').textContent  = TG_SOUNDTRACK.what;
+  document.getElementById('track-spotify').href     = TG_SOUNDTRACK.spotify;
+  document.getElementById('track-apple').href       = TG_SOUNDTRACK.apple;
+  el.hidden = false;
+})();
+
 const SISAY_SYSTEM = `You are **Sisay**, host and concierge of TheGathering Silveira 🌊🌄 — a hillside house at Praia da Silveira, Garopaba, Santa Catarina, Brazil, "where the mountain meets the sea".
 
 You once commanded the Weatherlight across the multiverse. You now keep this house, and you are fiercely protective of your passengers. Reply in the guest's language — English or Portuguese — deciding per message.
 
 **Your voice: sunlit, not stiff.** You are genuinely delighted people are here, and it shows. Warm, playful, a little conspiratorial — the friend who lives here and knows which table to ask for. Lead with enthusiasm for the *specific* thing, never generic hospitality filler: "Arca at golden hour, and ask for the deck" beats "There are many wonderful options." A well-placed Brazilian word (*praia*, *pousada*, *tudo bem*) is welcome; an emoji now and then is fine; a wall of them is not.
+
+**The soundtrack.** The house has its own trilha sonora — *TheGathering 🌊🌄*, a playlist the owners curated to match this place. Call get_house_manual with topic 'soundtrack' for the Spotify and Apple Music links. Offer it when it actually fits: welcoming someone in, anything about music or the Sonos, sunset on the deck, a pool afternoon, or 'what should we put on?'. Ask which platform they use, or just give both. It is a signature touch of the house — share it with pride, once. Never plug it twice.
 
 **Sell the place, honestly.** Everything here is genuinely good — the point break at dawn, the dunes at Siriú, the kitchen at sunset. Say why something is special, in one concrete detail rather than three adjectives.
 
@@ -2544,9 +2608,9 @@ const SISAY_TOOLS = [
   { name:'get_guide_cards', description:'The curated Garopaba Guide — restaurants, bars, coffee, surf, adventure. Optionally filter by category.',
     input_schema:{ type:'object', properties:{ category:{ type:'string',
       description:'coffee, burgers, sushi, cowork, poke, happy-hour, sandboarding, acougue, pizza' } } } },
-  { name:'get_house_manual', description:'How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity and rules.',
+  { name:'get_house_manual', description:'How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity, rules, and the house soundtrack.',
     input_schema:{ type:'object', properties:{ topic:{ type:'string',
-      description:'tv, projector, sonos, pool, wifi, house, checkin' } } } },
+      description:'tv, projector, sonos, pool, wifi, house, checkin, soundtrack' } } } },
   { name:'suggest_experience', description:'Pick the best guide cards for what the guest is after and reveal them. Prefer this over describing places in prose.',
     input_schema:{ type:'object', required:['ids'], properties:{
       ids:{ type:'array', items:{type:'string'}, description:'Card ids from get_guide_cards, best first, at most three.' } } } },

@@ -46,6 +46,26 @@ const TG_DECISIONS_COLL = "decisions";
 const TG_SESSIONS_COLL  = "agentSessions";
 
 // ──────────────────────────────────────────────────────────────
+//  The house soundtrack
+// ──────────────────────────────────────────────────────────────
+//  Defined once, here, because this file is the only thing both the
+//  guest site and the owners' portal already load — so Hanna and Sisay
+//  read the same object rather than each carrying its own copy of the
+//  links. It reaches the agents as DATA: merged into Hanna's
+//  get_house_info and Sisay's house manual at read time, not written
+//  into either system prompt. Change the links here and both agents,
+//  and the guest page, follow.
+//
+//  Public playlists — nothing secret, safe in the bundle.
+// ──────────────────────────────────────────────────────────────
+const TG_SOUNDTRACK = {
+  name:    "TheGathering 🌊🌄",
+  what:    "The house's official trilha sonora, curated by the three owners — MPB and Brazilian sounds with sunset beach-house energy, meant to match the place.",
+  spotify: "https://open.spotify.com/playlist/6p1z0izahO4LRsymqqhA9N",
+  apple:   "https://music.apple.com/us/playlist/thegathering/pl.u-55D66ZKsVADkDz",
+};
+
+// ──────────────────────────────────────────────────────────────
 //  Owner sign-in
 // ──────────────────────────────────────────────────────────────
 //  Phase 1 is deliberately "Auth-Lite": all three owners share one
