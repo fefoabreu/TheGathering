@@ -93,11 +93,23 @@ const TG_SOUNDTRACK = {
 //  Only these addresses may enter. Enforced in the browser for the UX
 //  and AGAIN in the Worker, which is the boundary that actually counts.
 // ──────────────────────────────────────────────────────────────
+//  Owner decision (Aug 16): ONE shared account, not three personal ones.
+//  All three owners sign in as the house account, the same way they already
+//  share the Google Doc.
+//
+//  ⚠ Adding an address here is HALF the job. Google's OAuth consent screen is
+//  in Testing mode, so an address must ALSO be listed as a test user there or
+//  Google blocks it before Firebase ever sees it — the symptom is "Access
+//  blocked: has not completed the Google verification process", which looks
+//  nothing like an allowlist problem. Change both, or neither.
+//  Console → APIs & Services → OAuth consent screen → Test users.
 const TG_OWNER_EMAILS = [
-  "thegatheringsilveira@gmail.com",   // the standard — shared by all three
-  "fefoabreu@gmail.com",
-  "piero.cabral@gmail.com",
-  "wilayres@gmail.com",
+  "thegatheringsilveira@gmail.com",   // the standard, shared by all three
+  // Personal accounts are deliberately NOT here. To add one, add it as a test
+  // user on the consent screen first, then uncomment:
+  // "fefoabreu@gmail.com",
+  // "piero.cabral@gmail.com",
+  // "wilayres@gmail.com",
 ];
 
 // Read-only, all of them. Hanna never writes to the Drive, the calendar or

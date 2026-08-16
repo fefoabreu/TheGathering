@@ -91,11 +91,12 @@ async function verifyFirebaseToken(token, apiKey) {
  * Kept as a var so it is a config change, not a code change. It mirrors
  * TG_OWNER_EMAILS in firebase-config.js; the two must agree.
  */
+// One shared house account, per the owners' decision. Must agree with
+// TG_OWNER_EMAILS in firebase-config.js AND with the consent screen's test
+// users — an address missing from any of the three simply will not work.
+// Override without a redeploy by setting OWNER_EMAILS in wrangler.toml.
 const OWNER_EMAILS = [
   'thegatheringsilveira@gmail.com',
-  'fefoabreu@gmail.com',
-  'piero.cabral@gmail.com',
-  'wilayres@gmail.com',
 ];
 
 function isOwner(email, env) {
