@@ -555,7 +555,10 @@
     }
     .hanna-astrolabe:hover .ha-ring { animation-duration:12s; }
     @media (prefers-reduced-motion: reduce) {
-      .ha-ring, .ha-arm { animation:none; }
+      .ha-ring, .ha-arm, .ht-ring, .ht-arm { animation:none; }
+      /* Keep a steady glow so "thinking" still reads without motion. */
+      .hanna-typing svg { animation:none; filter:drop-shadow(0 0 7px rgba(201,168,76,.6)); }
+      .ht-word { animation:none; opacity:.85; }
     }
     @media(max-width:650px){
       .hanna-astrolabe { right:1rem; bottom:1rem; width:88px; }
@@ -698,14 +701,31 @@
       padding:.18rem .45rem; border-radius:10px; color:var(--text-dim);
       background:rgba(255,255,255,.05); border:1px solid var(--border);
     }
-    .hanna-typing { display:none; gap:5px; padding:0 1.2rem .4rem; align-items:center; height:16px; flex-shrink:0; }
-    .hanna-typing span {
-      width:6px; height:6px; border-radius:50%; background:var(--gold); opacity:.5;
-      animation:h-dot 1.2s infinite ease-in-out;
+    /*  Hanna doesn't get three bouncing dots — she gets her own astrolabe,
+        the same instrument you summon her from, lit up and taking a bearing.
+        Sisay keeps the dots: she is a host, not a navigator. */
+    .hanna-typing {
+      display:none; gap:.55rem; padding:0 1.2rem .5rem;
+      align-items:center; flex-shrink:0;
     }
-    .hanna-typing span:nth-child(2){ animation-delay:.18s; }
-    .hanna-typing span:nth-child(3){ animation-delay:.36s; }
-    @keyframes h-dot { 0%,60%,100%{transform:translateY(0);opacity:.35} 30%{transform:translateY(-5px);opacity:1} }
+    .hanna-typing svg {
+      width:26px; height:26px; display:block;
+      animation:ht-glow 2s ease-in-out infinite;
+    }
+    .ht-ring { transform-origin:50% 50%; animation:ht-turn 3.4s linear infinite; }
+    .ht-arm  { transform-origin:50% 50%; animation:ht-sweep 2.6s cubic-bezier(.4,0,.5,1) infinite; }
+    .ht-word {
+      font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.15em;
+      text-transform:uppercase; color:var(--gold);
+      animation:ht-fade 2s ease-in-out infinite;
+    }
+    @keyframes ht-turn  { to { transform:rotate(360deg); } }
+    @keyframes ht-sweep { 0%,100%{ transform:rotate(-34deg) } 50%{ transform:rotate(34deg) } }
+    @keyframes ht-glow {
+      0%,100% { filter:drop-shadow(0 0 3px rgba(201,168,76,.3)); }
+      50%     { filter:drop-shadow(0 0 10px rgba(201,168,76,.85)); }
+    }
+    @keyframes ht-fade { 0%,100%{ opacity:.45 } 50%{ opacity:.95 } }
 
     /* One scrolling row, not a wrapping block. Wrapped chips grow downward
        and take the room the log needs. */
@@ -714,13 +734,21 @@
       padding:0 1.1rem .65rem; overflow-x:auto; scrollbar-width:none;
     }
     .hanna-suggest::-webkit-scrollbar { display:none; }
-    .hanna-suggest .h-chip { flex-shrink:0; }
-    .h-chip {
+    /*  Style by POSITION, not by class. The static openers carry .h-chip, but
+        the contextual chips come from tgPaintChips(), which emits bare
+        <button> elements — those fell through to the browser's default button
+        styling and rendered as white pills in a navy panel. Sisay never had
+        the bug because her rule was a descendant selector all along. */
+    .hanna-suggest .h-chip, .hanna-suggest button {
+      flex-shrink:0; font-family:inherit;
       padding:.4rem .75rem; border-radius:18px; cursor:pointer; font-size:.72rem;
       background:rgba(255,255,255,.04); border:1px solid var(--border);
-      color:var(--text-dim); transition:all .25s;
+      color:var(--text-dim); transition:all .25s; white-space:nowrap;
     }
-    .h-chip:hover { border-color:rgba(201,168,76,.45); color:var(--text); }
+    .hanna-suggest .h-chip:hover, .hanna-suggest button:hover {
+      border-color:rgba(201,168,76,.45); color:var(--text);
+      background:rgba(201,168,76,.1);
+    }
 
     .hanna-input-row {
       display:flex; gap:.6rem; align-items:flex-end; flex-shrink:0;
@@ -1931,7 +1959,36 @@
   </div>
 
   <div class="hanna-log" id="hanna-log"></div>
-  <div class="hanna-typing" id="hanna-typing"><span></span><span></span><span></span></div>
+  <!-- Her astrolabe, in miniature, taking a bearing while she thinks.
+       Own gradient ids — the FAB's hg-* are already claimed on this page. -->
+  <div class="hanna-typing" id="hanna-typing">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <radialGradient id="ht-face" cx="38%" cy="32%">
+          <stop offset="0%"   stop-color="#1B2740"/>
+          <stop offset="70%"  stop-color="#0C1220"/>
+          <stop offset="100%" stop-color="#070B14"/>
+        </radialGradient>
+        <linearGradient id="ht-brass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#F0DFA8"/>
+          <stop offset="45%"  stop-color="#C9A84C"/>
+          <stop offset="100%" stop-color="#8A6E2A"/>
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="45" fill="url(#ht-face)" stroke="url(#ht-brass)" stroke-width="4"/>
+      <g class="ht-ring" stroke="rgba(201,168,76,.8)" stroke-width="4" stroke-linecap="round">
+        <line x1="50" y1="8" x2="50" y2="19"/><line x1="50" y1="81" x2="50" y2="92"/>
+        <line x1="8" y1="50" x2="19" y2="50"/><line x1="81" y1="50" x2="92" y2="50"/>
+      </g>
+      <g class="ht-arm">
+        <line x1="50" y1="50" x2="50" y2="20" stroke="url(#ht-brass)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="50" cy="20" r="5" fill="none" stroke="url(#ht-brass)" stroke-width="3.5"/>
+      </g>
+      <circle cx="50" cy="50" r="7" fill="#5BAAD4"/>
+      <circle cx="50" cy="50" r="7" fill="none" stroke="url(#ht-brass)" stroke-width="3"/>
+    </svg>
+    <span class="ht-word">Charting</span>
+  </div>
 
   <div class="hanna-suggest" id="hanna-chips"></div>
 
@@ -3441,6 +3498,12 @@ const HANNA_SYSTEM = `You are **Hanna, Ship's Navigator** — the business manag
 
 You are an artificer and a navigator, not a captain: you chart the course and keep the records straight, but the owners decide. You are concise, warm and action-oriented — a program manager, not a chatbot.
 
+**Answer first, and stop.** You live in a narrow panel, often on a phone. Open with the answer itself — the date, the name, the number, the recommendation — in one or two sentences. Six short lines is your ceiling for an ordinary question. When there is genuinely more to say, do not pre-emptively write it: end with the offer and let offer_choices carry it ("Want the full clause?", "Shall I draft the reply?"). A complete answer they have to scroll is worse than a short one they can act on.
+
+**Never narrate the search.** Which tools you tried, what came back empty, which place you looked first — that is your working, not their answer, and they did not ask for it. Run the tools silently and report only the finding. "No vendor on file, nothing in mail, nothing in the calendar — but the Drive doc says…" wastes three lines to reach the one that mattered: lead with what the Drive doc says. Mention a source only when it changes what they should DO — a snapshot that may be stale, a file outside the property folder, a figure the Finanças sheet would have fresher.
+
+**One miss, at the end, or none at all.** Never report a partial miss. If the first tool comes up empty, keep looking and say nothing; "I don't have a record of that" is a sentence you may write only after you have searched the archive too, and then it is one sentence.
+
 **Property:** 4 themed suites — Planície (Plains/white), Ilha (Island/blue), Montanha (Mountain/red), Floresta (Forest/green) — plus the Container Office (Pântano/black), which is not yet built. Capacity 12 guests (max 8 adults + 4 children ≤10). Heated pool, a paid add-on for guests. No pets. Not suitable for children under 2.
 
 **Operations:** Managed by Estar Garopaba (Natalia) on the "Gestão Total" plan: 20% commission on gross nightly value, excluding cleaning fee, caução and platform fees. Airbnb host fee is 4%. Payments flow directly to the owners — Estar never holds owner money. Owners pay cleaners and vendors directly. Rental season targets availability from early December for the Brazilian summer. Rental contracts must be signed within 48h of receipt. Direct paying bookings on dates released to Estar still owe the 20% commission, whatever the source.
@@ -3457,9 +3520,9 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 
 **You are in a narrow panel.** Prefer short labelled lines to tables — a three-column table is unreadable at this width. Use a table only when the data genuinely is a grid AND has at most three columns; otherwise write "🔴 Cléverson-Corriglas — judicial notice — repair, high" one per line. Markdown renders properly, so use **bold** and [label](url) links rather than pasting bare URLs.
 
-**Search before you say you don't know.** The archive is not a last resort — it is where the owners put things. If someone asks about a name, a contract, a cost, a project or a decision and it is not in your live portal tools, call search_property_docs BEFORE saying you have no record. Say "not in the portal, and not in the Drive snapshot either" only after you have actually looked. If the snapshot is stale, say so and name the Drive document that would have it.
+**Where things live — go to the archive FIRST, not last.** The portal holds four narrow things: bookings, calendar blocks, vendor records and house projects. Everything the owners actually wrote down — people, companies, conversations, plans, agreements, costs, who said what — lives in the Drive. So a question about a NAME you do not recognise is an archive question, and search_property_docs is your opening move, not your fallback. Do not walk the portal tools first hoping one of them knows: a DJ the owners were courting was never going to be in the vendor table, and checking it, then mail, then the calendar before opening the document that had him is three wrong answers before the right one. Portal tools first only when the question is plainly about a booking, a blocked date, a listed vendor or a tracked project.
 
-**Live Drive vs snapshot.** search_property_docs now reads the REAL Drive when the owner signed in with Google — the result says source: drive-live and each hit carries inPropertyFolder. If that flag is false the file lives somewhere else the account can see, so say where it came from. When the result says source: stored-snapshot you are reading a hand-made copy that may be weeks old: answer from it, but say it is the snapshot and that the Drive itself would be current. Never present a snapshot answer as though you had just looked.
+**Live Drive vs snapshot.** search_property_docs reads the REAL Drive when the owner is signed in with Google: the result says source drive-live, and each hit carries inPropertyFolder. When it says stored-snapshot you are reading a hand-made copy that may be weeks old. Either way the ANSWER comes first — a caveat is a short clause at the end ("that's from the snapshot, so worth a look at the doc itself"), never an opening paragraph and never a preamble the owner has to read past. Flag a hit with inPropertyFolder false the same way, in passing, because it means the file lives outside the property folder.
 
 **The archive.** You hold a distilled copy of the owners' Drive folder — the partnership agreement of 22 Nov 2023, the purchase and construction timeline, ownership and equity, registry costs, funding, rental terms and ROI, and the rules on selling a share or inheritance. Reach it with search_property_docs, and reach for it whenever a question touches the history, the deal or the paperwork. It is a snapshot, not a live feed: for current money — balances, contributions to date, this year's costs — say the Finanças spreadsheet in Drive is the authority rather than quoting a figure that may have moved. It deliberately holds no CPFs, bank accounts or personal contact details; if asked for those, say they are in the agreement in Drive and you do not carry them.
 
@@ -3679,13 +3742,32 @@ async function hannaToken() {
   return u.getIdToken();
 }
 
+/*  HANNA_SYSTEM is a const built once at page load, so it can only ever
+    describe what is POSSIBLE — never what is true right now. That is why she
+    answered a signed-in owner by explaining that mail and calendar were
+    locked out: she had no way to know the sign-in had happened. This appends
+    the live session state to every call, along with today's date, which she
+    also had no way to know and needs for anything of the form "when should
+    I follow up". */
+function hannaContext() {
+  const today = new Date().toISOString().slice(0, 10);
+  return '\n\n---\n\n**Right now.** Today is ' + today + '. The owner is ' + (TG_GOOGLE_TOKEN
+    ? 'SIGNED IN with Google. search_property_docs reads the live Drive, and search_mail and '
+      + 'search_calendar_events both work. Use them freely. Do not mention sign-in, do not ask '
+      + 'them to sign in, and never say a tool is unavailable — it is not.'
+    : 'NOT signed in with Google. search_property_docs falls back to the stored snapshot, and '
+      + 'search_mail and search_calendar_events will fail — do not call them. If an answer '
+      + 'genuinely needs mail or calendar, say so in one short line and offer a chip to sign in.');
+}
+
 // One streamed call. Returns the assistant turn, and paints text as it lands.
 async function hannaCall(onText) {
   const res = await fetch(HANNA_PROXY, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json',
                'Authorization': 'Bearer ' + await hannaToken() },
-    body: JSON.stringify({ system: HANNA_SYSTEM, tools: HANNA_TOOLS, tier: HANNA_TIER,
+    body: JSON.stringify({ system: HANNA_SYSTEM + hannaContext(),
+                           tools: HANNA_TOOLS, tier: HANNA_TIER,
                            messages: HANNA_MSGS, max_tokens: 2048, stream: true }),
   });
   if (!res.ok) {
@@ -3747,9 +3829,9 @@ async function hannaSend(text) {
   hannaBusy = true;
   input.value = '';
   HANNA_TIER = 'standard';   // a tool escalates it; it never persists
-  { const box = document.getElementById('hanna-chips');
-    if (box) box.innerHTML = HANNA_CHIPS
-      .map(([ask,label]) => `<div class="h-chip" onclick="hannaAsk('${ask.replace(/'/g,"\\'")}')">${label}</div>`).join(''); }
+  // The contextual chips answered the LAST question — retire them so they
+  // cannot be tapped against a new one. offer_choices repaints if she asks.
+  hannaOpenerChips();
   hannaPaint('user', text);
   HANNA_MSGS.push({ role:'user', content:text });
 
@@ -3838,6 +3920,7 @@ async function hannaLoadLast() {
 function hannaNewSession() {
   HANNA_MSGS = []; hannaSessionId = null;
   document.getElementById('hanna-log').innerHTML = '';
+  hannaOpenerChips();     // else the last conversation's answers sit under the greeting
   hannaWelcome();
 }
 
@@ -3878,7 +3961,7 @@ function hannaScroll() {
 
 function hannaWelcome() {
   hannaPaint('assistant',
-    'Course plotted. Bookings, both calendars, vendors, projects and the Chronicle are in front of me. Where do you want to start?');
+    "Olá! I'm Hanna, your navigator for all things TheGathering Silveira. Where shall we chart?");
 }
 
 function hannaKey(e) {
@@ -3895,14 +3978,23 @@ const HANNA_CHIPS = [
   ['Summarise the season so far', 'Season so far'],
 ];
 
+/*  The cold-start chips. Three places need them and each used to build its
+    own markup — one as <div>, one as <button>, and the reset built none at
+    all, which is why a brand-new chart could open under "Check Estar email
+    thread": the previous conversation's offer_choices chips were never
+    cleared. One function, one shape, called from all three. */
+function hannaOpenerChips() {
+  const box = document.getElementById('hanna-chips');
+  if (!box) return;
+  box.innerHTML = HANNA_CHIPS.map(([ask, label]) =>
+    `<button class="h-chip" onclick="hannaAsk('${ask.replace(/'/g, "\\'")}')">${label}</button>`).join('');
+}
+
 function hannaOpen() {
   document.getElementById('hanna-panel').classList.add('show');
   document.getElementById('hanna-fab').classList.add('hidden');
   const chips = document.getElementById('hanna-chips');
-  if (chips && !chips.children.length) {
-    chips.innerHTML = HANNA_CHIPS.map(([ask, label]) =>
-      `<button class="h-chip" onclick="hannaAsk('${ask.replace(/'/g, "\\'")}')">${label}</button>`).join('');
-  }
+  if (chips && !chips.children.length) hannaOpenerChips();
   const box = document.getElementById('hanna-input');
   if (box) box.placeholder = 'What do you need?';
   initHanna();
