@@ -100,8 +100,24 @@ const TG_OWNER_EMAILS = [
   "wilayres@gmail.com",
 ];
 
-// Read-only. Hanna never writes to the Drive.
-const TG_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
+// Read-only, all of them. Hanna never writes to the Drive, the calendar or
+// the mailbox — every scope here ends in .readonly, which is the whole point.
+//
+// Owner decision (Aug 16): everything within the property folder is in scope,
+// and the calendar and mailbox on the house account are too. These are
+// requested TOGETHER at sign-in, so there is one consent screen rather than
+// three, and one token that expires with the tab.
+//
+// Note on Google's tiers: drive.readonly and calendar.readonly are SENSITIVE
+// scopes; gmail.readonly is RESTRICTED, which is a higher bar. In Testing mode
+// all three work for listed test users without Google verification — that is
+// the right posture for four owners and one house.
+const TG_GOOGLE_SCOPES = [
+  "https://www.googleapis.com/auth/drive.readonly",
+  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/gmail.readonly",
+];
+const TG_DRIVE_SCOPE = TG_GOOGLE_SCOPES[0];   // kept for older call sites
 
 // Property Mgmt → Garopaba → The Gathering Silveira. Used to mark whether a
 // search hit came from the property folder or from somewhere else the account

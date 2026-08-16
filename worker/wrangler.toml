@@ -22,6 +22,10 @@ id = "78d83d4847bd4b02b9fb235db1b0be48"
 [vars]
 MODEL = "claude-sonnet-5"
 
+# Routed to only for contract analysis and ROI projection — genuine reasoning
+# work. Everything conversational stays on Sonnet, which is most of the traffic.
+MODEL_ANALYSIS = "claude-opus-5"
+
 # Owner-only enforcement. OFF until Google sign-in is confirmed working —
 # turning it on before then would lock the owners out of their own portal,
 # because an anonymous session carries no email. Flip to "true" once an owner

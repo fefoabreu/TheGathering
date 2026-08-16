@@ -2344,6 +2344,70 @@ function gateBusy(busy) {
 }
 
 
+
+// ══ ROI ══════════════════════════════════════════════════════
+//  Arithmetic here, judgement in the model. It returns every assumption
+//  alongside the number, because an ROI stated without its basis is a
+//  guess wearing a suit — and the owners will quote it to each other.
+const TG_ROI_DEFAULTS = {
+  estarCommissionPct: 20,   // on GROSS, per the doc's answered question
+  airbnbHostFeePct:   4,
+  monthlyCostsBRL:    1390, // Starlink 190 + CELESC 450 + CASAN 250 + pool 500
+  cleaningPerStayBRL: 450,  // Dona Maria, per visit
+};
+
+function projectRoi(input) {
+  const a = { ...TG_ROI_DEFAULTS, ...input };
+  const missing = [];
+  if (!a.weeksRented) missing.push('weeksRented');
+  if (!a.nightlyBRL)  missing.push('nightlyBRL');
+  if (missing.length) {
+    return { needsInput: missing,
+             message: 'Ask the owner for ' + missing.join(' and ') + ' — I will not invent an occupancy or a rate.',
+             defaultsAvailable: TG_ROI_DEFAULTS };
+  }
+
+  const nights      = a.weeksRented * 7;
+  const gross       = nights * a.nightlyBRL;
+  const estar       = gross * a.estarCommissionPct / 100;
+  const airbnb      = gross * a.airbnbHostFeePct / 100;
+  const cleaning    = a.weeksRented * a.cleaningPerStayBRL;
+  const running     = a.monthlyCostsBRL * 12;
+  const net         = gross - estar - airbnb - cleaning - running;
+  const perOwner    = net / 3;
+
+  const out = {
+    assumptions: {
+      weeksRented: a.weeksRented, nightsRented: nights,
+      nightlyBRL: a.nightlyBRL,
+      estarCommissionPct: a.estarCommissionPct + '% of GROSS (not net of the Airbnb fee)',
+      airbnbHostFeePct: a.airbnbHostFeePct + '%',
+      cleaningPerStayBRL: a.cleaningPerStayBRL,
+      monthlyCostsBRL: a.monthlyCostsBRL,
+    },
+    annual: {
+      grossBRL: Math.round(gross),
+      estarCommissionBRL: -Math.round(estar),
+      airbnbFeeBRL: -Math.round(airbnb),
+      cleaningBRL: -Math.round(cleaning),
+      runningCostsBRL: -Math.round(running),
+      netBRL: Math.round(net),
+      netPerOwnerBRL: Math.round(perOwner),
+    },
+    caveats: [
+      'Excludes IPTU, insurance, and any capital works.',
+      'Excludes each owner\'s personal income tax — the agreement leaves IRPF to each partner.',
+      'The Finanças spreadsheet in the Drive is the authority for anything actual. These are projections.',
+    ],
+  };
+  if (a.purchaseBRL) {
+    out.annual.paybackYears = net > 0 ? Math.round(a.purchaseBRL / net * 10) / 10 : null;
+    out.caveats.push('Payback is simple division — no appreciation, no financing cost, no discount rate. '
+      + 'The partnership agreement projected an 18–20 year ROI horizon on Summer 2024 figures.');
+  }
+  return out;
+}
+
 // ══ LIVE DRIVE ═══════════════════════════════════════════════
 //  Called with the signed-in owner's own Google token, straight from the
 //  browser. Nothing transits our Worker and nothing is stored.
@@ -2356,6 +2420,16 @@ function gateBusy(busy) {
 //  say "from the property folder" or "from a folder shared with the account".
 //  Provenance beats restriction — it was a shared-in folder (DJ Cainan's
 //  presskit) that exposed the gap in the first place.
+
+/** One place that knows a 401 means the hour is up. */
+async function googleFetch(url) {
+  const r = await fetch(url, { headers: { Authorization: 'Bearer ' + TG_GOOGLE_TOKEN } });
+  if (r.status === 401) { TG_GOOGLE_TOKEN = null; throw new Error('Google token expired — sign in again'); }
+  if (r.status === 403) throw new Error('Scope not granted (403) — check the OAuth consent screen');
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
 const TG_DRIVE_API = 'https://www.googleapis.com/drive/v3';
 let TG_FOLDER_CACHE = null;
 
@@ -2366,17 +2440,36 @@ async function driveFetch(path) {
   return r.json();
 }
 
-/** Folder ids that sit inside the property tree, so a hit can be labelled. */
+/**
+ * Every folder id inside the property tree, walked to the BOTTOM.
+ *
+ * Owner requirement: everything under Property Mgmt → Garopaba → The Gathering
+ * Silveira is in scope, including subfolders that do not exist yet. So this
+ * walks the whole tree rather than a fixed depth — a depth cap would silently
+ * drop a folder the moment someone nested one level deeper than we guessed.
+ * The 40-round guard is a runaway backstop, not a depth policy; a tree that
+ * deep would mean something is wrong.
+ */
 async function propertyFolderIds() {
   if (TG_FOLDER_CACHE) return TG_FOLDER_CACHE;
   const ids = new Set([TG_PROPERTY_FOLDER_ID]);
   let frontier = [TG_PROPERTY_FOLDER_ID];
-  for (let depth = 0; depth < 3 && frontier.length; depth++) {
+  for (let round = 0; round < 40 && frontier.length; round++) {
     const next = [];
-    for (const id of frontier) {
-      const q = encodeURIComponent(`'${id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`);
-      const res = await driveFetch(`/files?q=${q}&fields=files(id)&pageSize=100`);
-      (res.files || []).forEach(f => { if (!ids.has(f.id)) { ids.add(f.id); next.push(f.id); } });
+    // Batch the level into one query per 12 parents rather than one per folder.
+    for (let i = 0; i < frontier.length; i += 12) {
+      const batch = frontier.slice(i, i + 12);
+      const parents = batch.map(id => `'${id}' in parents`).join(' or ');
+      const q = encodeURIComponent(
+        `(${parents}) and mimeType = 'application/vnd.google-apps.folder' and trashed = false`);
+      let page = '';
+      do {
+        const res = await driveFetch(
+          `/files?q=${q}&fields=nextPageToken,files(id)&pageSize=100` +
+          `&supportsAllDrives=true&includeItemsFromAllDrives=true` + (page ? `&pageToken=${page}` : ''));
+        (res.files || []).forEach(f => { if (!ids.has(f.id)) { ids.add(f.id); next.push(f.id); } });
+        page = res.nextPageToken || '';
+      } while (page);
     }
     frontier = next;
   }
@@ -2393,11 +2486,16 @@ async function driveSearch(query) {
     `/files?q=${filter}&fields=files(id,name,mimeType,modifiedTime,parents,webViewLink)&pageSize=8` +
     `&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true`);
 
-  const files = (res.files || []).filter(f => /document|spreadsheet|presentation|pdf/.test(f.mimeType));
+  let files = (res.files || []).filter(f => /document|spreadsheet|presentation|pdf/.test(f.mimeType));
   if (!files.length) return { source: 'drive', query: q, hits: [] };
 
   let propIds = new Set();
   try { propIds = await propertyFolderIds(); } catch (e) {}
+
+  // Anything in the property tree outranks anything merely visible to the
+  // account — the folder is the corpus, everything else is a bonus.
+  const inTree = f => (f.parents || []).some(p => propIds.has(p));
+  files = [...files.filter(inTree), ...files.filter(f => !inTree(f))];
 
   const hits = [];
   for (const f of files.slice(0, 3)) {
@@ -2411,7 +2509,7 @@ async function driveSearch(query) {
     } catch (e) {}
     hits.push({
       name: f.name,
-      inPropertyFolder: (f.parents || []).some(p => propIds.has(p)),
+      inPropertyFolder: inTree(f),
       modified: (f.modifiedTime || '').slice(0, 10),
       link: f.webViewLink,
       excerpt: text ? driveExcerpt(text, q) : '(not a Doc — open it to read)',
@@ -2454,6 +2552,11 @@ async function searchSnapshot(query) {
 //  long-lived Drive credential stored anywhere in this system.
 let TG_GOOGLE_TOKEN = null;
 
+// Which model tier the CURRENT turn needs. A tool sets it; hannaCall sends it;
+// the Worker decides what model that maps to. Reset every turn so one contract
+// review does not quietly bill the rest of the conversation at Opus rates.
+let HANNA_TIER = 'standard';
+
 function ownerAllowed(email) {
   return !!email && TG_OWNER_EMAILS.map(e => e.toLowerCase()).includes(email.toLowerCase());
 }
@@ -2464,7 +2567,8 @@ async function signInWithGoogle() {
   gateBusy(true);
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope(TG_DRIVE_SCOPE);
+    (typeof TG_GOOGLE_SCOPES !== 'undefined' ? TG_GOOGLE_SCOPES : [TG_DRIVE_SCOPE])
+      .forEach(sc => provider.addScope(sc));
     provider.setCustomParameters({ prompt: 'select_account' });
 
     const res = await tgAuth.signInWithPopup(provider);
@@ -3345,6 +3449,10 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 
 **The soundtrack.** The house has an official trilha sonora — a playlist the three owners curated to match the place. It is in get_house_info, with links for both Spotify and Apple Music. Mention it when it is genuinely useful — welcome and check-in material, anything about the Sonos or the sound system, or when someone is describing the house's character to a guest or a listing. It is a signature touch: offer it with pride, once, and never keep bringing it up.
 
+**Mail and calendar.** You can read the house Gmail and the house calendar, read-only, when the owner is signed in with Google. Use search_mail for anything that would have arrived by email — a vendor reply, what Estar actually sent, what was agreed with Giovana — and search_calendar_events for anything scheduled beyond the blocked-dates feed. The mailbox holds other people's correspondence: quote only what answers the question, and never repeat personal details that are not the point.
+
+**Analysis.** When the question is what something MEANS rather than what it says, call analyse_document — contract implications, what an obligation commits the owners to, where a clause is ambiguous. It pulls the document whole and runs the turn on a stronger model, so use it when the thinking is the point, not for lookups. For money, call project_roi: it returns the arithmetic AND its assumptions, and it will refuse to invent an occupancy or a rate. State a projection as a scenario with its basis in the same breath, never as a fact.
+
 **Never make them type.** Whenever your reply ends in a question, call offer_choices with 2–4 short answers to that exact question. "Want more detail, or shall I mark it done?" needs chips that say those two things.
 
 **You are in a narrow panel.** Prefer short labelled lines to tables — a three-column table is unreadable at this width. Use a table only when the data genuinely is a grid AND has at most three columns; otherwise write "🔴 Cléverson-Corriglas — judicial notice — repair, high" one per line. Markdown renders properly, so use **bold** and [label](url) links rather than pasting bare URLs.
@@ -3386,6 +3494,23 @@ const HANNA_TOOLS = [
   { name:'get_house_info', description:'Suites, capacity, house rules, the Estar management terms, and the house soundtrack.',
     input_schema:{ type:'object', properties:{} } },
   TG_CHOICES_TOOL,
+  { name:'analyse_document', description:"Pull a document from the Drive and reason over it — contract review, clause implications, what an obligation actually commits the owners to. Use this rather than search_property_docs when the question is 'what does this MEAN' rather than 'what does it say'. Routed to a stronger model, so reach for it when the thinking is the point.",
+    input_schema:{ type:'object', required:['nameOrQuery','question'], properties:{
+      nameOrQuery:{ type:'string', description:'Document name or distinctive words from it, e.g. "Acordo de Parceria" or "contrato Estar"' },
+      question:{ type:'string', description:'What you need decided about it' } } } },
+  { name:'project_roi', description:'Project return on the property from an occupancy and rate scenario, net of Estar commission, the Airbnb host fee and running costs. Returns the arithmetic AND the assumptions — never state the number without them.',
+    input_schema:{ type:'object', properties:{
+      weeksRented:{ type:'number', description:'Weeks let per year' },
+      nightlyBRL:{ type:'number', description:'Average nightly rate in R$' },
+      monthlyCostsBRL:{ type:'number', description:'Monthly running costs; defaults to the known utilities + pool + garden' },
+      purchaseBRL:{ type:'number', description:'Total invested, if known' } } } },
+  { name:'search_mail', description:"Search the house Gmail (TheGatheringSilveira@gmail.com) — vendor threads, Estar correspondence, quotes, bookings. Use it when a question is about something that would have arrived by email: 'did Renan ever reply', 'what did Estar send about the contract', 'what did we agree with Giovana'.",
+    input_schema:{ type:'object', required:['query'], properties:{
+      query:{ type:'string', description:"Gmail search syntax works, e.g. 'from:renan contrato' or 'estar garopaba after:2026/01/01'" } } } },
+  { name:'search_calendar_events', description:'Search the house Google Calendar by keyword, beyond the blocked-dates feed — meetings, visits, deliveries, anything scheduled.',
+    input_schema:{ type:'object', required:['query'], properties:{
+      query:{ type:'string' },
+      monthsAhead:{ type:'number', description:'How far forward to look; defaults to 6' } } } },
   { name:'search_property_docs', description:"The owners' Drive folder, distilled: the partnership agreement, the purchase and construction timeline, ownership and equity, costs and registry fees, how the purchase was funded, rental terms and ROI, the rules on selling a share and inheritance. Use this for any question about the history, the deal or the paperwork — do not guess at those.",
     input_schema:{ type:'object', required:['query'], properties:{ query:{ type:'string',
       description:'What you want to know, in plain words — e.g. "when did we buy the house and how long did the build take".' } } } },
@@ -3448,6 +3573,65 @@ async function hannaRunTool(name, input) {
     // Soundtrack is merged in from firebase-config.js rather than stored, so
     // it stays one definition shared with Sisay and survives an already-seeded
     // houseInfo doc.
+    // Fetch the document whole and hand it to the model. The reasoning is the
+    // product here, so the FULL text goes up rather than an excerpt — and this
+    // turn is routed to the analysis tier.
+    // ── Gmail ──────────────────────────────────────────────────
+    //  Read-only, on the house account, using the owner's own token.
+    case 'search_mail': {
+      if (!TG_GOOGLE_TOKEN) return { error: 'Not signed in with Google — the mailbox needs that token.' };
+      try {
+        const q = encodeURIComponent(input.query || '');
+        const list = await googleFetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${q}&maxResults=5`);
+        if (!list.messages || !list.messages.length) return { source:'gmail', query: input.query, hits: [] };
+        const hits = [];
+        for (const m of list.messages.slice(0, 4)) {
+          const msg = await googleFetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`);
+          const h = {}; (msg.payload?.headers || []).forEach(x => h[x.name.toLowerCase()] = x.value);
+          hits.push({ from: h.from, to: h.to, subject: h.subject, date: h.date,
+                      snippet: msg.snippet,
+                      link: 'https://mail.google.com/mail/u/0/#inbox/' + m.id });
+        }
+        return { source:'gmail-live', query: input.query, hits,
+                 note: 'Snippets only, not full bodies — enough to answer or to point the owner at the thread. This is third-party correspondence; quote only what answers the question.' };
+      } catch (e) { return { error: 'Gmail: ' + (e.message || e) }; }
+    }
+
+    case 'search_calendar_events': {
+      if (!TG_GOOGLE_TOKEN) return { error: 'Not signed in with Google — the calendar search needs that token.' };
+      try {
+        const months = input.monthsAhead || 6;
+        const min = new Date().toISOString();
+        const max = new Date(Date.now() + months * 30 * 86400000).toISOString();
+        const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+          + `?q=${encodeURIComponent(input.query || '')}&timeMin=${min}&timeMax=${max}`
+          + '&singleEvents=true&orderBy=startTime&maxResults=15';
+        const res = await googleFetch(url);
+        return { source:'calendar-live', query: input.query,
+                 events: (res.items || []).map(e => ({
+                   title: e.summary, from: e.start?.date || e.start?.dateTime,
+                   to: e.end?.date || e.end?.dateTime, where: e.location, notes: (e.description||'').slice(0,300) })) };
+      } catch (e) { return { error: 'Calendar: ' + (e.message || e) }; }
+    }
+
+    case 'analyse_document': {
+      if (!TG_GOOGLE_TOKEN) return { error: 'Not signed in with Google — I can only reach the stored snapshot, which is not enough to review a document properly.' };
+      const found = await driveSearch(input.nameOrQuery || '');
+      if (!found || !found.hits.length) return { error: 'No document matched "' + (input.nameOrQuery||'') + '" in the Drive.' };
+      const top = found.hits[0];
+      HANNA_TIER = 'analysis';
+      return { document: top.name, inPropertyFolder: top.inPropertyFolder,
+               modified: top.modified, link: top.link,
+               question: input.question,
+               text: top.excerpt,
+               note: 'Reason over this and answer the question. Name the obligation, who it binds, what it costs, and what happens if it is not met. Say plainly where a clause is ambiguous rather than picking a reading.' };
+    }
+
+    case 'project_roi': {
+      HANNA_TIER = 'analysis';
+      return projectRoi(input || {});
+    }
+
     case 'offer_choices':
       tgPaintChips('hanna-chips', input.choices, hannaAsk);
       return 'Choices shown.';
@@ -3501,7 +3685,7 @@ async function hannaCall(onText) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json',
                'Authorization': 'Bearer ' + await hannaToken() },
-    body: JSON.stringify({ system: HANNA_SYSTEM, tools: HANNA_TOOLS,
+    body: JSON.stringify({ system: HANNA_SYSTEM, tools: HANNA_TOOLS, tier: HANNA_TIER,
                            messages: HANNA_MSGS, max_tokens: 2048, stream: true }),
   });
   if (!res.ok) {
@@ -3562,6 +3746,7 @@ async function hannaSend(text) {
 
   hannaBusy = true;
   input.value = '';
+  HANNA_TIER = 'standard';   // a tool escalates it; it never persists
   { const box = document.getElementById('hanna-chips');
     if (box) box.innerHTML = HANNA_CHIPS
       .map(([ask,label]) => `<div class="h-chip" onclick="hannaAsk('${ask.replace(/'/g,"\\'")}')">${label}</div>`).join(''); }

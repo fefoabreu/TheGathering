@@ -325,11 +325,24 @@ export default {
     if (payload.action === 'calendar') return handleCalendar(env, origin);
     if (payload.action === 'docs')     return handleDocs(env, origin, payload.query);
 
+    /**
+     * Model routing by TIER, not by model name.
+     *
+     * The caller may ask for a tier; the Worker alone decides what model that
+     * maps to. A browser session still cannot name a model, which was the
+     * original point. What it CAN do is ask for the expensive tier — so this
+     * is worth having only because the endpoint is owner-only. Contract review
+     * and ROI work are genuine reasoning and earn Opus; "what is on the
+     * calendar Thursday" does not, and most traffic is the latter.
+     */
+    const TIERS = {
+      standard: env.MODEL || DEFAULT_MODEL,
+      analysis: env.MODEL_ANALYSIS || 'claude-opus-5',
+    };
+    const tier = TIERS[payload.tier] ? payload.tier : 'standard';
+
     const body = {
-      // The model is set by config, not by the caller. Letting the client
-      // pick meant a browser session could request a costlier model and
-      // quietly undo the choice made here.
-      model:      env.MODEL || DEFAULT_MODEL,
+      model:      TIERS[tier],
       max_tokens: Math.min(payload.max_tokens || MAX_TOKENS, 8192),
       messages:   payload.messages || [],
       stream:     payload.stream !== false,
@@ -357,6 +370,8 @@ export default {
     return new Response(upstream.body, {
       status: 200,
       headers: {
+        'X-TGS-Tier':    tier,
+        'X-TGS-Model':   body.model,
         'Content-Type':  body.stream ? 'text/event-stream; charset=utf-8' : 'application/json',
         'Cache-Control': 'no-cache',
         'Connection':    'keep-alive',
