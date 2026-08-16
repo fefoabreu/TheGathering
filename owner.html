@@ -171,6 +171,23 @@
       transform:translateY(-1px);
     }
     #gate-err { color:#E08080; font-size:.82rem; margin-top:.75rem; text-align:center; display:none; }
+    .gate-google {
+      display:flex; align-items:center; justify-content:center; gap:.7rem;
+      width:100%; background:#fff; color:#1A1A2E; border:1px solid rgba(0,0,0,.12);
+    }
+    .gate-google svg { width:18px; height:18px; flex-shrink:0; }
+    .gate-google:hover { background:#f4f4f6; }
+    .gate-hint { font-size:.72rem; color:var(--text-mute); line-height:1.6; margin:.7rem 0 0; text-align:center; }
+    .gate-hint strong { color:var(--text-dim); font-weight:600; }
+    .gate-fallback { margin-top:1.1rem; border-top:1px solid var(--border); padding-top:.9rem; }
+    .gate-fallback summary {
+      cursor:pointer; font-family:'Cinzel',serif; font-size:.66rem; letter-spacing:.14em;
+      text-transform:uppercase; color:var(--text-mute); list-style:none;
+    }
+    .gate-fallback summary::-webkit-details-marker { display:none; }
+    .gate-fallback summary:hover { color:var(--text-dim); }
+    .gate-fallback .gate-input { margin-top:.8rem; }
+    .gate-btn-quiet { background:rgba(255,255,255,.06); color:var(--text-dim); border:1px solid var(--border); box-shadow:none; }
     .gate-divider { border:none; border-top:1px solid var(--border); margin:1.8rem 0; }
     .gate-quote { font-size:.8rem; color:var(--text-mute); text-align:center; line-height:1.7; font-style:italic; }
 
@@ -1441,10 +1458,19 @@
 
   <div class="gate-card">
     <span class="corner-tl">✦</span>
-    <label class="gate-label">Access Code</label>
-    <input type="password" id="pwd" class="gate-input" placeholder="Enter your password" autocomplete="current-password">
-    <button class="gate-btn" id="gate-submit" onclick="tryLogin()">Enter the Battlefield</button>
+    <button class="gate-btn gate-google" id="gate-google" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-2.7-.4-3.9H24v7.1h12.1c-.2 1.8-1.6 4.6-4.5 6.4l6.9 5.3c4.1-3.8 6.6-9.3 6.6-15z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-6.9-5.3c-1.8 1.3-4.3 2.2-7.6 2.2-5.8 0-10.7-3.8-12.5-9.1l-7.1 5.5C8 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.5 28.5c-.5-1.4-.7-2.9-.7-4.5s.3-3.1.7-4.5l-7.1-5.5C2.9 17 2 20.4 2 24s.9 7 2.4 10z"/><path fill="#EA4335" d="M24 10.6c4.1 0 6.9 1.8 8.5 3.2l6.2-6C34.9 4.3 29.9 2 24 2 15.4 2 8 6.9 4.4 14l7.1 5.5c1.8-5.3 6.7-8.9 12.5-8.9z"/></svg>
+      Sign in with Google
+    </button>
+    <p class="gate-hint">Use <strong>TheGatheringSilveira@gmail.com</strong> — it is the house account, and it is what lets Hanna read the Drive.</p>
     <div id="gate-err">❌ Incorrect password. Try again.</div>
+
+    <details class="gate-fallback" id="gate-fallback">
+      <summary>Use the access code instead</summary>
+      <input type="password" id="pwd" class="gate-input" placeholder="Enter your password" autocomplete="current-password">
+      <button class="gate-btn gate-btn-quiet" id="gate-submit" onclick="tryLogin()">Enter the Battlefield</button>
+      <p class="gate-hint">No Drive access on this path — Hanna falls back to her stored snapshot.</p>
+    </details>
     <hr class="gate-divider">
     <p class="gate-quote">
       "One will corrupt, two will divide.<br>With three, there is balance."
@@ -2317,11 +2343,174 @@ function gateBusy(busy) {
   b.textContent = busy ? 'Entering…' : 'Enter the Battlefield';
 }
 
+
+// ══ LIVE DRIVE ═══════════════════════════════════════════════
+//  Called with the signed-in owner's own Google token, straight from the
+//  browser. Nothing transits our Worker and nothing is stored.
+//
+//  SCOPE NOTE: Drive's `'<id>' in parents` matches DIRECT children only, so
+//  scoping the query to the property folder would silently miss everything in
+//  its subfolders — Contrato e Docs, Progresso Obra, Arq&Design. We therefore
+//  search everything the account can see and report PROVENANCE instead:
+//  each hit says whether it sits in the property folder tree, so Hanna can
+//  say "from the property folder" or "from a folder shared with the account".
+//  Provenance beats restriction — it was a shared-in folder (DJ Cainan's
+//  presskit) that exposed the gap in the first place.
+const TG_DRIVE_API = 'https://www.googleapis.com/drive/v3';
+let TG_FOLDER_CACHE = null;
+
+async function driveFetch(path) {
+  const r = await fetch(TG_DRIVE_API + path, { headers: { Authorization: 'Bearer ' + TG_GOOGLE_TOKEN } });
+  if (r.status === 401) { TG_GOOGLE_TOKEN = null; throw new Error('Drive token expired'); }
+  if (!r.ok) throw new Error('Drive ' + r.status);
+  return r.json();
+}
+
+/** Folder ids that sit inside the property tree, so a hit can be labelled. */
+async function propertyFolderIds() {
+  if (TG_FOLDER_CACHE) return TG_FOLDER_CACHE;
+  const ids = new Set([TG_PROPERTY_FOLDER_ID]);
+  let frontier = [TG_PROPERTY_FOLDER_ID];
+  for (let depth = 0; depth < 3 && frontier.length; depth++) {
+    const next = [];
+    for (const id of frontier) {
+      const q = encodeURIComponent(`'${id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`);
+      const res = await driveFetch(`/files?q=${q}&fields=files(id)&pageSize=100`);
+      (res.files || []).forEach(f => { if (!ids.has(f.id)) { ids.add(f.id); next.push(f.id); } });
+    }
+    frontier = next;
+  }
+  TG_FOLDER_CACHE = ids;
+  return ids;
+}
+
+async function driveSearch(query) {
+  const q = String(query || '').trim();
+  if (!q) return null;
+  const esc = q.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const filter = encodeURIComponent(`fullText contains '${esc}' and trashed = false`);
+  const res = await driveFetch(
+    `/files?q=${filter}&fields=files(id,name,mimeType,modifiedTime,parents,webViewLink)&pageSize=8` +
+    `&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true`);
+
+  const files = (res.files || []).filter(f => /document|spreadsheet|presentation|pdf/.test(f.mimeType));
+  if (!files.length) return { source: 'drive', query: q, hits: [] };
+
+  let propIds = new Set();
+  try { propIds = await propertyFolderIds(); } catch (e) {}
+
+  const hits = [];
+  for (const f of files.slice(0, 3)) {
+    let text = '';
+    try {
+      if (f.mimeType === 'application/vnd.google-apps.document') {
+        const r = await fetch(`${TG_DRIVE_API}/files/${f.id}/export?mimeType=text/plain`,
+          { headers: { Authorization: 'Bearer ' + TG_GOOGLE_TOKEN } });
+        if (r.ok) text = await r.text();
+      }
+    } catch (e) {}
+    hits.push({
+      name: f.name,
+      inPropertyFolder: (f.parents || []).some(p => propIds.has(p)),
+      modified: (f.modifiedTime || '').slice(0, 10),
+      link: f.webViewLink,
+      excerpt: text ? driveExcerpt(text, q) : '(not a Doc — open it to read)',
+    });
+  }
+  return { source: 'drive-live', query: q, hits,
+           note: 'Read live from the Drive just now. `inPropertyFolder: false` means the file lives somewhere else the account can see.' };
+}
+
+/** The passage around the match, not the whole document. */
+function driveExcerpt(text, query) {
+  const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+  const low = text.toLowerCase();
+  let at = -1;
+  for (const w of words) { const i = low.indexOf(w); if (i >= 0) { at = i; break; } }
+  if (at < 0) return text.slice(0, 1200);
+  return (at > 400 ? '…' : '') + text.slice(Math.max(0, at - 400), at + 1800);
+}
+
+/** The stored snapshot — the fallback when there is no Drive token. */
+async function searchSnapshot(query) {
+  const u = firebase.auth().currentUser;
+  if (!u) return { error: 'No session — cannot reach the archive.' };
+  const res = await fetch(HANNA_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + await u.getIdToken() },
+    body: JSON.stringify({ action: 'docs', query }),
+  });
+  const d = await res.json();
+  if (d.error) return { error: d.message || d.error };
+  d.source = 'stored-snapshot';
+  d.note = 'From the stored snapshot, not live Drive. It can be out of date — say so if it matters.';
+  return d;
+}
+
+// ══ GOOGLE SSO ═══════════════════════════════════════════════
+//  The Google OAuth access token lives here, in memory only. Firebase's
+//  client SDK does not hand back a refresh token, so this expires in about
+//  an hour and the owner signs in again. That is a feature: there is no
+//  long-lived Drive credential stored anywhere in this system.
+let TG_GOOGLE_TOKEN = null;
+
+function ownerAllowed(email) {
+  return !!email && TG_OWNER_EMAILS.map(e => e.toLowerCase()).includes(email.toLowerCase());
+}
+
+async function signInWithGoogle() {
+  document.getElementById('gate-err').style.display = 'none';
+  if (!tgAuth) { gateError('❌ Firebase is not initialised.'); return; }
+  gateBusy(true);
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope(TG_DRIVE_SCOPE);
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    const res = await tgAuth.signInWithPopup(provider);
+    const email = res.user && res.user.email;
+
+    if (!ownerAllowed(email)) {
+      await tgAuth.signOut();
+      gateError('❌ ' + (email || 'That account') + ' is not an owner account.');
+      return;
+    }
+
+    TG_GOOGLE_TOKEN = (res.credential && res.credential.accessToken) || null;
+    sessionStorage.setItem('tg_gate', '1');
+    sessionStorage.setItem('tg_owner', email);
+    openPortal();
+    tgDriveBadge();
+  } catch (e) {
+    const c = e.code || '';
+    if (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return;
+    gateError(c === 'auth/operation-not-allowed'
+      ? '❌ Google sign-in is not enabled yet in the Firebase console.'
+      : '❌ ' + (e.message || c));
+  } finally { gateBusy(false); }
+}
+
+/** Show whether this session can reach the Drive, so it is never a mystery. */
+function tgDriveBadge() {
+  const el = document.getElementById('sync-pill');
+  if (!el) return;
+  const who = sessionStorage.getItem('tg_owner');
+  if (TG_GOOGLE_TOKEN && who) {
+    el.title = 'Signed in as ' + who + ' — Hanna can read the Drive live.';
+  } else if (who) {
+    el.title = 'Signed in as ' + who + ' — no Drive token; Hanna uses her stored snapshot.';
+  }
+}
+
 async function tryLogin() {
   const pwd = document.getElementById('pwd').value;
   if (!pwd) return;
   document.getElementById('gate-err').style.display = 'none';
 
+  if (typeof TG_ALLOW_PASSWORD_FALLBACK !== 'undefined' && !TG_ALLOW_PASSWORD_FALLBACK) {
+    gateError('❌ The access code is retired — sign in with Google.');
+    return;
+  }
   if (pwd !== TG_GATE_PASSWORD) {
     gateError('❌ Incorrect password. Try again.');
     return;
@@ -3264,21 +3453,20 @@ async function hannaRunTool(name, input) {
     case 'get_house_info': return { ...(storeGet('house') || {}),
                                     soundtrack: (typeof TG_SOUNDTRACK !== 'undefined' ? TG_SOUNDTRACK : undefined) };
 
-    // The knowledge pack is held in the Worker's KV, not in the browser and
-    // not in Firestore — the repo is public and guests hold anonymous tokens.
+    // LIVE Drive first, stored snapshot second. The snapshot is a photograph
+    // of the folder taken by hand; the Drive is the folder. When an owner is
+    // signed in with Google we read the real thing, using THEIR token — so
+    // there is no service credential to leak and no sync job to go stale.
     case 'search_property_docs': {
-      const u = firebase.auth().currentUser;
-      if (!u) return { error: 'No session — cannot reach the archive.' };
-      const res = await fetch(HANNA_PROXY, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-                   'Authorization': 'Bearer ' + await u.getIdToken() },
-        body: JSON.stringify({ action: 'docs', query: input.query || '' }),
-      });
-      const d = await res.json();
-      if (d.error) return { error: d.message || d.error };
-      return d;
+      if (TG_GOOGLE_TOKEN) {
+        try {
+          const live = await driveSearch(input.query || '');
+          if (live && live.hits.length) return live;
+        } catch (e) { /* fall through to the snapshot rather than failing */ }
+      }
+      return await searchSnapshot(input.query || '');
     }
+
     case 'list_decisions': return (TG_DECISIONS || []).slice(0, input.limit || 20);
     case 'add_decision': {
       if (!input.title) return 'A title is required.';

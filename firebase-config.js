@@ -79,6 +79,39 @@ const TG_SOUNDTRACK = {
 //  and the rules pick it up with no redeploy.
 // ──────────────────────────────────────────────────────────────
 
+// ──────────────────────────────────────────────────────────────
+//  Owner sign-in — Google SSO on the shared property account
+// ──────────────────────────────────────────────────────────────
+//  The three owners share TheGatheringSilveira@gmail.com, which is also
+//  the account that owns the Drive folder and the calendar. Signing in
+//  WITH that account does two jobs at once: it proves who is at the
+//  keyboard, and it hands the portal a Google token that can read the
+//  Drive as that account. No refresh token is stored anywhere — the
+//  token lives in memory for the session and dies with the tab, which
+//  is strictly safer than parking a long-lived credential in a Worker.
+//
+//  Only these addresses may enter. Enforced in the browser for the UX
+//  and AGAIN in the Worker, which is the boundary that actually counts.
+// ──────────────────────────────────────────────────────────────
+const TG_OWNER_EMAILS = [
+  "thegatheringsilveira@gmail.com",   // the standard — shared by all three
+  "fefoabreu@gmail.com",
+  "piero.cabral@gmail.com",
+  "wilayres@gmail.com",
+];
+
+// Read-only. Hanna never writes to the Drive.
+const TG_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
+
+// Property Mgmt → Garopaba → The Gathering Silveira. Used to mark whether a
+// search hit came from the property folder or from somewhere else the account
+// can see — provenance, not a restriction. See the sync-scope note in the brief.
+const TG_PROPERTY_FOLDER_ID = "1Q3Wo8OoiDPC_hls-2cgRextAZueU3gIV";
+
+// Legacy password path. Leave true until Google sign-in is confirmed working,
+// then set false — while it is true the old hole is still open.
+const TG_ALLOW_PASSWORD_FALLBACK = true;
+
 // The portal gate. Owner decision (Aug 12): this is the only access control
 // for now — inside, all three owners see everything, as in the shared Google
 // Doc. It is a shared team password, not a per-person credential.

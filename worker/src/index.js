@@ -78,7 +78,30 @@ async function verifyFirebaseToken(token, apiKey) {
   const user = data && Array.isArray(data.users) && data.users[0];
   if (!user) return { ok: false, reason: 'token not recognised' };
 
-  return { ok: true, uid: user.localId };
+  return { ok: true, uid: user.localId, email: (user.email || '').toLowerCase() };
+}
+
+/**
+ * Owner allowlist.
+ *
+ * The browser checks this too, but a browser check is decoration — anyone can
+ * call this Worker directly with any Firebase token, and every guest on the
+ * public site holds one. This is the check that means something.
+ *
+ * Kept as a var so it is a config change, not a code change. It mirrors
+ * TG_OWNER_EMAILS in firebase-config.js; the two must agree.
+ */
+const OWNER_EMAILS = [
+  'thegatheringsilveira@gmail.com',
+  'fefoabreu@gmail.com',
+  'piero.cabral@gmail.com',
+  'wilayres@gmail.com',
+];
+
+function isOwner(email, env) {
+  const list = (env.OWNER_EMAILS ? env.OWNER_EMAILS.split(',') : OWNER_EMAILS)
+    .map(e => e.trim().toLowerCase()).filter(Boolean);
+  return !!email && list.includes(email);
 }
 
 
@@ -278,6 +301,15 @@ export default {
     const check = await verifyFirebaseToken(idToken, env.FIREBASE_API_KEY || FIREBASE_API_KEY);
     if (!check.ok) {
       return json({ error: 'Unauthorized: ' + check.reason }, 401, origin);
+    }
+
+    // Owner-only from here. ENFORCE_OWNER stays off until Google sign-in is
+    // confirmed working, so a bad allowlist cannot lock the owners out of
+    // their own portal. Flip it in wrangler.toml once SSO is verified.
+    if (env.ENFORCE_OWNER === 'true' && !isOwner(check.email, env)) {
+      return json({ error: 'Forbidden: not an owner account.',
+                    detail: check.email ? 'Signed in as ' + check.email : 'Anonymous session' },
+                  403, origin);
     }
 
     if (!env.ANTHROPIC_API_KEY) {
