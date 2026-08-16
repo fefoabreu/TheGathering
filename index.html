@@ -40,6 +40,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
+  <script src="agent-ui.js"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
     :root {
@@ -895,7 +896,23 @@
     }
     .sb-who { font-family:'Cinzel',serif; font-size:.56rem; letter-spacing:.16em;
               text-transform:uppercase; color:var(--sunset); margin-bottom:.3rem; }
-    .sb-body { white-space:pre-wrap; }
+    .sb-body { white-space:normal; }
+
+    /* Rendered model output — links, lists and tables inside a narrow panel. */
+    .sb-body p { margin:0 0 .5em; }
+    .sb-body p:last-child, .sb-body ul:last-child, .sb-body ol:last-child { margin-bottom:0; }
+    .sb-body ul, .sb-body ol { margin:.35em 0 .6em; padding-left:1.15em; }
+    .sb-body li { margin:.18em 0; }
+    .sb-body a { color:var(--ocean-mid); text-decoration:underline; text-underline-offset:2px;
+                word-break:break-word; overflow-wrap:anywhere; }
+    .sb-body code { font-size:.92em; padding:.1em .3em; border-radius:4px; background:rgba(13,33,55,.07); }
+    /* A table can always scroll inside its own box rather than stretching the panel. */
+    .sb-body .ag-tablewrap { overflow-x:auto; margin:.5em 0; -webkit-overflow-scrolling:touch; }
+    .sb-body .ag-table { width:100%; border-collapse:collapse; font-size:.92em; }
+    .sb-body .ag-table th, .sb-body .ag-table td {
+      text-align:left; padding:.3em .5em; border-bottom:1px solid rgba(13,33,55,.12); white-space:nowrap; }
+    .sb-body .ag-table th { font-weight:600; color:var(--ocean-deep); }
+
 
     /* ── Category tiles — the opening move, mirroring the site's sections ── */
     .s-cats { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-top:.15rem; }
@@ -1504,7 +1521,10 @@
         <div class="sh-role">Guest AI Concierge</div>
       </div>
     </div>
-    <button class="sisay-close" onclick="sisayClose()" aria-label="Close">✕</button>
+    <div style="display:flex;gap:.4rem;flex-shrink:0">
+      <button class="sisay-close" onclick="sisayNewChat()" title="Start over">✦</button>
+      <button class="sisay-close" onclick="sisayClose()" aria-label="Close">✕</button>
+    </div>
   </div>
 
   <div class="sisay-log" id="sisay-log"></div>
@@ -2594,6 +2614,8 @@ You once commanded the Weatherlight across the multiverse. You now keep this hou
 
 **The soundtrack.** The house has its own trilha sonora — *TheGathering 🌊🌄*, a playlist the owners curated to match this place. Call get_house_manual with topic 'soundtrack' for the Spotify and Apple Music links. Offer it when it actually fits: welcoming someone in, anything about music or the Sonos, sunset on the deck, a pool afternoon, or 'what should we put on?'. Ask which platform they use, or just give both. It is a signature touch of the house — share it with pride, once. Never plug it twice.
 
+**Never make them type.** Whenever your reply ends in a question, call offer_choices with 2–4 short answers to that exact question. "Want the menu, or shall I check a booking?" needs chips that say Menu and Booking — not the generic openers. This is the difference between a concierge and a chatbot.
+
 **Sell the place, honestly.** Everything here is genuinely good — the point break at dawn, the dunes at Siriú, the kitchen at sunset. Say why something is special, in one concrete detail rather than three adjectives.
 
 **Be brief.** Two or three sentences, usually. You are a host at the door, not a brochure. End with a small nudge onward — another question worth asking, a next thing worth seeing — so the guest always has somewhere to go.
@@ -2611,6 +2633,7 @@ const SISAY_TOOLS = [
   { name:'get_house_manual', description:'How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity, rules, and the house soundtrack.',
     input_schema:{ type:'object', properties:{ topic:{ type:'string',
       description:'tv, projector, sonos, pool, wifi, house, checkin, soundtrack' } } } },
+  TG_CHOICES_TOOL,
   { name:'suggest_experience', description:'Pick the best guide cards for what the guest is after and reveal them. Prefer this over describing places in prose.',
     input_schema:{ type:'object', required:['ids'], properties:{
       ids:{ type:'array', items:{type:'string'}, description:'Card ids from get_guide_cards, best first, at most three.' } } } },
@@ -2625,6 +2648,10 @@ async function sisayRunTool(name, input) {
       return list.map(c => ({ id:c.id, name:c.name, category:c.category,
                               label:c.categoryLabel, about:c.description, address:c.address }));
     }
+    // Chips are a UI side-effect, not information for the model.
+    case 'offer_choices':
+      tgPaintChips('sisay-chips', input.choices, sisaySend);
+      return 'Choices shown.';
     case 'get_house_manual':
       return input.topic ? (SISAY_MANUAL[input.topic] || 'Not covered — the owners can confirm.') : SISAY_MANUAL;
     case 'suggest_experience': {
@@ -2726,6 +2753,11 @@ async function sisaySend(text) {
 
   sisayBusy = true;
   box.value = '';
+  // Contextual chips answered the LAST question — clear them so they cannot
+  // be tapped against a new one. offer_choices repaints if she asks again.
+  { const c = SISAY_COPY[sisayLang()].chips || [];
+    tgPaintChips('sisay-chips', null, sisaySend,
+      c.map(([ask,label]) => `<button onclick="sisayAsk('${ask.replace(/'/g,"\\'")}')">${label}</button>`).join('')); }
   // The tiles were a way in. Once they have been used, retire them so the
   // panel becomes the conversation rather than a menu with a chat under it.
   if (!sisayConversed) {
@@ -2773,7 +2805,7 @@ function sisayBubble(who, text) {
   el.className = 's-bubble s-' + who;
   if (who === 'sisay') {
     el.innerHTML = '<div class="sb-who">⚓ Sisay</div><div class="sb-body"></div>';
-    el.querySelector('.sb-body').textContent = text;
+    el.querySelector('.sb-body').innerHTML = tgRenderMarkdown(text);
   } else { el.textContent = text; }
   log.appendChild(el);
   log.scrollTop = log.scrollHeight;
@@ -2835,6 +2867,12 @@ function sisayOpen() {
   document.getElementById('sisay-fab').classList.add('hidden');
   if (!sisayStarted) { sisayStarted = true; sisayGreet(); }
   setTimeout(() => document.getElementById('sisay-input').focus(), 250);
+}
+function sisayNewChat() {
+  SISAY_MSGS = []; sisayConversed = false;
+  document.getElementById('sisay-log').innerHTML = '';
+  sisayApplyCopy();     // restores the opening chips
+  sisayGreet();
 }
 function sisayClose() {
   document.getElementById('sisay-panel').classList.remove('show');

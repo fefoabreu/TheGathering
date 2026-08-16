@@ -33,6 +33,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
+  <script src="agent-ui.js"></script>
   <style>
     /* ══ BATTLEFIELD TOKENS ══════════════════════════════════ */
     :root {
@@ -657,7 +658,23 @@
       font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.16em;
       text-transform:uppercase; color:var(--gold); margin-bottom:.4rem;
     }
-    .hb-body { white-space:pre-wrap; word-break:break-word; }
+    .hb-body { white-space:normal; word-break:break-word; }
+
+    /* Rendered model output — links, lists and tables inside a narrow panel. */
+    .hb-body p { margin:0 0 .5em; }
+    .hb-body p:last-child, .hb-body ul:last-child, .hb-body ol:last-child { margin-bottom:0; }
+    .hb-body ul, .hb-body ol { margin:.35em 0 .6em; padding-left:1.15em; }
+    .hb-body li { margin:.18em 0; }
+    .hb-body a { color:#8FC4E0; text-decoration:underline; text-underline-offset:2px;
+                word-break:break-word; overflow-wrap:anywhere; }
+    .hb-body code { font-size:.92em; padding:.1em .3em; border-radius:4px; background:rgba(255,255,255,.07); }
+    /* A table can always scroll inside its own box rather than stretching the panel. */
+    .hb-body .ag-tablewrap { overflow-x:auto; margin:.5em 0; -webkit-overflow-scrolling:touch; }
+    .hb-body .ag-table { width:100%; border-collapse:collapse; font-size:.92em; }
+    .hb-body .ag-table th, .hb-body .ag-table td {
+      text-align:left; padding:.3em .5em; border-bottom:1px solid rgba(232,220,200,.14); white-space:nowrap; }
+    .hb-body .ag-table th { font-weight:600; color:var(--gold); }
+
     .hb-tools { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.5rem; }
     .hb-tool {
       font-family:'Cinzel',serif; font-size:.56rem; letter-spacing:.08em;
@@ -3139,6 +3156,12 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 
 **The soundtrack.** The house has an official trilha sonora — a playlist the three owners curated to match the place. It is in get_house_info, with links for both Spotify and Apple Music. Mention it when it is genuinely useful — welcome and check-in material, anything about the Sonos or the sound system, or when someone is describing the house's character to a guest or a listing. It is a signature touch: offer it with pride, once, and never keep bringing it up.
 
+**Never make them type.** Whenever your reply ends in a question, call offer_choices with 2–4 short answers to that exact question. "Want more detail, or shall I mark it done?" needs chips that say those two things.
+
+**You are in a narrow panel.** Prefer short labelled lines to tables — a three-column table is unreadable at this width. Use a table only when the data genuinely is a grid AND has at most three columns; otherwise write "🔴 Cléverson-Corriglas — judicial notice — repair, high" one per line. Markdown renders properly, so use **bold** and [label](url) links rather than pasting bare URLs.
+
+**Search before you say you don't know.** The archive is not a last resort — it is where the owners put things. If someone asks about a name, a contract, a cost, a project or a decision and it is not in your live portal tools, call search_property_docs BEFORE saying you have no record. Say "not in the portal, and not in the Drive snapshot either" only after you have actually looked. If the snapshot is stale, say so and name the Drive document that would have it.
+
 **The archive.** You hold a distilled copy of the owners' Drive folder — the partnership agreement of 22 Nov 2023, the purchase and construction timeline, ownership and equity, registry costs, funding, rental terms and ROI, and the rules on selling a share or inheritance. Reach it with search_property_docs, and reach for it whenever a question touches the history, the deal or the paperwork. It is a snapshot, not a live feed: for current money — balances, contributions to date, this year's costs — say the Finanças spreadsheet in Drive is the authority rather than quoting a figure that may have moved. It deliberately holds no CPFs, bank accounts or personal contact details; if asked for those, say they are in the agreement in Drive and you do not carry them.
 
 **Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks, tasks and vendor records on request. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
@@ -3171,6 +3194,7 @@ const HANNA_TOOLS = [
       title:{type:'string'}, done:{type:'boolean'} } } },
   { name:'get_house_info', description:'Suites, capacity, house rules, the Estar management terms, and the house soundtrack.',
     input_schema:{ type:'object', properties:{} } },
+  TG_CHOICES_TOOL,
   { name:'search_property_docs', description:"The owners' Drive folder, distilled: the partnership agreement, the purchase and construction timeline, ownership and equity, costs and registry fees, how the purchase was funded, rental terms and ROI, the rules on selling a share and inheritance. Use this for any question about the history, the deal or the paperwork — do not guess at those.",
     input_schema:{ type:'object', required:['query'], properties:{ query:{ type:'string',
       description:'What you want to know, in plain words — e.g. "when did we buy the house and how long did the build take".' } } } },
@@ -3233,6 +3257,10 @@ async function hannaRunTool(name, input) {
     // Soundtrack is merged in from firebase-config.js rather than stored, so
     // it stays one definition shared with Sisay and survives an already-seeded
     // houseInfo doc.
+    case 'offer_choices':
+      tgPaintChips('hanna-chips', input.choices, hannaAsk);
+      return 'Choices shown.';
+
     case 'get_house_info': return { ...(storeGet('house') || {}),
                                     soundtrack: (typeof TG_SOUNDTRACK !== 'undefined' ? TG_SOUNDTRACK : undefined) };
 
@@ -3344,6 +3372,9 @@ async function hannaSend(text) {
 
   hannaBusy = true;
   input.value = '';
+  { const box = document.getElementById('hanna-chips');
+    if (box) box.innerHTML = HANNA_CHIPS
+      .map(([ask,label]) => `<div class="h-chip" onclick="hannaAsk('${ask.replace(/'/g,"\\'")}')">${label}</div>`).join(''); }
   hannaPaint('user', text);
   HANNA_MSGS.push({ role:'user', content:text });
 
@@ -3356,9 +3387,13 @@ async function hannaSend(text) {
       let first = true;
       const turn = await hannaCall(chunk => {
         if (first) { hannaTyping(false); first = false; }
-        body.textContent += chunk;
+        // Stream as plain text — re-parsing markdown on every token would be
+        // wasteful and would flicker half-formed tables. Render once, below.
+        body.dataset.raw = (body.dataset.raw || '') + chunk;
+        body.textContent = body.dataset.raw;
         hannaScroll();
       });
+      if (body.dataset.raw) body.innerHTML = tgRenderMarkdown(body.dataset.raw);
 
       HANNA_MSGS.push({ role:'assistant', content: turn.content });
       const calls = turn.content.filter(c => c.type === 'tool_use');
