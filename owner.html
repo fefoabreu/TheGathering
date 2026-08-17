@@ -833,6 +833,13 @@
     .vendor-name { font-size:1rem; font-weight:600; }
     .vendor-phone { font-size:.85rem; color:var(--text-dim); margin-top:.4rem; }
     .vendor-cost  { font-size:.78rem; color:var(--success); margin-top:.25rem; }
+    /*  Standing instructions about a contact — "call X before you call them",
+        what the relationship is, what matter they are engaged on. Set apart
+        from the contact details so it reads as guidance, not metadata. */
+    .vendor-notes {
+      font-size:.76rem; line-height:1.5; color:var(--text-dim); margin-top:.55rem;
+      padding-top:.55rem; border-top:1px solid var(--border);
+    }
 
 
     /* ══ CALENDAR NAV ════════════════════════════════════════════ */
@@ -2346,7 +2353,8 @@ const SEED_VENDORS = [
   { id:'broker',    group:'mgmt',    role:'🔑 Corretora',                name:'Adriane Kayser',        phone:'', cost:'',                        cadence:'',                         payKey:'broker'   },
 ];
 
-const VENDOR_GROUPS = { service:'Serviços Recorrentes', build:'Obra & Design', mgmt:'Gestão & Corretagem' };
+const VENDOR_GROUPS = { service:'Serviços Recorrentes', build:'Obra & Design',
+                        mgmt:'Gestão & Corretagem', legal:'Jurídico & Legal' };
 
 const SEED_HOUSE = {
   address:'Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000',
@@ -3364,7 +3372,9 @@ function renderVendors() {
   if (!list.length) { el.innerHTML = '<div class="empty-state">No vendors yet.</div>'; return; }
 
   // Grouped, so the build team does not read as weekly upkeep.
-  const order = ['service', 'build', 'mgmt'];
+  // A group missing from this list is silently dropped from the page — add
+  // it here AND to VENDOR_GROUPS, never just one.
+  const order = ['service', 'build', 'mgmt', 'legal'];
   const groups = {};
   list.forEach(v => { (groups[v.group || 'service'] ||= []).push(v); });
 
@@ -3385,6 +3395,7 @@ function vendorCard(v) {
             : `<div class="vendor-phone" style="opacity:.45">📞 in the Vault</div>`}
     ${v.cost    ? `<div class="vendor-cost">${esc(v.cost)}${pay ? ' · Pix: ' + esc(pay) : ''}</div>` : ''}
     ${v.cadence ? `<div class="vendor-phone" style="opacity:.7">🗓 ${esc(v.cadence)}</div>` : ''}
+    ${v.notes   ? `<div class="vendor-notes">${esc(v.notes)}</div>` : ''}
   </div>`;
 }
 
@@ -3519,6 +3530,8 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 **Never make them type.** Whenever your reply ends in a question, call offer_choices with 2–4 short answers to that exact question. "Want more detail, or shall I mark it done?" needs chips that say those two things.
 
 **You are in a narrow panel.** Prefer short labelled lines to tables — a three-column table is unreadable at this width. Use a table only when the data genuinely is a grid AND has at most three columns; otherwise write "🔴 Cléverson-Corriglas — judicial notice — repair, high" one per line. Markdown renders properly, so use **bold** and [label](url) links rather than pasting bare URLs.
+
+**⚖️ Contratos e Litígio — read it, never reconstruct it.** The governance doc "TheGathering Silveira 🌊🌄" carries a section titled **⚖️ Contratos e Litígio**, covering the Estar Garopaba contract items and rate table, and a **Guarda-Corpo** matter. Anything touching the Estar contract or its rates, the guarda-corpo, railing or deck safety, the glazing suppliers, or any legal or contractual question at all, is answered FROM that section — call search_property_docs, or analyse_document when the question is what something means, and read what is actually there. Deliberately, this prompt does not carry its contents: the section holds status, opinion and open decisions that change, so anything you state from memory will be wrong sooner than you think, and any legal position you improvise is worse than none. Read it, then answer. Where it lists open decisions, put them to the owners plainly and help them think through the trade-offs — that is the most useful thing you do here. You are not their lawyer: report what the document says and what it implies, flag where it is ambiguous, and leave the judgement to the advogada in the vendor directory (whose entry carries a standing instruction about who to notify before first contact — surface that whenever she comes up). Owners-only, always: the guest concierge knows nothing of this and it never reaches a guest.
 
 **Where things live — go to the archive FIRST, not last.** The portal holds four narrow things: bookings, calendar blocks, vendor records and house projects. Everything the owners actually wrote down — people, companies, conversations, plans, agreements, costs, who said what — lives in the Drive. So a question about a NAME you do not recognise is an archive question, and search_property_docs is your opening move, not your fallback. Do not walk the portal tools first hoping one of them knows: a DJ the owners were courting was never going to be in the vendor table, and checking it, then mail, then the calendar before opening the document that had him is three wrong answers before the right one. Portal tools first only when the question is plainly about a booking, a blocked date, a listed vendor or a tracked project.
 
