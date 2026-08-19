@@ -2086,15 +2086,7 @@
     <!-- ══ PORTALS (Links) ══ -->
     <div class="tab-panel" id="tab-links">
       <div class="section-title"><i class="ms ms-w ms-cost"></i> Quick Links</div>
-      <div class="grid-2" style="margin-bottom:2rem">
-        <a class="link-btn" href="https://www.airbnb.com/hosting/listings" target="_blank" rel="noopener"><span class="link-ico">🏡</span><div><div class="link-title">Airbnb Host Dashboard</div><div class="link-desc">Manage listings, messages, and reservations</div></div></a>
-        <a class="link-btn" href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener"><span class="link-ico">🔗</span><div><div class="link-title">Airbnb Listing</div><div class="link-desc">Public listing page — share with guests</div></div></a>
-        <a class="link-btn" href="https://www.instagram.com/thegatheringsilveira/" target="_blank" rel="noopener"><span class="link-ico">📸</span><div><div class="link-title">Instagram</div><div class="link-desc">@thegatheringsilveira</div></div></a>
-        <a class="link-btn" href="https://mysecurity.eufylife.com/#/camera" target="_blank" rel="noopener"><span class="link-ico">📷</span><div><div class="link-title">Eufy Security Cameras</div><div class="link-desc">Live camera access — mysecurity.eufylife.com</div></div></a>
-        <a class="link-btn" href="https://drive.google.com/drive/folders/1Q3Wo8OoiDPC_hls-2cgRextAZueU3gIV" target="_blank" rel="noopener"><span class="link-ico">📁</span><div><div class="link-title">Google Drive</div><div class="link-desc">All house documents, photos, and plans</div></div></a>
-        <a class="link-btn" href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" target="_blank" rel="noopener"><span class="link-ico">📐</span><div><div class="link-title">Interior Plans (PDF)</div><div class="link-desc">Architectural layouts — all 5 suites</div></div></a>
-        <a class="link-btn" href="https://maps.google.com/?q=Rua+Augusto+Germano+Wilke,+Praia+da+Silveira,+Garopaba+SC+88490-000" target="_blank" rel="noopener"><span class="link-ico">📍</span><div><div class="link-title">Google Maps</div><div class="link-desc">Rua Augusto Germano Wilke — Praia da Silveira</div></div></a>
-        <a class="link-btn" href="mailto:TheGatheringSilveira@gmail.com"><span class="link-ico">✉️</span><div><div class="link-title">House Email</div><div class="link-desc">TheGatheringSilveira@gmail.com</div></div></a>
+      <div class="grid-2" id="portal-grid" style="margin-bottom:2rem"></div></div></a>
       </div>
       <div class="section-title"><i class="ms ms-w ms-cost"></i> WiFi Credentials</div>
       <div class="grid-2">
@@ -2783,6 +2775,7 @@ function init() {
   renderBlocks();
   renderVendors();
   renderRecurring();
+  renderPortals();
   createParticles();
   showBattlefield();
 }
@@ -3362,6 +3355,21 @@ function vendorPay(v) {
   return (s.vendorPay && s.vendorPay[v.payKey || v.id]) || '';
 }
 
+/*  The Portals grid renders from TG_HOUSE_LINKS, the same list Hanna reads
+    through get_house_info and the guest site reads through tgGuestLinks().
+    It used to be eight hardcoded <a> tags, which is how the Instagram URL
+    came to exist in three places and be readable by neither agent. */
+function renderPortals() {
+  const el = document.getElementById('portal-grid');
+  if (!el || typeof TG_HOUSE_LINKS === 'undefined') return;
+  el.innerHTML = TG_HOUSE_LINKS.map(l => `
+    <a class="link-btn" href="${esc(l.url)}"${l.url.startsWith('mailto:') ? '' : ' target="_blank" rel="noopener"'}>
+      <span class="link-ico">${esc(l.icon)}</span>
+      <div><div class="link-title">${esc(l.title)}</div>
+           <div class="link-desc">${esc(l.desc)}</div></div>
+    </a>`).join('');
+}
+
 function renderVendors() {
   const el = document.getElementById('vendor-grid');
   if (!el) return;
@@ -3533,6 +3541,8 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 
 **⚖️ Contratos e Litígio — read it, never reconstruct it.** The governance doc "TheGathering Silveira 🌊🌄" carries a section titled **⚖️ Contratos e Litígio**, covering the Estar Garopaba contract items and rate table, and a **Guarda-Corpo** matter. Anything touching the Estar contract or its rates, the guarda-corpo, railing or deck safety, the glazing suppliers, or any legal or contractual question at all, is answered FROM that section — call search_property_docs, or analyse_document when the question is what something means, and read what is actually there. Deliberately, this prompt does not carry its contents: the section holds status, opinion and open decisions that change, so anything you state from memory will be wrong sooner than you think, and any legal position you improvise is worse than none. Read it, then answer. Where it lists open decisions, put them to the owners plainly and help them think through the trade-offs — that is the most useful thing you do here. You are not their lawyer: report what the document says and what it implies, flag where it is ambiguous, and leave the judgement to the advogada in the vendor directory (whose entry carries a standing instruction about who to notify before first contact — surface that whenever she comes up). Owners-only, always: the guest concierge knows nothing of this and it never reaches a guest.
 
+**The house's own links live in get_house_info, not in the archive.** Instagram, the Airbnb listing and the host dashboard, the house site, the contact email, the Eufy cameras, the Drive folder, the floor plans, the map, the address. These are one cheap tool call away, so never search the archive for them and never say you do not have one — call get_house_info and read it off. A question as small as "what's the house's Instagram?" should be answered in one line, immediately.
+
 **Where things live — go to the archive FIRST, not last.** The portal holds four narrow things: bookings, calendar blocks, vendor records and house projects. Everything the owners actually wrote down — people, companies, conversations, plans, agreements, costs, who said what — lives in the Drive. So a question about a NAME you do not recognise is an archive question, and search_property_docs is your opening move, not your fallback. Do not walk the portal tools first hoping one of them knows: a DJ the owners were courting was never going to be in the vendor table, and checking it, then mail, then the calendar before opening the document that had him is three wrong answers before the right one. Portal tools first only when the question is plainly about a booking, a blocked date, a listed vendor or a tracked project.
 
 **Live Drive vs snapshot.** search_property_docs reads the REAL Drive when the owner is signed in with Google: the result says source drive-live, and each hit carries inPropertyFolder. When it says stored-snapshot you are reading a hand-made copy that may be weeks old. Either way the ANSWER comes first — a caveat is a short clause at the end ("that's from the snapshot, so worth a look at the doc itself"), never an opening paragraph and never a preamble the owner has to read past. Flag a hit with inPropertyFolder false the same way, in passing, because it means the file lives outside the property folder.
@@ -3567,7 +3577,7 @@ const HANNA_TOOLS = [
   { name:'update_task', description:'Mark a project done or not done by its title.',
     input_schema:{ type:'object', required:['title'], properties:{
       title:{type:'string'}, done:{type:'boolean'} } } },
-  { name:'get_house_info', description:'Suites, capacity, house rules, the Estar management terms, and the house soundtrack.',
+  { name:'get_house_info', description:"Suites, capacity, house rules, the Estar management terms, the house soundtrack, and the house's own links and address — Instagram, the Airbnb listing and host dashboard, the site, the contact email, the Eufy cameras, the Drive folder, the floor plans, the map. Call it for any 'what is the house's X' question, social handles and portal links included.",
     input_schema:{ type:'object', properties:{} } },
   TG_CHOICES_TOOL,
   { name:'analyse_document', description:"Pull a document from the Drive and reason over it — contract review, clause implications, what an obligation actually commits the owners to. Use this rather than search_property_docs when the question is 'what does this MEAN' rather than 'what does it say'. Routed to a stronger model, so reach for it when the thinking is the point.",
@@ -3713,7 +3723,11 @@ async function hannaRunTool(name, input) {
       return 'Choices shown.';
 
     case 'get_house_info': return { ...(storeGet('house') || {}),
-                                    soundtrack: (typeof TG_SOUNDTRACK !== 'undefined' ? TG_SOUNDTRACK : undefined) };
+                                    soundtrack: (typeof TG_SOUNDTRACK !== 'undefined' ? TG_SOUNDTRACK : undefined),
+                                    // The full link list, owner-only entries included — she serves
+                                    // the owners, so she gets the host dashboard and the cameras too.
+                                    links:   (typeof TG_HOUSE_LINKS   !== 'undefined' ? TG_HOUSE_LINKS   : undefined),
+                                    address: (typeof TG_HOUSE_ADDRESS !== 'undefined' ? TG_HOUSE_ADDRESS : undefined) };
 
     // LIVE Drive first, stored snapshot second. The snapshot is a photograph
     // of the folder taken by hand; the Drive is the folder. When an owner is

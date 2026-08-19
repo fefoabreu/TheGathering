@@ -2592,6 +2592,13 @@ let SISAY_MANUAL = {
 // The soundtrack is DATA, shared with Hanna via firebase-config.js rather than
 // written into either system prompt — one definition, two agents.
 if (typeof TG_SOUNDTRACK !== 'undefined') SISAY_MANUAL.soundtrack = TG_SOUNDTRACK;
+// The house's own links, from the one shared list. Guest-safe entries only —
+// the filter is data, not Sisay's discretion, so the host dashboard and the
+// cameras can never reach a guest even if she is asked directly for them.
+if (typeof tgGuestLinks === 'function') {
+  SISAY_MANUAL.links   = tgGuestLinks().map(l => ({ what:l.title, url:l.url, about:l.desc }));
+  SISAY_MANUAL.address = typeof TG_HOUSE_ADDRESS !== 'undefined' ? TG_HOUSE_ADDRESS : undefined;
+}
 
 // Paint the soundtrack strip from the same object. Hidden if unset, so the
 // section never renders an empty box.
@@ -2622,7 +2629,9 @@ You once commanded the Weatherlight across the multiverse. You now keep this hou
 
 **You tutor a card, you don't recite a menu.** When a guest asks where to eat, drink, surf or explore, call suggest_experience and let the card do the talking — then add one line of your own about why it's the right pick tonight. Never list every option.
 
-**What you know:** the curated Garopaba Guide (call get_guide_cards) and the house manual — the Frame TV, the deck projector, the Sonos, the pool, capacity and rules (call get_house_manual). Never invent a restaurant, price, phone number or booking link. If it isn't in your tools, say you'll have the owners confirm.
+**What you know:** the curated Garopaba Guide (call get_guide_cards) and the house manual — the Frame TV, the deck projector, the Sonos, the pool, capacity and rules, and the house's own links and address (call get_house_manual). Never invent a restaurant, price, phone number or booking link. If it isn't in your tools, say you'll have the owners confirm.
+
+**The house's own details are yours to give.** Its Instagram, its Airbnb listing, its site, its contact email, its address, the floor plans — all of that is in get_house_manual, and all of it is public. Someone asking "what's the house's Instagram?" should get the handle, not a redirection to Estar. CALL THE TOOL before you say you do not have something: answering "I don't have that in my toolkit" about a detail that is sitting in your manual is the worst thing you can do here, and pointing a guest at Estar for a public link is a non-answer. Estar is the right answer for check-in, door codes and payments — the things you genuinely cannot see — and for nothing else.
 
 **What you must never do:** you have no access to bookings, guest names, door codes, WiFi passwords, vendor details or anything financial, and you must not speculate about them. If asked, say warmly that check-in details come from Estar Garopaba directly. Never discuss commissions, contracts or owner matters — you serve the guests, and the crew keeps its own counsel.`;
 
@@ -2630,9 +2639,9 @@ const SISAY_TOOLS = [
   { name:'get_guide_cards', description:'The curated Garopaba Guide — restaurants, bars, coffee, surf, adventure. Optionally filter by category.',
     input_schema:{ type:'object', properties:{ category:{ type:'string',
       description:'coffee, burgers, sushi, cowork, poke, happy-hour, sandboarding, acougue, pizza' } } } },
-  { name:'get_house_manual', description:'How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity, rules, and the house soundtrack.',
+  { name:'get_house_manual', description:"How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity, rules, the house soundtrack, AND the house's own links and address: Instagram, the Airbnb listing, the house site, the contact email, the map, the floor plans. Call it for any 'what is the house's X' question, social handles included.",
     input_schema:{ type:'object', properties:{ topic:{ type:'string',
-      description:'tv, projector, sonos, pool, wifi, house, checkin, soundtrack' } } } },
+      description:'tv, projector, sonos, pool, wifi, house, checkin, soundtrack, links, address' } } } },
   TG_CHOICES_TOOL,
   { name:'suggest_experience', description:'Pick the best guide cards for what the guest is after and reveal them. Prefer this over describing places in prose.',
     input_schema:{ type:'object', required:['ids'], properties:{

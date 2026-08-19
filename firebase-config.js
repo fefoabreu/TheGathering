@@ -144,3 +144,64 @@ const TG_ALLOW_PASSWORD_FALLBACK = true;
 // for now — inside, all three owners see everything, as in the shared Google
 // Doc. It is a shared team password, not a per-person credential.
 const TG_GATE_PASSWORD = "@tgs";
+
+// ──────────────────────────────────────────────────────────────
+//  The house links — one list, three consumers
+// ──────────────────────────────────────────────────────────────
+//  Same reasoning as TG_SOUNDTRACK above, and it should have been done
+//  here from the start. The Instagram URL used to exist three times —
+//  hardcoded in the guest footer, hardcoded again in the owner Portals
+//  tab, and written in the Google Doc — and in none of the places an
+//  agent could read. So Sisay answered "I don't have the house's
+//  Instagram handle" on a page whose own footer was rendering it.
+//
+//  Every consumer now reads THIS list: the guest footer, the owner
+//  Portals grid, Sisay's house manual and Hanna's get_house_info.
+//  Add a link here and all four follow. Add it anywhere else and you
+//  have recreated the bug.
+//
+//  `guest: true` marks what a guest may be told. Owner-only entries
+//  (host dashboard, cameras, Drive) never reach Sisay — she filters on
+//  this flag, she is not trusted to judge it.
+//
+//  URLs and public handles only. Passwords — the mailbox password, the
+//  WiFi key, camera credentials — live in the Vault (gathering/secrets)
+//  and never in this file: the repo is public.
+// ──────────────────────────────────────────────────────────────
+const TG_HOUSE_LINKS = [
+  { id:'instagram', guest:true,  icon:'📸', title:'Instagram',
+    url:'https://www.instagram.com/thegatheringsilveira/',
+    handle:'@thegatheringsilveira',
+    desc:'The house on Instagram — @thegatheringsilveira' },
+  { id:'airbnb', guest:true,  icon:'🏡', title:'Airbnb Listing',
+    url:'https://www.airbnb.com/rooms/1608023407293236428',
+    desc:'The public listing — this is the one to share and to book through' },
+  { id:'site', guest:true,  icon:'🌊', title:'House Site',
+    url:'https://fefoabreu.me/TheGathering/',
+    desc:'TheGathering Silveira — the house’s own site' },
+  { id:'email', guest:true,  icon:'✉️', title:'House Email',
+    url:'mailto:TheGatheringSilveira@gmail.com',
+    handle:'TheGatheringSilveira@gmail.com',
+    desc:'TheGatheringSilveira@gmail.com' },
+  { id:'maps', guest:true,  icon:'📍', title:'Google Maps',
+    url:'https://maps.google.com/?q=Rua+Augusto+Germano+Wilke,+Praia+da+Silveira,+Garopaba+SC+88490-000',
+    desc:'Rua Augusto Germano Wilke, s/n° — Praia da Silveira, Garopaba SC 88490-000' },
+  { id:'plans', guest:true,  icon:'📐', title:'Interior Plans (PDF)',
+    url:'https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view',
+    desc:'Architectural layouts — all 5 suites' },
+  { id:'airbnb-host', guest:false, icon:'🔑', title:'Airbnb Host Dashboard',
+    url:'https://www.airbnb.com/hosting/listings',
+    desc:'Manage listings, messages and reservations' },
+  { id:'eufy', guest:false, icon:'📷', title:'Eufy Security Cameras',
+    url:'https://mysecurity.eufylife.com/#/camera',
+    desc:'Live camera access — mysecurity.eufylife.com' },
+  { id:'drive', guest:false, icon:'📁', title:'Google Drive',
+    url:'https://drive.google.com/drive/folders/1Q3Wo8OoiDPC_hls-2cgRextAZueU3gIV',
+    desc:'All house documents, photos and plans' },
+];
+
+/** The links a guest may be given. Sisay reads only this. */
+function tgGuestLinks() { return TG_HOUSE_LINKS.filter(l => l.guest); }
+
+// The house's own address, in one place for the same reason.
+const TG_HOUSE_ADDRESS = 'Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000';
