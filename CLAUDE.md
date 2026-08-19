@@ -50,22 +50,54 @@ leave account creation and password entry to Fêfo.
 
 ## Hanna's property knowledge
 
-Hanna answers questions about the house's history, the deal and the paperwork from
-a **snapshot** of the owners' Drive folder (Property Mgmt → Garopaba → The Gathering
-Silveira), not a live feed. It is not a Drive integration — there is no OAuth.
+Hanna reads the **live Google Doc** when an owner is signed in with Google. The
+stored snapshot is now a genuine fallback, not the usual answer.
 
-- Source pack: `worker/knowledge.local.json` — **gitignored, never commit it**
-- Upload: `worker/push-knowledge.sh` → Cloudflare KV `HANNA_CACHE / knowledge:v1`
-- Served by: `handleDocs()` in `worker/src/index.js`, `action: 'docs'`
-- Reached by: Hanna's `search_property_docs` tool in `owner.html`
+**Live path (default).** `search_property_docs` → `loadGovernanceDoc()` finds
+"TheGathering Silveira 🌊🌄" in the Drive, exports it as plain text, splits it on
+its own emoji headings and searches the sections in memory. Fetched once per
+session and cached in `TG_DOC`; the doc id is cached in `localStorage`
+(`tg_govdoc_id`) and re-resolved by name if it goes stale. Every result carries
+`allSections`, so Hanna can see the headings she has not searched yet.
 
-It lives in KV rather than Firestore on purpose: guests on the public site hold
-anonymous Firebase tokens, and `firestore.rules` grants any signed-in caller the
-`gathering` collection. KV is only reachable from inside the Worker.
+Two traps, both already hit and fixed — do not reintroduce them:
+- Drive's `fullText contains 'a b c'` is a **literal phrase** match, so a
+  natural-language question matched nothing and fell through to the snapshot.
+  `driveSearch()` now ORs the distinctive terms.
+- Section splitting keyed only on "line starts with an emoji" **destroyed** the
+  House Info block: its list items (📍 📧 📸) each opened a new section whose
+  empty body was then discarded. A heading must be emoji-led **and** preceded by
+  a blank line.
 
-The pack deliberately omits CPFs, bank accounts, home addresses and personal phone
-numbers — for owners and third parties alike. Re-run the script when the source
-documents change materially.
+**Snapshot path (fallback).** Used when no Google token, or when the live read
+fails — in which case the result carries `liveReadFailed` and Hanna is told to
+say so. Source pack `worker/knowledge.local.json` — **gitignored, never commit
+it** — pushed by `worker/push-knowledge.sh` to Cloudflare KV `HANNA_CACHE /
+knowledge:v1`, served by `handleDocs()` in `worker/src/index.js`. It lives in KV
+rather than Firestore because guests hold anonymous Firebase tokens and
+`firestore.rules` grants any signed-in caller the `gathering` collection.
+
+The pack omits CPFs, bank accounts, home addresses, personal phone numbers and
+all credentials. Re-run the script when the source documents change materially.
+
+## House links and other shared facts
+
+`TG_HOUSE_LINKS` in `firebase-config.js` is the single source for the house's
+links, and `TG_SOUNDTRACK` for the playlist. `firebase-config.js` is the only
+file both pages load, which is why shared facts belong there.
+
+Four consumers read the link list: the owner Portals grid (`renderPortals()`),
+Hanna's `get_house_info`, Sisay's manual, and `tgGuestLinks()`. **Never hardcode
+a house link anywhere else** — the Instagram URL was once written in the guest
+footer and the Portals tab and in neither place an agent could read, so Sisay
+told a guest she did not have it while the footer below her rendered it.
+
+Entries carry `guest: true/false`; Sisay only ever receives the filtered list, so
+guest-safety is data rather than model discretion. URLs and public handles only —
+passwords live in the Vault (`gathering/secrets`), because this repo is public.
+
+The guest footer stays hardcoded on purpose: its labels are `TG_PT` translation
+keys, so rendering it from data would break i18n.
 
 ## Conventions
 

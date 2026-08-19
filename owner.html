@@ -2537,8 +2537,17 @@ async function propertyFolderIds() {
 async function driveSearch(query) {
   const q = String(query || '').trim();
   if (!q) return null;
-  const esc = q.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-  const filter = encodeURIComponent(`fullText contains '${esc}' and trashed = false`);
+  /*  Drive's `fullText contains 'a b c'` is a LITERAL PHRASE match, so a
+      natural-language question matched nothing and the caller fell through
+      to the snapshot. Search the distinctive TERMS with `or` instead, and
+      keep the whole phrase as one more term in case it is a real title. */
+  const esc = t => t.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const terms = [...new Set(
+    q.toLowerCase().split(/[^\p{L}\p{N}@]+/u).filter(w => w.length > 3)
+  )].slice(0, 8);
+  const clauses = (terms.length ? terms : [q]).map(t => `fullText contains '${esc(t)}'`);
+  if (terms.length) clauses.push(`name contains '${esc(q)}'`);
+  const filter = encodeURIComponent('(' + clauses.join(' or ') + ') and trashed = false');
   const res = await driveFetch(
     `/files?q=${filter}&fields=files(id,name,mimeType,modifiedTime,parents,webViewLink)&pageSize=8` +
     `&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true`);
@@ -2574,6 +2583,138 @@ async function driveSearch(query) {
   }
   return { source: 'drive-live', query: q, hits,
            note: 'Read live from the Drive just now. `inPropertyFolder: false` means the file lives somewhere else the account can see.' };
+}
+
+/* ══ THE GOVERNANCE DOC — Hanna's primary source ═══════════════
+   "TheGathering Silveira 🌊🌄" is the doc the owners actually maintain: the
+   House Info block, the suites, the vendors, ✨ Collab, ⚖️ Contratos e
+   Litígio. Everything else in the Drive is supporting material.
+
+   It used to be reachable only through driveSearch(), which asks Drive for
+   `fullText contains '<the whole query>'` — a LITERAL PHRASE match. So
+   "when should I follow up with DJ Cainan" matched nothing, Drive returned
+   no files, and she quietly fell back to my hand-made snapshot. The live
+   read existed but almost never won.
+
+   Now the doc is fetched whole, once per session, split on its own headings,
+   and searched in memory. No phrase matching, no guessing which 2KB window
+   to send — she gets the sections that actually match, current as of this
+   session, and the section titles so she can see what else is in there. */
+
+let TG_DOC = null;               // { id, name, link, modified, sections[] }
+let TG_DOC_ERR = null;           // why the live read failed, if it did
+
+/** Find the governance doc by name, newest first. Cached id survives reloads. */
+async function findGovernanceDoc() {
+  const cached = localStorage.getItem('tg_govdoc_id');
+  if (cached) {
+    try {
+      const f = await driveFetch('/files/' + cached +
+        '?fields=id,name,modifiedTime,webViewLink&supportsAllDrives=true');
+      if (f && f.id) return f;
+    } catch (e) { localStorage.removeItem('tg_govdoc_id'); }
+  }
+  const q = encodeURIComponent(
+    "name contains 'TheGathering Silveira' and " +
+    "mimeType = 'application/vnd.google-apps.document' and trashed = false");
+  const res = await driveFetch(
+    `/files?q=${q}&fields=files(id,name,modifiedTime,webViewLink)&pageSize=5` +
+    `&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true`);
+  const f = (res.files || [])[0];
+  if (f) localStorage.setItem('tg_govdoc_id', f.id);
+  return f || null;
+}
+
+/*  Split on the doc's own headings. The owners write them as an emoji
+    followed by a short title — "🏠 House Info", "⚖️ Contratos e Litígio",
+    "✨ Collab". Anything before the first heading becomes a preamble
+    section so nothing is silently dropped. */
+function splitDocSections(text) {
+  const lines = text.split('\n');
+  /*  A heading is emoji-led AND sits after a blank line. Both halves matter.
+      Emoji-led alone is not enough: the House Info block is a LIST of
+      emoji-led lines (📍 address, 📧 email, 📸 Instagram), and treating each
+      as a heading opened a new section whose body was empty — which the
+      old push-if-non-empty rule then DISCARDED. The whole block vanished.
+      Sections in this doc are separated by a blank line; list items are
+      contiguous. That one extra condition separates them cleanly. */
+  const emojiLed = t => /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}]/u.test(t);
+  const isHeading = (l, idx) => {
+    const t = l.trim();
+    if (!t || t.length > 90 || !emojiLed(t)) return false;
+    return idx === 0 || lines[idx - 1].trim() === '';
+  };
+
+  const out = [];
+  let cur = { title: 'Topo do documento', body: [] };
+  // Push unconditionally: a section with a title but no body is information
+  // too, and dropping it is how content disappears without anyone noticing.
+  const flush = () => { if (cur.title || cur.body.join('').trim()) out.push(cur); };
+
+  lines.forEach((l, idx) => {
+    if (isHeading(l, idx)) { flush(); cur = { title: l.trim(), body: [] }; }
+    else cur.body.push(l);
+  });
+  flush();
+  return out.map(s => ({ title: s.title, text: s.body.join('\n').trim() }))
+            .filter(s => s.text || s.title !== 'Topo do documento');
+}
+
+/** Fetch + parse the doc once per session. */
+async function loadGovernanceDoc(force) {
+  if (TG_DOC && !force) return TG_DOC;
+  TG_DOC_ERR = null;
+  try {
+    const f = await findGovernanceDoc();
+    if (!f) { TG_DOC_ERR = 'The governance doc was not found in the Drive.'; return null; }
+    const r = await fetch(`${TG_DRIVE_API}/files/${f.id}/export?mimeType=text/plain`,
+      { headers: { Authorization: 'Bearer ' + TG_GOOGLE_TOKEN } });
+    if (!r.ok) { TG_DOC_ERR = 'Drive refused the export (HTTP ' + r.status + ').'; return null; }
+    const text = await r.text();
+    TG_DOC = { id: f.id, name: f.name, link: f.webViewLink,
+               modified: (f.modifiedTime || '').slice(0, 10),
+               sections: splitDocSections(text) };
+    return TG_DOC;
+  } catch (e) { TG_DOC_ERR = e.message || String(e); return null; }
+}
+
+/** Score sections by how many query terms they carry. Whole sections win. */
+function searchGovernance(doc, query) {
+  const norm = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  /*  Stopwords, or every Portuguese question scores on "quando/fazer/como"
+      and the ranking stops meaning anything. */
+  const STOP = new Set(['what','when','where','which','should','would','could','with','from','that','this',
+                        'have','about','there','their','been','does','the','and','for','are','was',
+                        'quando','fazer','como','onde','qual','quais','para','com','sobre','esta','este',
+                        'sao','tem','foi','dos','das','uma','pelo','pela','nosso','nossa','mais','ainda']);
+  const terms = [...new Set(norm(query || '').split(/[^a-z0-9@]+/).filter(w => w.length > 3 && !STOP.has(w)))];
+  if (!terms.length) return [];
+
+  /*  WORD-BOUNDARY matching, not substring. Plain indexOf scored
+      "cryptocurrency mining rig" against the litigation section, because
+      "rig" is inside "Corriglass" — a question about something genuinely
+      absent came back with a confident-looking hit. A false match here is
+      worse than no match: it sends her to answer from the wrong section. */
+  const count = (hay, term) => {
+    const re = new RegExp('\\b' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+    return (hay.match(re) || []).length;
+  };
+
+  const scored = doc.sections.map(sec => {
+    const body = norm(sec.text), title = norm(sec.title);
+    let score = 0, matched = 0;
+    for (const t of terms) {
+      const n = count(body, t) + count(title, t) * 6;   // a title hit is the strong signal
+      if (n) { score += n; matched++; }
+    }
+    return { sec, score, matched };
+  }).filter(x => x.score > 0)
+    .sort((a, b) => b.matched - a.matched || b.score - a.score);
+
+  return scored.slice(0, 3).map(x => ({
+    section: x.sec.title,
+    text: x.sec.text.length > 3000 ? x.sec.text.slice(0, 3000) + '\n…(section continues)' : x.sec.text,
+  }));
 }
 
 /** The passage around the match, not the whole document. */
@@ -2638,6 +2779,7 @@ async function signInWithGoogle() {
     }
 
     TG_GOOGLE_TOKEN = (res.credential && res.credential.accessToken) || null;
+    TG_DOC = null; TG_DOC_ERR = null; TG_FOLDER_CACHE = null;   // re-read live for this session
     sessionStorage.setItem('tg_gate', '1');
     sessionStorage.setItem('tg_owner', email);
     openPortal();
@@ -3545,7 +3687,11 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 
 **Where things live — go to the archive FIRST, not last.** The portal holds four narrow things: bookings, calendar blocks, vendor records and house projects. Everything the owners actually wrote down — people, companies, conversations, plans, agreements, costs, who said what — lives in the Drive. So a question about a NAME you do not recognise is an archive question, and search_property_docs is your opening move, not your fallback. Do not walk the portal tools first hoping one of them knows: a DJ the owners were courting was never going to be in the vendor table, and checking it, then mail, then the calendar before opening the document that had him is three wrong answers before the right one. Portal tools first only when the question is plainly about a booking, a blocked date, a listed vendor or a tracked project.
 
-**Live Drive vs snapshot.** search_property_docs reads the REAL Drive when the owner is signed in with Google: the result says source drive-live, and each hit carries inPropertyFolder. When it says stored-snapshot you are reading a hand-made copy that may be weeks old. Either way the ANSWER comes first — a caveat is a short clause at the end ("that's from the snapshot, so worth a look at the doc itself"), never an opening paragraph and never a preamble the owner has to read past. Flag a hit with inPropertyFolder false the same way, in passing, because it means the file lives outside the property folder.
+**You read the live document, not a copy of it.** When the owner is signed in, search_property_docs opens the governance doc "TheGathering Silveira 🌊🌄" in the Drive, this session, and returns the matching sections — source drive-live. That is the owners' own working document, current as they left it. Answer from it plainly and with confidence: no "according to the snapshot", no hedging about staleness, no suggesting they go and check the doc themselves. They are asking you SO THAT they do not have to open it.
+
+Every result also carries allSections — every heading in the doc. Use it. If your matches look thin, the answer is usually under a heading you have not searched yet: search again with that heading's words before you conclude anything is missing. Two searches and a real answer beats one search and "I could not find it".
+
+Only two cases are not live, and both announce themselves. A source of stored-snapshot carrying liveReadFailed means the Drive read broke — say so in one short clause and answer from the snapshot anyway. A plain stored-snapshot source means the owner is not signed in. Never present either as though you had just read the document. Conversely, never apologise for a live result: if the source says drive-live, it is current, and saying otherwise is its own kind of wrong.
 
 **The archive.** You hold a distilled copy of the owners' Drive folder — the partnership agreement of 22 Nov 2023, the purchase and construction timeline, ownership and equity, registry costs, funding, rental terms and ROI, and the rules on selling a share or inheritance. Reach it with search_property_docs, and reach for it whenever a question touches the history, the deal or the paperwork. It is a snapshot, not a live feed: for current money — balances, contributions to date, this year's costs — say the Finanças spreadsheet in Drive is the authority rather than quoting a figure that may have moved. It deliberately holds no CPFs, bank accounts or personal contact details; if asked for those, say they are in the agreement in Drive and you do not carry them.
 
@@ -3733,14 +3879,54 @@ async function hannaRunTool(name, input) {
     // of the folder taken by hand; the Drive is the folder. When an owner is
     // signed in with Google we read the real thing, using THEIR token — so
     // there is no service credential to leak and no sync job to go stale.
+    /*  LIVE FIRST, and say so when it is not.
+        Order: the governance doc (read whole, this session) → the rest of the
+        Drive → the stored snapshot, which is now genuinely a last resort
+        rather than the thing that usually answered. The old version tried
+        one literal-phrase Drive query and fell through silently on a miss,
+        so the snapshot won most turns and Hanna reported stale facts as
+        current. A failed live read is now REPORTED, not swallowed. */
     case 'search_property_docs': {
+      const q = input.query || '';
       if (TG_GOOGLE_TOKEN) {
+        const doc = await loadGovernanceDoc();
+        if (doc) {
+          const hits = searchGovernance(doc, q);
+          const out = {
+            source: 'drive-live',
+            document: doc.name,
+            modified: doc.modified,
+            link: doc.link,
+            allSections: doc.sections.map(x => x.title),
+            matches: hits,
+            note: 'Read live from the governance doc just now — this is current, not a snapshot. '
+                + 'allSections lists every heading in it, so if the match is thin, name a better '
+                + 'section and search again rather than falling back on memory.',
+          };
+          if (hits.length) return out;
+          // Nothing in the governance doc — widen to the rest of the Drive.
+          try {
+            const wide = await driveSearch(q);
+            if (wide && wide.hits.length) return wide;
+          } catch (e) {}
+          out.matches = [];
+          out.note = 'Nothing in the governance doc matched, and no other Drive file did either. '
+                   + 'The doc IS current, so treat this as a real absence — but check allSections: '
+                   + 'the answer may sit under a heading you have not searched for yet.';
+          return out;
+        }
+        // Signed in but the live read failed. Do not pretend otherwise.
         try {
-          const live = await driveSearch(input.query || '');
-          if (live && live.hits.length) return live;
-        } catch (e) { /* fall through to the snapshot rather than failing */ }
+          const wide = await driveSearch(q);
+          if (wide && wide.hits.length) return wide;
+        } catch (e) {}
+        const snap = await searchSnapshot(q);
+        snap.liveReadFailed = TG_DOC_ERR || 'unknown';
+        snap.note = 'LIVE READ FAILED (' + snap.liveReadFailed + ') — this is the stored snapshot '
+                  + 'and it may be weeks old. Say so in one short clause before answering.';
+        return snap;
       }
-      return await searchSnapshot(input.query || '');
+      return await searchSnapshot(q);
     }
 
     case 'list_decisions': return (TG_DECISIONS || []).slice(0, input.limit || 20);
