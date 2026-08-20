@@ -99,6 +99,35 @@ passwords live in the Vault (`gathering/secrets`), because this repo is public.
 The guest footer stays hardcoded on purpose: its labels are `TG_PT` translation
 keys, so rendering it from data would break i18n.
 
+## Hanna's panel
+
+Three states, mutually exclusive, set through `hannaSetState('dock'|'max'|'min')`
+— never by adding the classes directly, or a panel ends up both maximised and
+collapsed (a 96vh title bar). `hannaState()` reads the current one. The choice
+persists in `localStorage.tg_hanna_state`, but opening never restores straight
+into `min`: the owner just asked for the panel.
+
+`.hp-max` / `.hp-min` are declared **after** the 650px media query on purpose.
+Same specificity, so source order decides — declared before it, a maximised
+panel would snap back to the docked size on a phone, which is where maximising
+matters most.
+
+Close and minimise are different acts: close returns to the astrolabe, minimise
+parks the conversation in the header bar with a count of what is in it.
+
+**Openers** come from `hannaOpeners()`, built from live house data — calendar
+collisions first (clause 6.4 is the expensive one), then the next real arrival,
+the loudest open project, an unassigned recurring service, open Chronicle
+decisions. Every source is wrapped in its own try/catch and falls back to
+`HANNA_CHIPS_FALLBACK`. Two things to keep:
+
+- Airbnb writes blocked spans as "Airbnb (Not available)". Those are filtered —
+  offering "what should I have ready for Not available?" is worse than offering
+  nothing.
+- The ask goes in `data-ask`, not an inline `onclick`. These strings are built
+  from house data, and a vendor role or block label containing an apostrophe
+  used to break out of the handler.
+
 ## Conventions
 
 - Single-file pages: keep CSS in the page's `<style>` and JS in its `<script>`.

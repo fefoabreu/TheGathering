@@ -650,6 +650,62 @@
       .hanna-panel { right:.6rem; left:.6rem; bottom:.6rem; width:auto; max-height:80vh; }
     }
 
+    /* ══ PANEL STATES — docked · maximised · minimised ════════════
+       Declared AFTER the 650px media query on purpose. These rules and the
+       phone rule have the same specificity, so source order decides: put
+       them first and a maximised panel would snap back to the docked size
+       on a phone, which is exactly where maximising matters most. See the
+       CSS-ordering note in CLAUDE.md. */
+
+    /*  Maximised: a focused reading surface. Not literally fullscreen —
+        a margin keeps the deck visible behind it, so it reads as a panel
+        that grew rather than a page that navigated. */
+    .hanna-panel.hp-max {
+      right:2vw; left:2vw; bottom:2vh; top:2vh;
+      width:auto; max-height:none; height:96vh;
+      border-radius:18px;
+      /*  Fully opaque. The docked panel sits at .99 alpha, which is invisible
+          over a small footprint but ghosts the deck's gold headings through a
+          full-screen surface — you could read "COMMANDER DECK" behind her name. */
+      background:linear-gradient(170deg,#101624,#090D16);
+    }
+    /*  The conversation itself stays a comfortable measure. Text run to the
+        full width of a 1600px window is unreadable, so the log centres and
+        the extra space becomes margin. */
+    .hanna-panel.hp-max .hanna-log,
+    .hanna-panel.hp-max .hanna-suggest,
+    .hanna-panel.hp-max .hanna-input-row {
+      width:min(820px,100%); margin-left:auto; margin-right:auto;
+    }
+    .hanna-panel.hp-max .hanna-log { padding:1.6rem 1.1rem; gap:1.1rem; }
+    .hanna-panel.hp-max .h-bubble { max-width:74%; font-size:.95rem; }
+    .hanna-panel.hp-max .hanna-suggest { flex-wrap:wrap; overflow-x:visible; }
+
+    /*  Minimised: the header bar alone, still showing who it is and that the
+        conversation is intact. Deliberately NOT the same as closing — close
+        returns to the astrolabe, minimise parks the conversation in reach. */
+    .hanna-panel.hp-min { max-height:none; height:auto; }
+    .hanna-panel.hp-min .hanna-log,
+    .hanna-panel.hp-min .hanna-typing,
+    .hanna-panel.hp-min .hanna-suggest,
+    .hanna-panel.hp-min .hanna-input-row { display:none !important; }
+    .hanna-panel.hp-min .hanna-head { border-bottom:0; cursor:pointer; }
+    .hanna-panel.hp-min { width:min(300px,calc(100vw - 3rem)); }
+
+    /*  A quiet count of what is parked in there, so a minimised panel does
+        not look like an empty title bar. */
+    .hh-parked {
+      display:none; font-size:.58rem; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--gold); opacity:.75; margin-top:.2rem;
+    }
+    .hanna-panel.hp-min .hh-parked { display:block; }
+    .hanna-panel.hp-min .hh-role { display:none; }
+
+    @media(max-width:650px){
+      .hanna-panel.hp-max { right:0; left:0; top:0; bottom:0; height:100vh; border-radius:0; }
+      .hanna-panel.hp-max .h-bubble { max-width:92%; }
+    }
+
     /* ══ HANNA — agent panel ═════════════════════════════════════ */
     /*  The log used to carry its own border, background, padding and a
         340px min-height — styling from back when Hanna was an embedded tab
@@ -749,6 +805,13 @@
       border-color:rgba(201,168,76,.45); color:var(--text);
       background:rgba(201,168,76,.1);
     }
+    /*  The specific thing a suggestion is about — the date, the vendor, the
+        project. Highlighting it is what makes an opener read as "about your
+        house" rather than as a generic menu item. */
+    .hanna-suggest .h-chip em {
+      font-style:normal; font-weight:600; color:var(--mu);
+    }
+    .hanna-suggest .h-chip:hover em { color:var(--gold); }
 
     .hanna-input-row {
       display:flex; gap:.6rem; align-items:flex-end; flex-shrink:0;
@@ -1951,17 +2014,22 @@
 </button>
 
 <div class="hanna-panel" id="hanna-panel">
-  <div class="hanna-head">
+  <div class="hanna-head" onclick="hannaHeadClick(event)">
     <div>
       <!-- Her name is the second doorway into the Manifest, for owners who
            meet her here rather than at the foot of the Chronicle. -->
       <button class="hh-name" onclick="openManifest()"
               title="The Weatherlight Manifest — how this crew came to keep the house">Hanna</button>
       <div class="hh-role">Ship's Navigator · Commander Deck</div>
+      <div class="hh-parked" id="hanna-parked">Conversation parked</div>
     </div>
     <div style="display:flex;gap:.35rem">
-      <button class="hanna-icon" onclick="hannaNewSession()" title="New chart">✦</button>
-      <button class="hanna-icon" onclick="hannaClose()" aria-label="Close">✕</button>
+      <button class="hanna-icon" onclick="hannaNewSession()" title="New chart" aria-label="New chart">✦</button>
+      <button class="hanna-icon" id="hanna-max" onclick="hannaToggleMax(event)"
+              title="Maximise" aria-label="Maximise">⤢</button>
+      <button class="hanna-icon" id="hanna-min" onclick="hannaToggleMin(event)"
+              title="Minimise" aria-label="Minimise">–</button>
+      <button class="hanna-icon" onclick="hannaClose()" title="Close" aria-label="Close">✕</button>
     </div>
   </div>
 
@@ -3458,6 +3526,7 @@ function initStores() {
         }
       }
       st.render();
+      if (typeof hannaRefreshOpeners === 'function') hannaRefreshOpeners();
     }, () => st.render());
   });
 }
@@ -4088,6 +4157,7 @@ async function hannaSend(text) {
     hannaTyping(false);
     hannaBusy = false;
     hannaScroll();
+    hannaParkedLabel();
     hannaPersist();
   }
 }
@@ -4184,23 +4254,127 @@ function hannaKey(e) {
 function hannaAsk(q) { document.getElementById('hanna-input').value = q; hannaSend(); }
 
 
-const HANNA_CHIPS = [
+/*  The cold-start openers used to be four fixed strings — the same four
+    whether a guest arrived tomorrow or the house sat empty for a month.
+    They are now built from what is actually going on: the property
+    calendar, the open projects, the vendor gaps, the Chronicle. Most
+    urgent first, so the first thing offered is the thing that matters.
+
+    Everything degrades: each source is wrapped, and if the data has not
+    landed yet (Firestore is async, the calendar is a fetch) the generic
+    set fills the gap rather than showing an empty row. */
+
+const HANNA_CHIPS_FALLBACK = [
   ['What needs my attention today?', 'Today'],
   ['Any conflicts between the calendars?', 'Calendar conflicts'],
   ['What is still open on the house projects?', 'Open projects'],
   ['Summarise the season so far', 'Season so far'],
 ];
 
+const tgDayMonth = iso => {
+  const [y, m, d] = String(iso).split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return d + ' ' + ['Jan','Feb','Mar','Apr','May','Jun',
+                    'Jul','Aug','Sep','Oct','Nov','Dec'][m - 1];
+};
+
+function hannaOpeners() {
+  const out = [];
+  const today = new Date().toISOString().slice(0, 10);
+  const push = (ask, label) => { if (out.length < 5) out.push([ask, label]); };
+
+  // 1 — A collision between an owner block and the property calendar is the
+  //     one thing that costs real money (clause 6.4). It always leads.
+  try {
+    const blocks = (typeof getSavedBlocks === 'function' ? getSavedBlocks() : []) || [];
+    const cal    = (typeof TG_GCAL !== 'undefined' ? TG_GCAL : []) || [];
+    const clash  = blocks.find(b => cal.some(e => b.from <= e.to && e.from <= b.to));
+    if (clash) push('The owner block "' + clash.label + '" (' + clash.from + ' to ' + clash.to +
+                    ') looks like it overlaps the property calendar. Is that a real conflict, and what should I do about it?',
+                    'Conflict on <em>' + tgDayMonth(clash.from) + '</em>');
+  } catch (e) {}
+
+  // 2 — Who is coming, and when. Airbnb writes its blocked spans as
+  //     "Airbnb (Not available)" — a placeholder, not an arrival. Offering
+  //     "what should I have ready for Not available?" is worse than offering
+  //     nothing, so titles that are plainly placeholders are skipped and the
+  //     next real event is used instead.
+  try {
+    const noise = /not available|unavailable|blocked|bloquead|indispon|reserved|busy/i;
+    const cal = ((typeof TG_GCAL !== 'undefined' ? TG_GCAL : []) || [])
+      .filter(e => e.to >= today && e.title && !noise.test(e.title))
+      .sort((a, b) => a.from < b.from ? -1 : 1);
+    if (cal.length) {
+      const n = cal[0];
+      push('What do I need to have ready for "' + n.title + '" on ' + n.from + '?',
+           'Ready for <em>' + tgDayMonth(n.from) + '</em>');
+    } else {
+      // Everything ahead is a block rather than a booking — still worth asking.
+      const blocked = ((typeof TG_GCAL !== 'undefined' ? TG_GCAL : []) || [])
+        .filter(e => e.to >= today).sort((a, b) => a.from < b.from ? -1 : 1);
+      if (blocked.length)
+        push('The property calendar is blocked from ' + blocked[0].from +
+             '. Is that a booking, an owner stay, or a gap someone forgot to release?',
+             'Calendar from <em>' + tgDayMonth(blocked[0].from) + '</em>');
+    }
+  } catch (e) {}
+
+  // 3 — The loudest open project.
+  try {
+    const open = ((typeof getProjects === 'function' ? getProjects() : []) || [])
+      .filter(p => !p.done);
+    const hi = open.find(p => p.priority === 'high') || open[0];
+    if (hi) push('Where do things stand on "' + hi.title + '", and what is the next step?',
+                 '<em>' + tgEscape(hi.title.slice(0, 28)) + (hi.title.length > 28 ? '…' : '') + '</em>');
+  } catch (e) {}
+
+  // 4 — A recurring service with nobody assigned is a gap that bites in season.
+  try {
+    const gap = (storeGet('vendors') || []).find(v => v.group === 'service' && !v.name);
+    if (gap) push('We still have no one for "' + gap.role + '". Who did we consider, and what should I do about it?',
+                  'No one for <em>' + tgEscape((gap.role || '').replace(/^[^\w]+\s*/, '')) + '</em>');
+  } catch (e) {}
+
+  // 5 — Anything the Chronicle left hanging.
+  try {
+    const open = (TG_DECISIONS || []).filter(d => d.status && d.status !== 'decided');
+    if (open.length) push('What is still undecided in the Chronicle, and what do you need from us to close it?',
+                          '<em>' + open.length + '</em> open decision' + (open.length > 1 ? 's' : ''));
+  } catch (e) {}
+
+  // Always leave a way into the wider picture.
+  push('What needs my attention today?', 'Today');
+  push('Summarise the season so far', 'Season so far');
+
+  return out.length >= 2 ? out.slice(0, 5) : HANNA_CHIPS_FALLBACK;
+}
+
 /*  The cold-start chips. Three places need them and each used to build its
     own markup — one as <div>, one as <button>, and the reset built none at
     all, which is why a brand-new chart could open under "Check Estar email
     thread": the previous conversation's offer_choices chips were never
     cleared. One function, one shape, called from all three. */
+/*  Openers are built from data that arrives after the page does — Firestore
+    snapshots and the calendar fetch. Without this, opening the panel early
+    pins the generic fallback set for the whole session. Only repaints while
+    the conversation is still cold, so it can never wipe live offer_choices. */
+function hannaRefreshOpeners() {
+  const started = HANNA_MSGS.some(m => m.role === 'user' && typeof m.content === 'string');
+  if (started || hannaBusy) return;
+  hannaOpenerChips();
+}
+
 function hannaOpenerChips() {
   const box = document.getElementById('hanna-chips');
   if (!box) return;
-  box.innerHTML = HANNA_CHIPS.map(([ask, label]) =>
-    `<button class="h-chip" onclick="hannaAsk('${ask.replace(/'/g, "\\'")}')">${label}</button>`).join('');
+  // The ask goes in a data attribute, not into an inline handler: these are
+  // built from house data — a vendor role or a block label with an apostrophe
+  // would otherwise break out of the onclick string. Labels are the only HTML
+  // here, and their variable parts are escaped where they are built.
+  box.innerHTML = hannaOpeners().map(([ask, label]) =>
+    `<button class="h-chip" data-ask="${tgEscape(ask)}">${label}</button>`).join('');
+  box.querySelectorAll('button').forEach(b =>
+    b.addEventListener('click', () => hannaAsk(b.dataset.ask)));
 }
 
 function hannaOpen() {
@@ -4208,11 +4382,82 @@ function hannaOpen() {
   document.getElementById('hanna-fab').classList.add('hidden');
   const chips = document.getElementById('hanna-chips');
   if (chips && !chips.children.length) hannaOpenerChips();
+  // Restore the remembered size. Never open straight into minimised: the
+  // owner just asked for the panel, so give them a usable one.
+  let want = 'dock';
+  try { want = localStorage.getItem('tg_hanna_state') || 'dock'; } catch (e) {}
+  hannaSetState(want === 'max' ? 'max' : 'dock');
   const box = document.getElementById('hanna-input');
   if (box) box.placeholder = 'What do you need?';
   initHanna();
   setTimeout(() => box && box.focus(), 250);
 }
+/* ══ WINDOW CONTROLS ══════════════════════════════════════════
+   Maximise for a focused read, minimise to park the conversation without
+   losing it. The two are mutually exclusive — a panel cannot be both, and
+   letting them combine produces a 96vh-tall title bar. */
+
+function hannaPanel() { return document.getElementById('hanna-panel'); }
+
+function hannaSetState(state) {          // 'max' | 'min' | 'dock'
+  const p = hannaPanel(); if (!p) return;
+  p.classList.remove('hp-max', 'hp-min');
+  if (state === 'max') p.classList.add('hp-max');
+  if (state === 'min') p.classList.add('hp-min');
+
+  const maxBtn = document.getElementById('hanna-max');
+  if (maxBtn) {
+    const on = state === 'max';
+    maxBtn.textContent = on ? '⤡' : '⤢';
+    maxBtn.title = on ? 'Restore' : 'Maximise';
+    maxBtn.setAttribute('aria-label', maxBtn.title);
+  }
+  const minBtn = document.getElementById('hanna-min');
+  if (minBtn) {
+    const on = state === 'min';
+    minBtn.textContent = on ? '▢' : '–';
+    minBtn.title = on ? 'Restore' : 'Minimise';
+    minBtn.setAttribute('aria-label', minBtn.title);
+  }
+  // Size is a preference, not session state — it should survive a reload.
+  try { localStorage.setItem('tg_hanna_state', state); } catch (e) {}
+  if (state === 'min') hannaParkedLabel(); else hannaScroll();
+}
+
+function hannaState() {
+  const p = hannaPanel();
+  if (!p) return 'dock';
+  return p.classList.contains('hp-max') ? 'max'
+       : p.classList.contains('hp-min') ? 'min' : 'dock';
+}
+
+function hannaToggleMax(e) {
+  if (e) e.stopPropagation();               // the header itself restores; don't double-fire
+  hannaSetState(hannaState() === 'max' ? 'dock' : 'max');
+  const box = document.getElementById('hanna-input');
+  if (box) setTimeout(() => box.focus(), 120);
+}
+
+function hannaToggleMin(e) {
+  if (e) e.stopPropagation();
+  hannaSetState(hannaState() === 'min' ? 'dock' : 'min');
+}
+
+/** A minimised panel restores when its bar is clicked, anywhere but a button. */
+function hannaHeadClick(e) {
+  if (e && e.target.closest('button')) return;
+  if (hannaState() === 'min') hannaSetState('dock');
+}
+
+/** How much is parked in there, shown only while minimised. */
+function hannaParkedLabel() {
+  const el = document.getElementById('hanna-parked');
+  if (!el) return;
+  const turns = HANNA_MSGS.filter(m => m.role === 'user' && typeof m.content === 'string').length;
+  el.textContent = turns ? turns + (turns === 1 ? ' question parked' : ' questions parked')
+                         : 'Conversation parked';
+}
+
 function hannaClose() {
   document.getElementById('hanna-panel').classList.remove('show');
   document.getElementById('hanna-fab').classList.remove('hidden');
@@ -4273,6 +4518,7 @@ async function loadGcal(force) {
     const d = await res.json();
     if (d.error) throw new Error(d.message || d.error);
     TG_GCAL = d.events || [];
+    if (typeof hannaRefreshOpeners === 'function') hannaRefreshOpeners();
     gcalState = 'ok';
   } catch (e) {
     gcalState = 'error: ' + (e.message || e);
