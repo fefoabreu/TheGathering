@@ -2263,6 +2263,11 @@
     //    These are composed in tgRainyGuideCards() from TG_RAINY_DAY — change
     //    that data and these keys must change with it, or the card quietly
     //    falls back to English (degraded, not broken).
+    "Surfland\u2019s covered kids space, and the closest rainy option to the house. Under a roof, so the children can run while the adults sit down. Worth calling ahead to confirm.":
+      "O espaço kids coberto da Surfland, a opção mais perto da casa em dia de chuva. Tudo coberto, então as crianças correm enquanto os adultos sentam. Vale ligar antes para confirmar.",
+    "Inside the Surfland Brasil complex, Estr. GRP 396, Garopaba — 21 minutes, 13 km":
+      "Dentro do complexo Surfland Brasil, Estr. GRP 396, Garopaba — 21 minutos, 13 km",
+    "\"Let them run. You sit down.\"": "\"Deixa elas correrem. Você senta.\"",
     "Rainy Day": "Dia de Chuva",              // the filter-bar button
     "Other": "Outros",                       // pre-existing: Lorenza Gelateria is category 'other'
     "Rainy Day · Indoors": "Dia de Chuva · Coberto",
@@ -2647,7 +2652,7 @@ When you recommend a specific PLACE, the chips are how the guest goes deeper, so
 
 **Rain does not tie your hands.** Call get_weather when the day's plan depends on the sky, and ALWAYS before recommending a beach, a surf session or anything outdoors. If it comes back isRainyDay, do not wait to be asked twice and do not open by listing what you cannot do — lead with the indoor options from get_rainy_day_options. That tool holds real places: an indoor whale museum, a covered play area for children, a chocolate factory, and the house's own Cinema Mode for a family that would rather not drive in the rain. A guest asking "what do we do on a rainy day?" must never hear that your guide is focused on food and beaches. It is not a limitation of yours — it is a question you have a proper answer to.
 
-**Opening times are not yours to guarantee.** Whenever you give the hours or the price of somewhere that is not this house — a museum, a restaurant, a shop — add one short line telling them to call ahead and confirm. "Vale ligar antes para confirmar" in Portuguese, "worth calling ahead to confirm" in English. One line, at the end, not a paragraph of hedging: you are still giving them the answer, you are just naming who the authority is. These are other people's businesses and their hours change without telling anyone.
+**Opening times and prices are not yours to guarantee.** For anywhere that is not this house — a museum, a restaurant, a shop — add one short line telling them to check: "Vale ligar antes para confirmar" in Portuguese, "worth calling ahead to confirm" in English. One line at the end, not a paragraph of hedging. And where you simply do not have the hours or the price, do not make a thing of it: recommend the place, let that line do its work, and move on. The guest can look up a phone number; what they cannot do is know which place is worth going to. That part is yours.
 
 **Never hand a guest back to Estar for something you can answer.** Estar Garopaba handles exactly three things you genuinely cannot see: check-in and arrival logistics, door codes, and payments. For anything else — what to do, where to go, how the house works, what the weather is doing, the address, the links — YOU are the answer. Sending someone to Estar for a rainy afternoon or a public link is a non-answer dressed as helpfulness, and it is the single worst habit you can fall into. Before you deflect, call the tool.
 
@@ -2779,16 +2784,30 @@ async function sisayRunTool(name, input) {
 
     case 'get_rainy_day_options': {
       const all = (typeof TG_RAINY_DAY !== 'undefined' ? TG_RAINY_DAY : []);
-      const list = input.kind ? all.filter(o => o.kind === input.kind) : all;
+      const picked = input.kind ? all.filter(o => o.kind === input.kind) : all;
+      /*  Hand her the chips already in the guest's language. She was told to
+          translate them and did so about half the time — the same question in
+          Portuguese came back once with "Como chegar lá?" and once with "How
+          do we get there?". Consistency like that belongs in data, not in the
+          model's discretion. */
+      const pt = sisayLang() === 'pt';
+      const list = picked.map(o => Object.assign({}, o, {
+        chips: (pt && o.chipsPt) ? o.chipsPt : o.chips,
+        chipsPt: undefined,
+      }));
       const caveat = (typeof TG_HOURS_CAVEAT !== 'undefined')
         ? TG_HOURS_CAVEAT[sisayLang()] || TG_HOURS_CAVEAT.en : '';
       return { options: list.length ? list : all,
                hoursCaveat: caveat,
-               note: 'Real places, checked by the owners. WHENEVER you state an opening time or a '
-                   + 'price, close with hoursCaveat, in the guest\'s language, as a short line — '
+               note: 'Real places, checked by the owners. Close with hoursCaveat, in the guest\'s '
+                   + 'language, as one short line whenever you give an opening time or a price — '
                    + 'these are other people\'s businesses and their hours move. Never invent one. '
-                   + 'Sending a family 40 minutes in the rain to a closed door is the one '
-                   + 'unforgivable mistake here. Offer each option chips from its own list.' };
+                   + 'Where an option lists no hours or price, simply do not state any — the '
+                   + 'caveat already tells the guest to check, so do not apologise for not '
+                   + 'carrying them and do not spend a line explaining the gap. Recommend the '
+                   + 'place, add the caveat, move on. Sending a family out in the rain to '
+                   + 'a closed door is the one unforgivable mistake here. Offer each option chips '
+                   + 'from its own list.' };
     }
 
     case 'get_house_manual':
@@ -2950,6 +2969,14 @@ async function sisaySend(text) {
                        content: typeof out === 'string' ? out : JSON.stringify(out) });
       }
       SISAY_MSGS.push({ role:'user', content:results });
+      /*  offer_choices is a pure UI side-effect — there is nothing in its result
+          for her to reason about. Looping again just hands her another hop to
+          fill, and she fills it: "Chips estão na tela — é só escolher", or a
+          whole extra bubble. Telling her not to in the tool result did not
+          hold. So the loop ENDS here instead: when every tool this hop was
+          offer_choices, the reply is already complete. Deterministic, rather
+          than depending on her obeying an instruction. */
+      if (calls.every(c => c.name === 'offer_choices')) break;
     }
   } catch (e) {
     sisayTyping(false);

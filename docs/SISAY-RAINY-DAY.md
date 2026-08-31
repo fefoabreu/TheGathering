@@ -35,8 +35,9 @@ able to correct an opening time without editing an agent's personality.
 
 | id | kind | venue | verdict |
 |---|---|---|---|
-| `baleia-franca` | `museum` | Centro Nacional da Baleia Franca, Itapirubá | **Primary.** Indoor, free, has the skeleton |
+| `baleia-franca` | `museum` | Centro Nacional da Baleia Franca, Itapirubá | Indoor, free, has the 13.95 m skeleton |
 | `museu-baleia` | `museum` | Museu da Baleia de Imbituba, Praia do Porto | Indoor, free, closer — but small and tired |
+| `surfland-kids` | `kids` | Espaço Kids coberto, Surfland Brasil | **Best for small children.** Covered, closest at 21 min |
 | `cinema` | `in-house` | Cinema Mode at the house | No drive, no weather |
 
 Each entry carries `name, where, driveApprox, what, whyRainy, hours, price,
@@ -56,7 +57,7 @@ them; the data notes this so Sisay does not repeat it.
 - Museu da Baleia: **Wed–Fri 08:00–12:00 & 13:00–17:00, Sat/Sun/holidays 09:00–17:00,
   closed Mon/Tue. Free.** 40 min. Confirmed by Notisul (Feb 2026) and Google Maps.
 
-**2. Só 4x4 Kids is not an indoor playground — it was removed.** Its own Instagram
+**2. Só 4x4 Kids is not an indoor playground — it was removed, and replaced.** Its own Instagram
 bio and TripAdvisor entry both describe *"locação de carrinhos elétricos 4x4"* —
 ride-on electric car rental, plus a 5 m × 5 m kids space. **No source confirms it
 is covered**, the core activity is driving small cars around, and Surfland markets
@@ -64,10 +65,12 @@ itself on "vida ao ar livre". There is no published price, and Surfland charges
 park entry on top. Listing it as a rainy-day option would have sent families out
 in the rain to an open-air attraction.
 
-> **Thread worth pulling:** Surfland separately advertises an *"espaço kids
-> **coberto**"* as its own amenity — a different thing from Só 4x4 Kids, and
-> unverified. If that checks out it is the covered kids option this matrix is
-> missing. Surfland: **(48) 99203-7446**.
+> **Resolved.** Surfland's own *espaço kids coberto* is a different thing from
+> Só 4x4 Kids, and an owner has confirmed first-hand — having been there with
+> family — that it **is** covered. It is now the `surfland-kids` entry and the
+> best option here for small children: covered, and the closest at 21 minutes.
+> Its hours and price remain unconfirmed, along with whether Surfland complex
+> entry is charged separately, which the caveat covers.
 
 **3. The chocolate shop and the Mini Museu do Mar are unrelated, and both fail.**
 Different organisations, different locations, no connection.

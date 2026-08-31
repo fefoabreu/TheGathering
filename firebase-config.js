@@ -251,6 +251,12 @@ const TG_RAINY_DAY = [
       { label: 'The other whale museum', send: 'Tell me about the other whale museum in Imbituba.' },
       { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
     ],
+    chipsPt: [
+      { label: 'Como chegar lá?',   send: 'Como chegamos ao Centro Nacional da Baleia Franca em Itapirubá?' },
+      { label: 'Horário',           send: 'Qual o horário do Centro Nacional da Baleia Franca?' },
+      { label: 'O outro museu',     send: 'Me fala do outro museu da baleia em Imbituba.' },
+      { label: 'Prefiro ficar em casa', send: 'Preferimos ficar em casa — monta um dia de cinema.' },
+    ],
     verified: 'Hours and free entry confirmed 2026-08-31 against the official site '
             + '(baleiafranca.org.br) AND Google Maps, which agree exactly. September is Mês da '
             + 'Baleia Franca with special programming — worth a call before going.',
@@ -280,9 +286,47 @@ const TG_RAINY_DAY = [
       { label: 'The one with the skeleton', send: 'Tell me about the Centro Nacional da Baleia Franca instead.' },
       { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
     ],
+    chipsPt: [
+      { label: 'Como chegar lá?', send: 'Como chegamos ao Museu da Baleia de Imbituba?' },
+      { label: 'Horário',         send: 'Qual o horário do Museu da Baleia de Imbituba?' },
+      { label: 'O do esqueleto',  send: 'Me fala do Centro Nacional da Baleia Franca no lugar.' },
+      { label: 'Prefiro ficar em casa', send: 'Preferimos ficar em casa — monta um dia de cinema.' },
+    ],
     verified: 'Hours and free entry confirmed 2026-08-31 by two independent sources — Notisul '
             + '(Feb 2026) and Google Maps. NOTE: this is NOT where the big skeleton is; that is '
             + 'at Itapirubá. One local news article confuses the two — do not repeat that.',
+  },
+  {
+    id: 'surfland-kids',
+    kind: 'kids',
+    name: 'Espaço Kids coberto, Surfland Brasil',
+    where: 'Inside the Surfland Brasil complex, Estr. GRP 396, Garopaba',
+    driveApprox: '21 minutes, 13 km',
+    what: 'Surfland\u2019s own covered children\u2019s space, inside the complex.',
+    whyRainy: 'Under a roof and the nearest of the options, so the children burn off a wet '
+            + 'afternoon while the adults sit down. The best of these for small children.',
+    cardCopy: 'Surfland\u2019s covered kids space, and the closest rainy option to the house. '
+            + 'Under a roof, so the children can run while the adults sit down.',
+    unknowns: 'Opening hours and price are not confirmed, and whether entry to the Surfland '
+            + 'complex is charged separately is not confirmed either. Say both plainly.',
+    phone: '(48) 99203-7446',
+    maps: 'https://maps.google.com/?q=Surfland+Brasil+Garopaba+SC',
+    chips: [
+      { label: 'How do we get there?', send: 'How do we get to Surfland Brasil?' },
+      { label: 'What does it cost?',   send: 'What does the Surfland kids space cost, and is complex entry included?' },
+      { label: 'The whale museum instead', send: 'Tell me about the whale museum in Itapirubá instead.' },
+      { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
+    ],
+    chipsPt: [
+      { label: 'Como chegar?',     send: 'Como chegamos na Surfland Brasil?' },
+      { label: 'Quanto custa?',    send: 'Quanto custa o espaço kids da Surfland, e a entrada do complexo está inclusa?' },
+      { label: 'Museu da baleia',  send: 'Me fala do museu da baleia em Itapirubá.' },
+      { label: 'Ficar em casa',    send: 'Preferimos ficar em casa — monta um dia de cinema.' },
+    ],
+    verified: 'COVERED: confirmed first-hand by an owner, who has been there with family — this '
+            + 'is the strongest source we have and it settles the question. NOT confirmed: hours, '
+            + 'price, and whether Surfland complex entry is charged on top. Note this is NOT the '
+            + 'same as Só 4x4 Kids, which rents electric ride-on cars and is not covered.',
   },
   {
     id: 'cinema',
@@ -310,6 +354,12 @@ const TG_RAINY_DAY = [
       { label: 'Sound through the house',      send: 'How do I get the sound onto the Sonos in every room?' },
       { label: 'Something to watch',            send: 'What should we watch tonight?' },
       { label: 'Actually, we would go out',    send: 'We would rather go out — what is open in the rain?' },
+    ],
+    chipsPt: [
+      { label: 'Como usar o projetor?', send: 'Me explica passo a passo o projetor do deck.' },
+      { label: 'Som pela casa',         send: 'Como coloco o som na Sonos em todos os cômodos?' },
+      { label: 'O que assistir?',       send: 'O que a gente assiste hoje?' },
+      { label: 'Prefiro sair',          send: 'Preferimos sair — o que está aberto na chuva?' },
     ],
     verified: 'From the house manual. The kit is the house\u2019s own, so this does not go stale.',
   },
@@ -347,6 +397,8 @@ const TG_RAINY_CARD_STYLE = {
     flavor: '"Fourteen metres of right whale, and not a drop of rain on you."' },
   'museu-baleia':  { emoji: '🏛️', color: 'blue',
     flavor: '"The old whaling station, kept as a reminder."' },
+  'surfland-kids': { emoji: '🛝', color: 'green',
+    flavor: '"Let them run. You sit down."' },
 };
 
 function tgRainyGuideCards() {
@@ -359,8 +411,11 @@ function tgRainyGuideCards() {
     const bits = [o.cardCopy || o.what];
     if (o.hours) bits.push(o.hours);
     if (o.price) bits.push('Entry: ' + o.price);
-    // Anything with a stated opening time carries the caveat.
-    if (o.hours || o.price) bits.push(TG_HOURS_CAVEAT.en);
+    /*  Unconditional — only third-party venues become cards, and one with NO
+        confirmed hours needs the caveat more than one with them, not less.
+        Gating this on `hours` would have silently dropped it from exactly the
+        card where it matters most. */
+    bits.push(TG_HOURS_CAVEAT.en);
     return {
       id: 'rainy-' + o.id,
       name: o.name,
