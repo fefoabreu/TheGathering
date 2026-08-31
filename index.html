@@ -2258,6 +2258,26 @@
   // Keyed by the exact rendered English string, so no markup is
   // instrumented and dynamically-rendered text translates too.
   const TG_PT = {
+    // ── Rainy Day cards. Keys are the exact rendered English strings, per the
+    //    i18n convention: translation walks text nodes and matches on them.
+    //    These are composed in tgRainyGuideCards() from TG_RAINY_DAY — change
+    //    that data and these keys must change with it, or the card quietly
+    //    falls back to English (degraded, not broken).
+    "Rainy Day": "Dia de Chuva",              // the filter-bar button
+    "Other": "Outros",                       // pre-existing: Lorenza Gelateria is category 'other'
+    "Rainy Day · Indoors": "Dia de Chuva · Coberto",
+    "A complete 13.95 m right whale skeleton, indoors, with guided visits and a telescope deck for spotting the real thing offshore. Free, and it lands well with children. Tuesday to Saturday, 09:00–12:00 and 14:00–17:00. CLOSED Sunday and Monday. Entry: Free.":
+      "Um esqueleto completo de baleia franca de 13,95 m, em ambiente fechado, com visitas guiadas e um deck com luneta para avistar as baleias de verdade. Gratuito, e as crianças adoram. De terça a sábado, 09h–12h e 14h–17h. FECHADO domingo e segunda. Entrada: Gratuita.",
+    "The municipal museum inside a restored 1973 whaling station — bones, the old ovens, harpoons. Small and worn, but free, indoors and closer than Itapirubá. Wednesday to Friday 08:00–12:00 and 13:00–17:00; Saturday, Sunday and holidays 09:00–17:00. CLOSED Monday and Tuesday. Entry: Free.":
+      "O museu municipal dentro de uma antiga estação baleeira de 1973 — ossos, os fornos antigos, arpões. Pequeno e desgastado, mas gratuito, coberto e mais perto que Itapirubá. De quarta a sexta 08h–12h e 13h–17h; sábado, domingo e feriados 09h–17h. FECHADO segunda e terça. Entrada: Gratuita.",
+    "\"Fourteen metres of right whale, and not a drop of rain on you.\"":
+      "\"Quatorze metros de baleia franca, e nem uma gota de chuva em você.\"",
+    "\"The old whaling station, kept as a reminder.\"":
+      "\"A antiga estação baleeira, preservada como lembrança.\"",
+    "Av. Atlântica s/n, Itapirubá Norte, Imbituba — 44 minutes, 41 km":
+      "Av. Atlântica s/n, Itapirubá Norte, Imbituba — 44 minutos, 41 km",
+    "Rua Itagiba s/n, Praia do Porto, Imbituba — 40 minutes, 30 km":
+      "Rua Itagiba s/n, Praia do Porto, Imbituba — 40 minutos, 30 km",
     "Experiences": "Experiências",
     "Suites": "Suítes",
     "Location": "Localização",
@@ -3254,12 +3274,23 @@ function sisayPerch(show) {
   ];
 
   // ── State ─────────────────────────────────────────────────
-  let guideCards = [...DEFAULT_GUIDE_CARDS];
+  /*  The published Firestore deck REPLACES guideCards wholesale, so appending
+      rainy cards to DEFAULT_GUIDE_CARDS alone would make them vanish the
+      moment the owners publish. They are merged in after every load instead,
+      derived from TG_RAINY_DAY so there is still only one copy of the venue
+      data. Idempotent: re-merging never duplicates. */
+  function withRainyCards(list) {
+    if (typeof tgRainyGuideCards !== 'function') return list;
+    const base = (list || []).filter(c => !String(c.id).startsWith('rainy-'));
+    return base.concat(tgRainyGuideCards());
+  }
+
+  let guideCards = withRainyCards([...DEFAULT_GUIDE_CARDS]);
   let revealIndex = 0;
   let guideOpened = sessionStorage.getItem('tg_guide_opened') === 'true';
 
   // ── Helpers ───────────────────────────────────────────────
-  const CAT_LABELS = { coffee:'Coffee', burgers:'Burgers', sushi:'Sushi', cowork:'Cowork', poke:'Poke Bowl', 'happy-hour':'Happy Hour', sandboarding:'Adventure', acougue:'Açougue', pizza:'Pizza' };
+  const CAT_LABELS = { coffee:'Coffee', burgers:'Burgers', sushi:'Sushi', cowork:'Cowork', poke:'Poke Bowl', 'happy-hour':'Happy Hour', sandboarding:'Adventure', acougue:'Açougue', pizza:'Pizza', 'rainy-day':'Rainy Day', other:'Other' };
   function getCatLabel(cat) { return CAT_LABELS[cat] || cat; }
 
   // ── Firebase init ─────────────────────────────────────────
@@ -3273,7 +3304,7 @@ function sisayPerch(show) {
             if (snap.exists) {
               const data = snap.data();
               if (data && Array.isArray(data.cards) && data.cards.length) {
-                guideCards = data.cards;
+                guideCards = withRainyCards(data.cards);
                 if (guideOpened) renderGuideGrid();
               }
             }

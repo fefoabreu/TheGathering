@@ -238,6 +238,8 @@ const TG_RAINY_DAY = [
         + 'adult right whale skeleton. Guided visits, a deck with a telescope for whale watching.',
     whyRainy: 'Indoors, free, and reviewers single out how well the guided tour lands with '
             + 'children. The strongest rainy-morning answer near the house.',
+    cardCopy: 'A complete 13.95 m right whale skeleton, indoors, with guided visits and a '
+            + 'telescope deck for spotting the real thing offshore. Free, and it lands well with children.',
     hours: 'Tuesday to Saturday, 09:00–12:00 and 14:00–17:00. CLOSED Sunday and Monday.',
     price: 'Free.',
     booking: 'Families can walk in. Groups of 10 or more must book 72h ahead.',
@@ -262,6 +264,8 @@ const TG_RAINY_DAY = [
     what: 'The municipal museum, in a restored 1973 whaling station — whale bones, the old '
         + 'ovens, harpoons. Staff give informal tours. Run by the Prefeitura, not by Australis.',
     whyRainy: 'Indoors and free, and closer than Itapirubá.',
+    cardCopy: 'The municipal museum inside a restored 1973 whaling station — bones, the old '
+            + 'ovens, harpoons. Small and worn, but free, indoors and closer than Itapirubá.',
     caution: 'Small and visibly tired — recent reviews say the panels are worn and there is '
            + 'little information. Good for 45 minutes, thin as the whole outing. The subject is '
            + 'the whaling slaughter, which is heavy going for young children.',
@@ -314,4 +318,52 @@ const TG_RAINY_DAY = [
 /** Rainy-day options, optionally filtered by kind. */
 function tgRainyDay(kind) {
   return kind ? TG_RAINY_DAY.filter(o => o.kind === kind) : TG_RAINY_DAY;
+}
+
+/*  The same venues, shaped as guide cards for the public deck.
+ *
+ *  DERIVED, not duplicated. Writing these out a second time as card literals
+ *  is how the Instagram bug happened: two copies, one of them quietly wrong.
+ *  Hours and prices here are research-backed with dated sources, so they are
+ *  exactly the thing that must not drift. Edit TG_RAINY_DAY and the card,
+ *  the concierge and the deck all move together.
+ *
+ *  Cinema Mode is excluded — the deck is places in Garopaba, and the house
+ *  is not somewhere a guest travels to.
+ */
+const TG_RAINY_CARD_STYLE = {
+  'baleia-franca': { emoji: '🐋', color: 'blue',
+    flavor: '"Fourteen metres of right whale, and not a drop of rain on you."' },
+  'museu-baleia':  { emoji: '🏛️', color: 'blue',
+    flavor: '"The old whaling station, kept as a reminder."' },
+};
+
+function tgRainyGuideCards() {
+  return TG_RAINY_DAY.filter(o => o.kind !== 'in-house').map((o, i) => {
+    const style = TG_RAINY_CARD_STYLE[o.id] || { emoji: '🌧️', color: 'blue', flavor: '' };
+    /*  Deck copy, not concierge copy. Concatenating what + whyRainy + hours +
+        caution produced a 500-character card next to 145-character neighbours.
+        `cardCopy` is written for the deck; the caution and the pitch stay in
+        the data for Sisay to deliver in conversation, where they belong. */
+    const bits = [o.cardCopy || o.what];
+    if (o.hours) bits.push(o.hours);
+    if (o.price) bits.push('Entry: ' + o.price);
+    return {
+      id: 'rainy-' + o.id,
+      name: o.name,
+      category: 'rainy-day',
+      categoryLabel: 'Rainy Day · Indoors',
+      emoji: style.emoji,
+      color: style.color,
+      description: bits.join(' '),
+      address: o.where + (o.driveApprox ? ' — ' + o.driveApprox : ''),
+      tags: ['rainy-day', 'indoor', 'family', 'museum'],
+      flavor: style.flavor,
+      active: true,
+      order: 100 + i,          // after the curated deck, never displacing it
+      rarity: 'rare',
+      link: o.maps,
+      phone: o.phone || '',
+    };
+  });
 }

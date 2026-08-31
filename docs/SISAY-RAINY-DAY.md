@@ -82,19 +82,40 @@ Different organisations, different locations, no connection.
 
 ## Two phone calls would close the remaining gaps
 
-Neither was made — contacting businesses on your behalf needs your go-ahead.
+**I cannot place calls** — no telephony capability. The questions are written
+out ready to read in [`RAINY-DAY-CALL-SCRIPT.md`](RAINY-DAY-CALL-SCRIPT.md):
 
-1. **(48) 99127-8961** — Instituto Australis, to confirm the skeleton is at
-   Itapirubá (one article claims otherwise) and check September programming.
-2. **(48) 99203-7446** — Surfland, on whether the *espaço kids coberto* is real,
-   its hours and price.
+1. **(48) 99127-8961** — Instituto Australis, to settle which site holds the
+   13.95 m skeleton (one article disagrees with every other source).
+2. **(48) 99203-7446** — Surfland, on whether their *espaço kids coberto* is
+   real. If it is, that is the covered kids option this matrix still lacks.
 
-### Cinema Mode
+## Guide cards on the public site
 
-Built from the house manual's own `tv`, `projector` and `sonos` entries, so it
-does not go stale: projector → HDMI → sound to Sonos, not the built-in speaker;
-or the 75" Frame TV via the One Connect box, one power press to leave Art Mode;
-Sonos grouped across living room, kitchen and deck.
+The venues appear in the Garopaba Guide deck under a **Rainy Day** filter, so a
+guest can orient themselves without opening the concierge at all.
+
+**Derived, not duplicated.** `tgRainyGuideCards()` in `firebase-config.js`
+generates the cards from `TG_RAINY_DAY` — the same constant Sisay reads. Writing
+them out again as card literals is precisely how the Instagram bug happened.
+
+Two things this had to survive:
+
+- **The published Firestore deck REPLACES `guideCards` wholesale.** Adding cards
+  to `DEFAULT_GUIDE_CARDS` alone would make them vanish the moment the owners
+  publish from the portal. `withRainyCards()` re-merges after every load, and is
+  idempotent so re-merging never duplicates.
+- **Deck copy is not concierge copy.** Concatenating everything produced a
+  500-character card beside 145-character neighbours, so each venue carries a
+  short `cardCopy`; the caution and the pitch stay in the data for Sisay to
+  deliver in conversation.
+
+Cinema Mode is excluded from the deck — it is the house, not somewhere a guest
+travels to.
+
+Both cards are fully translated, keyed on the exact English strings per the i18n
+convention. Change the composed description in `TG_RAINY_DAY` and the `TG_PT`
+key must change with it, or the card falls back to English — degraded, not broken.
 
 ## 2. Weather routing
 
