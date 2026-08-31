@@ -3933,9 +3933,11 @@ async function hannaRunTool(name, input) {
       return projectRoi(input || {});
     }
 
+    // Same as Sisay: the tool result has to end the turn, or the next hop
+    // gets spent narrating the chips the owner can already see.
     case 'offer_choices':
       tgPaintChips('hanna-chips', input.choices, hannaAsk);
-      return 'Choices shown.';
+      return 'Chips are on screen now. Your reply is COMPLETE — do not add any further text, do not describe the chips, and do not tell the owner to tap one. They can see them.';
 
     case 'get_house_info': return { ...(storeGet('house') || {}),
                                     soundtrack: (typeof TG_SOUNDTRACK !== 'undefined' ? TG_SOUNDTRACK : undefined),

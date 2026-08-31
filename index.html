@@ -2266,10 +2266,10 @@
     "Rainy Day": "Dia de Chuva",              // the filter-bar button
     "Other": "Outros",                       // pre-existing: Lorenza Gelateria is category 'other'
     "Rainy Day · Indoors": "Dia de Chuva · Coberto",
-    "A complete 13.95 m right whale skeleton, indoors, with guided visits and a telescope deck for spotting the real thing offshore. Free, and it lands well with children. Tuesday to Saturday, 09:00–12:00 and 14:00–17:00. CLOSED Sunday and Monday. Entry: Free.":
-      "Um esqueleto completo de baleia franca de 13,95 m, em ambiente fechado, com visitas guiadas e um deck com luneta para avistar as baleias de verdade. Gratuito, e as crianças adoram. De terça a sábado, 09h–12h e 14h–17h. FECHADO domingo e segunda. Entrada: Gratuita.",
-    "The municipal museum inside a restored 1973 whaling station — bones, the old ovens, harpoons. Small and worn, but free, indoors and closer than Itapirubá. Wednesday to Friday 08:00–12:00 and 13:00–17:00; Saturday, Sunday and holidays 09:00–17:00. CLOSED Monday and Tuesday. Entry: Free.":
-      "O museu municipal dentro de uma antiga estação baleeira de 1973 — ossos, os fornos antigos, arpões. Pequeno e desgastado, mas gratuito, coberto e mais perto que Itapirubá. De quarta a sexta 08h–12h e 13h–17h; sábado, domingo e feriados 09h–17h. FECHADO segunda e terça. Entrada: Gratuita.",
+    "A complete 13.95 m right whale skeleton, indoors, with guided visits and a telescope deck for spotting the real thing offshore. Free, and it lands well with children. Tuesday to Saturday, 09:00–12:00 and 14:00–17:00. CLOSED Sunday and Monday. Entry: Free. Worth calling ahead to confirm.":
+      "Um esqueleto completo de baleia franca de 13,95 m, em ambiente fechado, com visitas guiadas e um deck com luneta para avistar as baleias de verdade. Gratuito, e as crianças adoram. De terça a sábado, 09h–12h e 14h–17h. FECHADO domingo e segunda. Entrada: Gratuita. Vale ligar antes para confirmar.",
+    "The municipal museum inside a restored 1973 whaling station — bones, the old ovens, harpoons. Small and worn, but free, indoors and closer than Itapirubá. Wednesday to Friday 08:00–12:00 and 13:00–17:00; Saturday, Sunday and holidays 09:00–17:00. CLOSED Monday and Tuesday. Entry: Free. Worth calling ahead to confirm.":
+      "O museu municipal dentro de uma antiga estação baleeira de 1973 — ossos, os fornos antigos, arpões. Pequeno e desgastado, mas gratuito, coberto e mais perto que Itapirubá. De quarta a sexta 08h–12h e 13h–17h; sábado, domingo e feriados 09h–17h. FECHADO segunda e terça. Entrada: Gratuita. Vale ligar antes para confirmar.",
     "\"Fourteen metres of right whale, and not a drop of rain on you.\"":
       "\"Quatorze metros de baleia franca, e nem uma gota de chuva em você.\"",
     "\"The old whaling station, kept as a reminder.\"":
@@ -2647,6 +2647,8 @@ When you recommend a specific PLACE, the chips are how the guest goes deeper, so
 
 **Rain does not tie your hands.** Call get_weather when the day's plan depends on the sky, and ALWAYS before recommending a beach, a surf session or anything outdoors. If it comes back isRainyDay, do not wait to be asked twice and do not open by listing what you cannot do — lead with the indoor options from get_rainy_day_options. That tool holds real places: an indoor whale museum, a covered play area for children, a chocolate factory, and the house's own Cinema Mode for a family that would rather not drive in the rain. A guest asking "what do we do on a rainy day?" must never hear that your guide is focused on food and beaches. It is not a limitation of yours — it is a question you have a proper answer to.
 
+**Opening times are not yours to guarantee.** Whenever you give the hours or the price of somewhere that is not this house — a museum, a restaurant, a shop — add one short line telling them to call ahead and confirm. "Vale ligar antes para confirmar" in Portuguese, "worth calling ahead to confirm" in English. One line, at the end, not a paragraph of hedging: you are still giving them the answer, you are just naming who the authority is. These are other people's businesses and their hours change without telling anyone.
+
 **Never hand a guest back to Estar for something you can answer.** Estar Garopaba handles exactly three things you genuinely cannot see: check-in and arrival logistics, door codes, and payments. For anything else — what to do, where to go, how the house works, what the weather is doing, the address, the links — YOU are the answer. Sending someone to Estar for a rainy afternoon or a public link is a non-answer dressed as helpfulness, and it is the single worst habit you can fall into. Before you deflect, call the tool.
 
 **Speak of yourself as a woman in Portuguese.** You are Sisay, capitã e concierge — so "sou a Sisay", "estou pronta", "vou ser honesta", "fico feliz". Never the masculine form. In English this never comes up, which is exactly why it slips in Portuguese.
@@ -2762,9 +2764,13 @@ async function sisayRunTool(name, input) {
                               label:c.categoryLabel, about:c.description, address:c.address }));
     }
     // Chips are a UI side-effect, not information for the model.
+    /*  'Choices shown.' invited her to keep talking: she used the next hop to
+        write "(chips aguardando toque)" and, before that, a whole extra bubble
+        saying "just tap one and let's get you sorted". The tool result now
+        says the turn is over. */
     case 'offer_choices':
       tgPaintChips('sisay-chips', input.choices, sisaySend);
-      return 'Choices shown.';
+      return 'Chips are on screen now. Your reply is COMPLETE — do not add any further text, do not describe the chips, and do not tell the guest to tap one. They can see them.';
     case 'get_weather': {
       try { return await sisayWeather(); }
       catch (e) { return { error: 'The forecast is not reachable right now. Say so plainly rather '
@@ -2774,11 +2780,15 @@ async function sisayRunTool(name, input) {
     case 'get_rainy_day_options': {
       const all = (typeof TG_RAINY_DAY !== 'undefined' ? TG_RAINY_DAY : []);
       const list = input.kind ? all.filter(o => o.kind === input.kind) : all;
+      const caveat = (typeof TG_HOURS_CAVEAT !== 'undefined')
+        ? TG_HOURS_CAVEAT[sisayLang()] || TG_HOURS_CAVEAT.en : '';
       return { options: list.length ? list : all,
-               note: 'Real places, checked by the owners. Where a field says the hours or the '
-                   + 'price are unconfirmed, SAY it is worth calling ahead — never invent an '
-                   + 'opening time. Sending a family 40 minutes in the rain to a closed door is '
-                   + 'the one unforgivable mistake here. Offer each option chips from its own list.' };
+               hoursCaveat: caveat,
+               note: 'Real places, checked by the owners. WHENEVER you state an opening time or a '
+                   + 'price, close with hoursCaveat, in the guest\'s language, as a short line — '
+                   + 'these are other people\'s businesses and their hours move. Never invent one. '
+                   + 'Sending a family 40 minutes in the rain to a closed door is the one '
+                   + 'unforgivable mistake here. Offer each option chips from its own list.' };
     }
 
     case 'get_house_manual':

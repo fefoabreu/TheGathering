@@ -117,6 +117,22 @@ Both cards are fully translated, keyed on the exact English strings per the i18n
 convention. Change the composed description in `TG_RAINY_DAY` and the `TG_PT`
 key must change with it, or the card falls back to English — degraded, not broken.
 
+## Hours are never guaranteed
+
+Third-party opening times go stale and no amount of research fixes that
+permanently, so every surface that states one carries the same short line:
+
+> **EN** "Worth calling ahead to confirm." · **PT** "Vale ligar antes para confirmar."
+
+One constant, `TG_HOURS_CAVEAT` in `firebase-config.js`, so the wording cannot
+drift between the guide card and the concierge. It is appended automatically to
+any card with `hours` or `price`, returned to Sisay as `hoursCaveat` in the
+guest's language, and backed by a prompt rule that applies to **any** venue she
+quotes hours for — not only rainy-day ones.
+
+It is one line at the end, never a paragraph of hedging. She still gives the
+answer; the caveat just names who the authority is.
+
 ## 2. Weather routing
 
 `get_weather` → Open-Meteo at the house's coordinates (`-28.0333, -48.6167`).

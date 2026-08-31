@@ -331,6 +331,17 @@ function tgRainyDay(kind) {
  *  Cinema Mode is excluded — the deck is places in Garopaba, and the house
  *  is not somewhere a guest travels to.
  */
+/*  Hours and prices for someone else's business go stale, and no amount of
+ *  research fixes that permanently. Rather than chase them, every surface
+ *  that states an opening time carries the same short caveat, so the guest
+ *  knows the authority is the establishment, not us. One constant, so the
+ *  wording cannot drift between the card and the concierge.
+ */
+const TG_HOURS_CAVEAT = {
+  en: 'Worth calling ahead to confirm.',
+  pt: 'Vale ligar antes para confirmar.',
+};
+
 const TG_RAINY_CARD_STYLE = {
   'baleia-franca': { emoji: '🐋', color: 'blue',
     flavor: '"Fourteen metres of right whale, and not a drop of rain on you."' },
@@ -348,6 +359,8 @@ function tgRainyGuideCards() {
     const bits = [o.cardCopy || o.what];
     if (o.hours) bits.push(o.hours);
     if (o.price) bits.push('Entry: ' + o.price);
+    // Anything with a stated opening time carries the caveat.
+    if (o.hours || o.price) bits.push(TG_HOURS_CAVEAT.en);
     return {
       id: 'rainy-' + o.id,
       name: o.name,
