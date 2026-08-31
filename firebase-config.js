@@ -229,63 +229,56 @@ const TG_HOUSE_ADDRESS = 'Rua Augusto Germano Wilke, s/n° · Praia da Silveira,
 // ──────────────────────────────────────────────────────────────
 const TG_RAINY_DAY = [
   {
-    id: 'australis',
+    id: 'baleia-franca',
     kind: 'museum',
-    name: 'Instituto Australis — Museu da Baleia',
-    where: 'Imbituba, the next town up the coast',
-    driveApprox: 'roughly 25–30 minutes from the house',
-    what: 'An indoor museum built around a complete right whale skeleton — baleia franca, '
-        + 'the whale this stretch of coast is known for.',
-    whyRainy: 'Entirely indoors, genuinely interesting, and the single best rainy-morning '
-            + 'answer for a family with children.',
-    maps: 'https://maps.google.com/?q=Instituto+Australis+Museu+da+Baleia+Imbituba+SC',
+    name: 'Centro Nacional de Conservação da Baleia Franca (Espaço Australis)',
+    where: 'Av. Atlântica s/n, Itapirubá Norte, Imbituba',
+    driveApprox: '44 minutes, 41 km',
+    what: 'Run by Instituto Australis. The Espaço Australis annex holds a complete 13.95 m '
+        + 'adult right whale skeleton. Guided visits, a deck with a telescope for whale watching.',
+    whyRainy: 'Indoors, free, and reviewers single out how well the guided tour lands with '
+            + 'children. The strongest rainy-morning answer near the house.',
+    hours: 'Tuesday to Saturday, 09:00–12:00 and 14:00–17:00. CLOSED Sunday and Monday.',
+    price: 'Free.',
+    booking: 'Families can walk in. Groups of 10 or more must book 72h ahead.',
+    phone: '+55 48 99127-8961',
+    maps: 'https://maps.google.com/?q=Centro+Nacional+de+Conservacao+da+Baleia+Franca+Itapiruba+Imbituba',
     chips: [
-      { label: 'How do we get there?',  send: 'How do we get to the Instituto Australis in Imbituba?' },
-      { label: 'Price and opening hours', send: 'What does the Instituto Australis cost and when is it open?' },
-      { label: 'Something for the kids', send: 'Show me the covered play area at Surfland instead.' },
+      { label: 'How do we get there?', send: 'How do we get to the Centro Nacional da Baleia Franca in Itapirubá?' },
+      { label: 'Opening hours',        send: 'When is the Centro Nacional da Baleia Franca open?' },
+      { label: 'The other whale museum', send: 'Tell me about the other whale museum in Imbituba.' },
       { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
     ],
-    verified: 'Place and what it is: confirmed by the owners. HOURS AND PRICE ARE NOT '
-            + 'CONFIRMED — tell the guest to check before driving.',
+    verified: 'Hours and free entry confirmed 2026-08-31 against the official site '
+            + '(baleiafranca.org.br) AND Google Maps, which agree exactly. September is Mês da '
+            + 'Baleia Franca with special programming — worth a call before going.',
   },
   {
-    id: 'so4x4kids',
-    kind: 'kids',
-    name: 'Só 4x4 Kids, at Surfland Brasil',
-    where: 'Inside the Surfland Brasil complex, Garopaba',
-    driveApprox: 'roughly 10–15 minutes from the house',
-    what: 'A fully covered indoor play area — ball pit and playground — inside the Surfland complex.',
-    whyRainy: 'Under a roof, so the children burn off a wet afternoon while the adults sit down. '
-            + 'The rest of the complex is there when the rain eases.',
-    maps: 'https://maps.google.com/?q=Surfland+Brasil+Garopaba+SC',
+    id: 'museu-baleia',
+    kind: 'museum',
+    name: 'Museu da Baleia de Imbituba (Barracão Manoel Rosa)',
+    where: 'Rua Itagiba s/n, Praia do Porto, Imbituba',
+    driveApprox: '40 minutes, 30 km',
+    what: 'The municipal museum, in a restored 1973 whaling station — whale bones, the old '
+        + 'ovens, harpoons. Staff give informal tours. Run by the Prefeitura, not by Australis.',
+    whyRainy: 'Indoors and free, and closer than Itapirubá.',
+    caution: 'Small and visibly tired — recent reviews say the panels are worn and there is '
+           + 'little information. Good for 45 minutes, thin as the whole outing. The subject is '
+           + 'the whaling slaughter, which is heavy going for young children.',
+    hours: 'Wednesday to Friday 08:00–12:00 and 13:00–17:00; Saturday, Sunday and holidays '
+         + '09:00–17:00. CLOSED Monday and Tuesday.',
+    price: 'Free.',
+    phone: '(48) 3255-0268',
+    maps: 'https://maps.google.com/?q=Museu+da+Baleia+de+Imbituba+Praia+do+Porto',
     chips: [
-      { label: 'How do we get there?', send: 'How do we get to Surfland Brasil?' },
-      { label: 'Price and opening hours', send: 'What does Só 4x4 Kids cost and when is it open?' },
-      { label: 'The whale museum instead', send: 'Tell me about the whale museum in Imbituba instead.' },
+      { label: 'How do we get there?', send: 'How do we get to the Museu da Baleia in Imbituba?' },
+      { label: 'Opening hours',        send: 'When is the Museu da Baleia de Imbituba open?' },
+      { label: 'The one with the skeleton', send: 'Tell me about the Centro Nacional da Baleia Franca instead.' },
       { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
     ],
-    verified: 'Place and what it is: confirmed by the owners. HOURS AND PRICE ARE NOT '
-            + 'CONFIRMED — tell the guest to check before driving.',
-  },
-  {
-    id: 'chocolate',
-    kind: 'food',
-    name: 'Casa de Chocolates Garopaba & Mini Museu do Mar',
-    where: 'Garopaba',
-    driveApprox: 'a short drive — the closest of the three',
-    what: 'An artisanal chocolate maker, paired with a small marine museum.',
-    whyRainy: 'Short, indoors, and it suits an afternoon rather than a whole day — the easiest '
-            + 'of the three to fold into a wet morning.',
-    maps: 'https://maps.google.com/?q=Casa+de+Chocolates+Garopaba+SC',
-    chips: [
-      { label: 'How do we get there?', send: 'How do we get to the Casa de Chocolates in Garopaba?' },
-      { label: 'Price and opening hours', send: 'What does the Casa de Chocolates cost and when is it open?' },
-      { label: 'Something for the kids', send: 'Show me the covered play area at Surfland instead.' },
-      { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
-    ],
-    verified: 'Place and what it is: confirmed by the owners. HOURS AND PRICE ARE NOT '
-            + 'CONFIRMED, and whether the chocolate shop and the mini museum are one venue or '
-            + 'two has not been confirmed either — say so rather than presenting it as settled.',
+    verified: 'Hours and free entry confirmed 2026-08-31 by two independent sources — Notisul '
+            + '(Feb 2026) and Google Maps. NOTE: this is NOT where the big skeleton is; that is '
+            + 'at Itapirubá. One local news article confuses the two — do not repeat that.',
   },
   {
     id: 'cinema',

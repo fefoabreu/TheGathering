@@ -30,27 +30,64 @@ it sits beside `TG_HOUSE_LINKS` and `TG_SOUNDTRACK`.
 **It is data, not prompt.** A prompt is not a database, and an owner should be
 able to correct an opening time without editing an agent's personality.
 
-| id | kind | venue |
-|---|---|---|
-| `australis` | `museum` | Instituto Australis — Museu da Baleia, Imbituba |
-| `so4x4kids` | `kids` | Só 4x4 Kids, at Surfland Brasil |
-| `chocolate` | `food` | Casa de Chocolates Garopaba & Mini Museu do Mar |
-| `cinema` | `in-house` | Cinema Mode at the house |
+> **The original brief contained three factual errors.** Research on 2026-08-31
+> corrected all three before launch. See "What the research changed" below.
 
-Each entry carries `name, where, driveApprox, what, whyRainy, maps, chips[],
-verified`.
+| id | kind | venue | verdict |
+|---|---|---|---|
+| `baleia-franca` | `museum` | Centro Nacional da Baleia Franca, Itapirubá | **Primary.** Indoor, free, has the skeleton |
+| `museu-baleia` | `museum` | Museu da Baleia de Imbituba, Praia do Porto | Indoor, free, closer — but small and tired |
+| `cinema` | `in-house` | Cinema Mode at the house | No drive, no weather |
 
-### Honesty about what is not known
+Each entry carries `name, where, driveApprox, what, whyRainy, hours, price,
+phone, maps, chips[], verified` (+ `caution` where warranted).
 
-`verified` is load-bearing. The **places and what they are** came from the
-owners. **Hours and prices did not** and are marked unconfirmed, with the tool
-instructing her to say so. Sending a family forty minutes through rain to a
-closed door is the one unforgivable failure here — "call ahead" beats a
-confident invention.
+## What the research changed
 
-**Owner action:** confirm hours/prices for the three venues, and whether the
-chocolate shop and the Mini Museu do Mar are one venue or two. Then update
-`verified` and add a `hours` / `price` field.
+**1. The skeleton is at the other museum.** There are two separate whale
+institutions in Imbituba. Instituto Australis — the organisation named in the
+brief — runs the **Centro Nacional in Itapirubá**, and that is where the 13.95 m
+right whale skeleton is. The **Museu da Baleia** at Praia do Porto is municipal,
+run by the Prefeitura, and is a different place. One local news article conflates
+them; the data notes this so Sisay does not repeat it.
+
+- Centro Nacional: **Tue–Sat 09:00–12:00 & 14:00–17:00, closed Sun/Mon. Free.**
+  44 min. Confirmed against the official site *and* Google Maps, which agree exactly.
+- Museu da Baleia: **Wed–Fri 08:00–12:00 & 13:00–17:00, Sat/Sun/holidays 09:00–17:00,
+  closed Mon/Tue. Free.** 40 min. Confirmed by Notisul (Feb 2026) and Google Maps.
+
+**2. Só 4x4 Kids is not an indoor playground — it was removed.** Its own Instagram
+bio and TripAdvisor entry both describe *"locação de carrinhos elétricos 4x4"* —
+ride-on electric car rental, plus a 5 m × 5 m kids space. **No source confirms it
+is covered**, the core activity is driving small cars around, and Surfland markets
+itself on "vida ao ar livre". There is no published price, and Surfland charges
+park entry on top. Listing it as a rainy-day option would have sent families out
+in the rain to an open-air attraction.
+
+> **Thread worth pulling:** Surfland separately advertises an *"espaço kids
+> **coberto**"* as its own amenity — a different thing from Só 4x4 Kids, and
+> unverified. If that checks out it is the covered kids option this matrix is
+> missing. Surfland: **(48) 99203-7446**.
+
+**3. The chocolate shop and the Mini Museu do Mar are unrelated, and both fail.**
+Different organisations, different locations, no connection.
+
+- **Chocolate Artesanal Garopaba:** the farm café is flagged *"Temporariamente
+  fechado"*, with no reviews in 2026. The business now advertises only a market
+  stall — Mercado do Produtor, Tue/Fri/Sat 08:00–13:00. Outdoor, and mornings only.
+- **Mini Museu do Mar:** the NGO is thriving, but the museum has **vanished from
+  every current source** — no address, hours or visiting info on its own site,
+  Instagram or Linktree, and no tourism guide lists it. The only hours ever
+  published are from a 2019 blog post. Omitted.
+
+## Two phone calls would close the remaining gaps
+
+Neither was made — contacting businesses on your behalf needs your go-ahead.
+
+1. **(48) 99127-8961** — Instituto Australis, to confirm the skeleton is at
+   Itapirubá (one article claims otherwise) and check September programming.
+2. **(48) 99203-7446** — Surfland, on whether the *espaço kids coberto* is real,
+   its hours and price.
 
 ### Cinema Mode
 
@@ -120,22 +157,29 @@ Added to `SISAY_SYSTEM` in `index.html`:
 
 ## Verified behaviour
 
-Asked *"O que fazer com as crianças em um dia chuvoso?"* on a genuinely wet day
-(69.7 mm, 100% chance):
+All against the live agent on a genuinely wet day (69.7 mm, 100% chance).
 
-```
-tools called: get_weather → get_rainy_day_options → offer_choices
-```
+**"Dia de chuva com crianças. O que fazer?"**
+`get_weather → get_rainy_day_options → offer_choices`
 
-> Chuva firme hoje, então nada de praia — mas tenho o lugar certo pras crianças:
-> o Só 4x4 Kids, dentro do complexo Surfland Brasil, uns 10-15 minutinhos daqui.
-> É uma área coberta com piscina de bolinhas e playground, então elas gastam
-> energia enquanto vocês sentam com um café. 🌧️
->
-> Só um aviso: não tenho certeza do horário e preço, vale ligar antes de sair de casa.
+> Chuva firme hoje, então nada de praia — mas tenho um plano ótimo pra criançada:
+> o Centro Nacional de Conservação da Baleia Franca em Itapirubá, com um esqueleto
+> de baleia de quase 14 metros, entrada gratuita e um passeio guiado que os
+> pequenos adoram. Fica a uns 44 minutos daqui.
 
-One bubble, correct feminine Portuguese, unprompted honesty about the unverified
-hours, and chips to continue.
+**"Podemos ir hoje ao museu da baleia? Que horas abre?"** — today is a Monday:
+
+> Hoje é segunda-feira — e as duas opções de museu da baleia fecham exatamente às
+> segundas… melhor plano pra hoje é o Cinema Mode em casa, e deixamos a baleia
+> pra amanhã, terça, quando o Centro Nacional reabre às 9h.
+
+That second one is the whole point of putting real hours in the data: she caught
+a closed door before anyone got in a car.
+
+**"Qual a melhor praia para hoje?"** — she calls `get_weather` *first*, says today
+is not a beach day, and points at the day after tomorrow, which is the sunny one.
+
+One bubble per answer, correct feminine Portuguese throughout, chips every time.
 
 ## Not done
 
