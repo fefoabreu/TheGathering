@@ -86,7 +86,19 @@ function tgRenderMarkdown(raw) {
     }
 
     closeList();
-    if (line.trim() === '') { out.push('<br>'); continue; }
+    if (line.trim() === '') {
+      /*  A blank line BETWEEN two blocks is just a paragraph break, and <p>
+          already carries a margin — emitting <br> as well produced a visible
+          hole between paragraphs. Only keep the <br> where it is doing real
+          work: leading spacing, or a run of blank lines the writer meant. */
+      const prev = out[out.length - 1] || '';
+      // Nothing emitted yet: a leading blank line would just push the first
+      // line down inside the bubble.
+      if (!out.length) continue;
+      if (/<\/(p|ul|ol|div)>$/.test(prev)) continue;
+      out.push('<br>');
+      continue;
+    }
     out.push(`<p>${tgInline(line)}</p>`);
   }
   closeList();

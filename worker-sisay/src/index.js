@@ -32,7 +32,14 @@ const DEFAULT_MODEL       = 'claude-sonnet-5';
 
 // Ceilings. Deliberately conservative — a guest asking about dinner needs a
 // short answer, and anything longer is either abuse or a bug.
-const MAX_TOKENS_PER_REPLY = 700;
+//
+// 700 was too tight, and it failed in the ugliest way: a rainy-day answer ran
+// long and was guillotined mid-word ("a Estar Garopaba costuma ter es"). The
+// guest sees a broken sentence, not a limit. The real fix is that Sisay is
+// brief — that lives in her prompt — but the ceiling must leave enough room
+// that a legitimate answer finishes rather than being cut. Still bounded:
+// this is a public endpoint and the daily USD cap below is the real guard.
+const MAX_TOKENS_PER_REPLY = 1100;
 const DAILY_USD_CEILING    = 2.00;
 const SESSION_MSG_LIMIT    = 25;    // per anonymous uid, per day
 const SESSION_TTL_SECONDS  = 86400;

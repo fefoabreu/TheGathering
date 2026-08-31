@@ -2621,11 +2621,19 @@ You once commanded the Weatherlight across the multiverse. You now keep this hou
 
 **The soundtrack.** The house has its own trilha sonora — *TheGathering 🌊🌄*, a playlist the owners curated to match this place. Call get_house_manual with topic 'soundtrack' for the Spotify and Apple Music links. Offer it when it actually fits: welcoming someone in, anything about music or the Sonos, sunset on the deck, a pool afternoon, or 'what should we put on?'. Ask which platform they use, or just give both. It is a signature touch of the house — share it with pride, once. Never plug it twice.
 
-**Never make them type.** Whenever your reply ends in a question, call offer_choices with 2–4 short answers to that exact question. "Want the menu, or shall I check a booking?" needs chips that say Menu and Booking — not the generic openers. This is the difference between a concierge and a chatbot.
+**Never make them type, and never leave a dead end.** Whenever your reply ends in a question, call offer_choices with 2–4 short answers to that exact question. "Want the menu, or shall I check a booking?" needs chips that say Menu and Booking — not the generic openers. This is the difference between a concierge and a chatbot.
+
+When you recommend a specific PLACE, the chips are how the guest goes deeper, so offer the obvious next moves: how to get there, what it costs and when it opens, a different option, or staying in. Each entry from get_rainy_day_options carries its own chips list, written for exactly that place — use it rather than inventing your own, and translate the labels to the guest's language.
+
+**Rain does not tie your hands.** Call get_weather when the day's plan depends on the sky, and ALWAYS before recommending a beach, a surf session or anything outdoors. If it comes back isRainyDay, do not wait to be asked twice and do not open by listing what you cannot do — lead with the indoor options from get_rainy_day_options. That tool holds real places: an indoor whale museum, a covered play area for children, a chocolate factory, and the house's own Cinema Mode for a family that would rather not drive in the rain. A guest asking "what do we do on a rainy day?" must never hear that your guide is focused on food and beaches. It is not a limitation of yours — it is a question you have a proper answer to.
+
+**Never hand a guest back to Estar for something you can answer.** Estar Garopaba handles exactly three things you genuinely cannot see: check-in and arrival logistics, door codes, and payments. For anything else — what to do, where to go, how the house works, what the weather is doing, the address, the links — YOU are the answer. Sending someone to Estar for a rainy afternoon or a public link is a non-answer dressed as helpfulness, and it is the single worst habit you can fall into. Before you deflect, call the tool.
+
+**Speak of yourself as a woman in Portuguese.** You are Sisay, capitã e concierge — so "sou a Sisay", "estou pronta", "vou ser honesta", "fico feliz". Never the masculine form. In English this never comes up, which is exactly why it slips in Portuguese.
 
 **Sell the place, honestly.** Everything here is genuinely good — the point break at dawn, the dunes at Siriú, the kitchen at sunset. Say why something is special, in one concrete detail rather than three adjectives.
 
-**Be brief.** Two or three sentences, usually. You are a host at the door, not a brochure. End with a small nudge onward — another question worth asking, a next thing worth seeing — so the guest always has somewhere to go.
+**Be brief.** Two or three sentences, usually. You are a host at the door, not a brochure. End with a small nudge onward — another question worth asking, a next thing worth seeing — so the guest always has somewhere to go. Never open with a preamble about what you can and cannot do, or with an apology for your own limits: a guest reading four lines before reaching a recommendation has been made to wait for nothing. Give the pick first. And keep it inside a phone screen — a reply long enough to be cut off mid-word has already failed.
 
 **You tutor a card, you don't recite a menu.** When a guest asks where to eat, drink, surf or explore, call suggest_experience and let the card do the talking — then add one line of your own about why it's the right pick tonight. Never list every option.
 
@@ -2643,10 +2651,86 @@ const SISAY_TOOLS = [
     input_schema:{ type:'object', properties:{ topic:{ type:'string',
       description:'tv, projector, sonos, pool, wifi, house, checkin, soundtrack, links, address' } } } },
   TG_CHOICES_TOOL,
+  { name:'get_weather', description:"Live weather at the house (Praia da Silveira) — right now plus three days. Returns a decided isRainyDay flag, so you never have to interpret weather codes. Call it before recommending a beach, a surf session or anything outdoors, and whenever the guest asks what to do today.",
+    input_schema:{ type:'object', properties:{} } },
+  { name:'get_rainy_day_options', description:"Indoor and covered things to do near the house when the weather turns — an indoor whale museum, a covered children's play area, a chocolate factory, and the house's own Cinema Mode. Each option carries how to get there, what is known about hours and prices, and the follow-up chips to offer. Use this instead of saying your guide is focused on food and beaches.",
+    input_schema:{ type:'object', properties:{ kind:{ type:'string',
+      description:"Optional filter: 'museum', 'kids', 'food', 'in-house'. Omit for all." } } } },
   { name:'suggest_experience', description:'Pick the best guide cards for what the guest is after and reveal them. Prefer this over describing places in prose.',
     input_schema:{ type:'object', required:['ids'], properties:{
       ids:{ type:'array', items:{type:'string'}, description:'Card ids from get_guide_cards, best first, at most three.' } } } },
 ];
+
+/* ══ WEATHER AT THE HOUSE ══════════════════════════════════════
+   Sisay had no idea what the sky was doing. Asked what to do on a rainy day
+   she could only say her guide is "focada em comida, praia e aventura" —
+   true, and useless. Open-Meteo is free, needs no key and no attribution
+   token, and answers for the house's own coordinates.
+
+   The tool returns a decided `wet` boolean rather than a WMO code, because
+   the routing decision should not depend on the model remembering that 82
+   means violent rain showers and 51 means drizzle. */
+
+const TG_COORDS = { lat: -28.0333, lon: -48.6167 };   // Praia da Silveira
+
+const WMO = {
+  0:'clear sky', 1:'mainly clear', 2:'partly cloudy', 3:'overcast',
+  45:'fog', 48:'depositing rime fog',
+  51:'light drizzle', 53:'drizzle', 55:'heavy drizzle',
+  56:'freezing drizzle', 57:'heavy freezing drizzle',
+  61:'light rain', 63:'rain', 65:'heavy rain',
+  66:'freezing rain', 67:'heavy freezing rain',
+  71:'light snow', 73:'snow', 75:'heavy snow', 77:'snow grains',
+  80:'light rain showers', 81:'rain showers', 82:'violent rain showers',
+  85:'snow showers', 86:'heavy snow showers',
+  95:'thunderstorm', 96:'thunderstorm with hail', 99:'thunderstorm with heavy hail',
+};
+const wmoWet  = c => (c >= 51 && c <= 67) || (c >= 80 && c <= 82) || (c >= 95 && c <= 99);
+const wmoText = c => WMO[c] || 'unsettled';
+
+let TG_WX = null, TG_WX_AT = 0;
+
+async function sisayWeather() {
+  // Ten minutes is plenty: the guest is deciding about today, not modelling.
+  if (TG_WX && Date.now() - TG_WX_AT < 600000) return TG_WX;
+  const url = 'https://api.open-meteo.com/v1/forecast'
+    + `?latitude=${TG_COORDS.lat}&longitude=${TG_COORDS.lon}`
+    + '&current=temperature_2m,precipitation,weather_code'
+    + '&daily=weather_code,precipitation_sum,precipitation_probability_max,'
+    + 'temperature_2m_max,temperature_2m_min,wind_speed_10m_max'
+    + '&timezone=America%2FSao_Paulo&forecast_days=3';
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('weather ' + r.status);
+  const d = await r.json();
+
+  const day = i => ({
+    date: d.daily.time[i],
+    summary: wmoText(d.daily.weather_code[i]),
+    wet: wmoWet(d.daily.weather_code[i]),
+    rainMm: d.daily.precipitation_sum[i],
+    rainChancePct: d.daily.precipitation_probability_max[i],
+    highC: d.daily.temperature_2m_max[i],
+    lowC: d.daily.temperature_2m_min[i],
+    windMaxKmh: d.daily.wind_speed_10m_max[i],
+  });
+
+  const today = day(0);
+  // "Wet enough to change the plan" is a judgement, so make it here, once,
+  // rather than leaving it to be re-decided differently every turn.
+  const wetNow = wmoWet(d.current.weather_code) || d.current.precipitation > 0;
+  TG_WX = {
+    place: 'Praia da Silveira, Garopaba',
+    now: { tempC: d.current.temperature_2m,
+           summary: wmoText(d.current.weather_code),
+           rainingNow: wetNow },
+    today, tomorrow: day(1), dayAfter: day(2),
+    isRainyDay: wetNow || today.wet || (today.rainChancePct >= 60) || (today.rainMm >= 1),
+    note: 'Live from Open-Meteo for the house itself. If isRainyDay is true, lead with '
+        + 'the indoor options from get_rainy_day_options — do not make the guest ask twice.',
+  };
+  TG_WX_AT = Date.now();
+  return TG_WX;
+}
 
 async function sisayRunTool(name, input) {
   input = input || {};
@@ -2661,6 +2745,22 @@ async function sisayRunTool(name, input) {
     case 'offer_choices':
       tgPaintChips('sisay-chips', input.choices, sisaySend);
       return 'Choices shown.';
+    case 'get_weather': {
+      try { return await sisayWeather(); }
+      catch (e) { return { error: 'The forecast is not reachable right now. Say so plainly rather '
+                                + 'than guessing at the sky, and offer the indoor options anyway.' }; }
+    }
+
+    case 'get_rainy_day_options': {
+      const all = (typeof TG_RAINY_DAY !== 'undefined' ? TG_RAINY_DAY : []);
+      const list = input.kind ? all.filter(o => o.kind === input.kind) : all;
+      return { options: list.length ? list : all,
+               note: 'Real places, checked by the owners. Where a field says the hours or the '
+                   + 'price are unconfirmed, SAY it is worth calling ahead — never invent an '
+                   + 'opening time. Sending a family 40 minutes in the rain to a closed door is '
+                   + 'the one unforgivable mistake here. Offer each option chips from its own list.' };
+    }
+
     case 'get_house_manual':
       return input.topic ? (SISAY_MANUAL[input.topic] || 'Not covered — the owners can confirm.') : SISAY_MANUAL;
     case 'suggest_experience': {
@@ -2779,13 +2879,35 @@ async function sisaySend(text) {
   sisayTyping(true);
 
   try {
+    let turnBubble = null;      // the single bubble this whole turn writes into
     for (let hop = 0; hop < 4; hop++) {
       const turn = await sisayCall();
       const content = (turn.content || []).filter(b => b.type !== 'text' || (b.text || '').trim());
       SISAY_MSGS.push({ role:'assistant', content });
 
+      /*  One answer, one bubble. Each hop used to paint its own, so a reply
+          that called offer_choices arrived as two: the recommendation, then a
+          stray "Just tap one and let's get you sorted 🌊" in a bubble of its
+          own. That reads as two messages from someone who could not decide
+          when to stop talking. Later hops append to the first bubble instead. */
       const said = content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
-      if (said) { sisayTyping(false); sisayBubble('sisay', said); }
+      if (said) {
+        sisayTyping(false);
+        if (turnBubble) {
+          // Collapse runs of blank lines: each hop's text arrives already
+          // trimmed, and joining with a blank line on top of a trailing one
+          // renders as a gaping hole between paragraphs.
+          turnBubble.dataset.raw =
+            ((turnBubble.dataset.raw || '') + '\n\n' + said).replace(/\n{3,}/g, '\n\n');
+          const body = turnBubble.querySelector('.sb-body');
+          if (body) body.innerHTML = tgRenderMarkdown(turnBubble.dataset.raw);
+          const log = document.getElementById('sisay-log');
+          if (log) log.scrollTop = log.scrollHeight;
+        } else {
+          turnBubble = sisayBubble('sisay', said);
+          if (turnBubble) turnBubble.dataset.raw = said;
+        }
+      }
 
       const calls = content.filter(b => b.type === 'tool_use');
       if (!calls.length) break;

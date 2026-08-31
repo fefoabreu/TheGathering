@@ -205,3 +205,120 @@ function tgGuestLinks() { return TG_HOUSE_LINKS.filter(l => l.guest); }
 
 // The house's own address, in one place for the same reason.
 const TG_HOUSE_ADDRESS = 'Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000';
+
+
+// ──────────────────────────────────────────────────────────────
+//  The Rainy Day Matrix
+// ──────────────────────────────────────────────────────────────
+//  Asked what to do on a wet day, Sisay used to answer that her guide is
+//  "focada em comida, praia e aventura" — accurate, and useless. The guide
+//  cards cover coffee, burgers, sushi, surf and sandboarding; not one of
+//  them is indoors. Her hands were not tied by judgement, they were tied by
+//  data, exactly as with the Instagram handle.
+//
+//  These live here rather than in her system prompt on purpose: a prompt is
+//  not a database, and the owners should be able to correct an opening time
+//  without anyone editing an agent's personality. Reached through
+//  get_rainy_day_options.
+//
+//  HOURS AND PRICES GO STALE. Every entry carries `verified` and, where a
+//  detail could not be confirmed, says so in plain words. Sisay is told to
+//  pass that uncertainty on rather than smoothing it over — sending a family
+//  forty minutes through the rain to a closed door is the one unforgivable
+//  failure here.
+// ──────────────────────────────────────────────────────────────
+const TG_RAINY_DAY = [
+  {
+    id: 'australis',
+    kind: 'museum',
+    name: 'Instituto Australis — Museu da Baleia',
+    where: 'Imbituba, the next town up the coast',
+    driveApprox: 'roughly 25–30 minutes from the house',
+    what: 'An indoor museum built around a complete right whale skeleton — baleia franca, '
+        + 'the whale this stretch of coast is known for.',
+    whyRainy: 'Entirely indoors, genuinely interesting, and the single best rainy-morning '
+            + 'answer for a family with children.',
+    maps: 'https://maps.google.com/?q=Instituto+Australis+Museu+da+Baleia+Imbituba+SC',
+    chips: [
+      { label: 'How do we get there?',  send: 'How do we get to the Instituto Australis in Imbituba?' },
+      { label: 'Price and opening hours', send: 'What does the Instituto Australis cost and when is it open?' },
+      { label: 'Something for the kids', send: 'Show me the covered play area at Surfland instead.' },
+      { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
+    ],
+    verified: 'Place and what it is: confirmed by the owners. HOURS AND PRICE ARE NOT '
+            + 'CONFIRMED — tell the guest to check before driving.',
+  },
+  {
+    id: 'so4x4kids',
+    kind: 'kids',
+    name: 'Só 4x4 Kids, at Surfland Brasil',
+    where: 'Inside the Surfland Brasil complex, Garopaba',
+    driveApprox: 'roughly 10–15 minutes from the house',
+    what: 'A fully covered indoor play area — ball pit and playground — inside the Surfland complex.',
+    whyRainy: 'Under a roof, so the children burn off a wet afternoon while the adults sit down. '
+            + 'The rest of the complex is there when the rain eases.',
+    maps: 'https://maps.google.com/?q=Surfland+Brasil+Garopaba+SC',
+    chips: [
+      { label: 'How do we get there?', send: 'How do we get to Surfland Brasil?' },
+      { label: 'Price and opening hours', send: 'What does Só 4x4 Kids cost and when is it open?' },
+      { label: 'The whale museum instead', send: 'Tell me about the whale museum in Imbituba instead.' },
+      { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
+    ],
+    verified: 'Place and what it is: confirmed by the owners. HOURS AND PRICE ARE NOT '
+            + 'CONFIRMED — tell the guest to check before driving.',
+  },
+  {
+    id: 'chocolate',
+    kind: 'food',
+    name: 'Casa de Chocolates Garopaba & Mini Museu do Mar',
+    where: 'Garopaba',
+    driveApprox: 'a short drive — the closest of the three',
+    what: 'An artisanal chocolate maker, paired with a small marine museum.',
+    whyRainy: 'Short, indoors, and it suits an afternoon rather than a whole day — the easiest '
+            + 'of the three to fold into a wet morning.',
+    maps: 'https://maps.google.com/?q=Casa+de+Chocolates+Garopaba+SC',
+    chips: [
+      { label: 'How do we get there?', send: 'How do we get to the Casa de Chocolates in Garopaba?' },
+      { label: 'Price and opening hours', send: 'What does the Casa de Chocolates cost and when is it open?' },
+      { label: 'Something for the kids', send: 'Show me the covered play area at Surfland instead.' },
+      { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
+    ],
+    verified: 'Place and what it is: confirmed by the owners. HOURS AND PRICE ARE NOT '
+            + 'CONFIRMED, and whether the chocolate shop and the mini museum are one venue or '
+            + 'two has not been confirmed either — say so rather than presenting it as settled.',
+  },
+  {
+    id: 'cinema',
+    kind: 'in-house',
+    name: 'Cinema Mode, at the house',
+    where: 'Here — no drive, no weather',
+    what: 'The deck projector or the 75" Frame TV in the living room, with the Sonos '
+        + 'carrying the sound through living room, kitchen and deck.',
+    whyRainy: 'The best answer when nobody wants to get in a car. Rain on the hillside '
+            + 'with the projector going is genuinely one of the better evenings here.',
+    steps: [
+      'Deck projector: power it on, then select the HDMI input.',
+      'Send the sound to the Sonos rather than the projector\u2019s own speaker — it is not close.',
+      'Indoors instead: the Samsung Frame TV, 75", in the living room. Input runs through '
+        + 'the One Connect box behind the panel.',
+      'The Frame sits in Art Mode when idle — one press of the remote\u2019s power button '
+        + 'wakes it to TV rather than turning it off.',
+      'Sonos: open the app on the guest WiFi, pick the rooms you want grouped, then AirPlay '
+        + 'or Spotify Connect to them.',
+      'If the pool heating was arranged before arrival, a heated pool in light rain is its own '
+        + 'kind of good — the deck is covered enough to get back inside dry.',
+    ],
+    chips: [
+      { label: 'How do I use the projector?', send: 'Walk me through the deck projector step by step.' },
+      { label: 'Sound through the house',      send: 'How do I get the sound onto the Sonos in every room?' },
+      { label: 'Something to watch',            send: 'What should we watch tonight?' },
+      { label: 'Actually, we would go out',    send: 'We would rather go out — what is open in the rain?' },
+    ],
+    verified: 'From the house manual. The kit is the house\u2019s own, so this does not go stale.',
+  },
+];
+
+/** Rainy-day options, optionally filtered by kind. */
+function tgRainyDay(kind) {
+  return kind ? TG_RAINY_DAY.filter(o => o.kind === kind) : TG_RAINY_DAY;
+}
