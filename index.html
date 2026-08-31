@@ -2664,7 +2664,17 @@ When you recommend a specific PLACE, the chips are how the guest goes deeper, so
 
 **You tutor a card, you don't recite a menu.** When a guest asks where to eat, drink, surf or explore, call suggest_experience and let the card do the talking — then add one line of your own about why it's the right pick tonight. Never list every option.
 
-**What you know:** the curated Garopaba Guide (call get_guide_cards) and the house manual — the Frame TV, the deck projector, the Sonos, the pool, capacity and rules, and the house's own links and address (call get_house_manual). Never invent a restaurant, price, phone number or booking link. If it isn't in your tools, say you'll have the owners confirm.
+**What you know.** Four bodies of knowledge, and you should reach for the right one rather than defaulting to the guide cards:
+- **The beach matrix** (recommend_beach) — 13 beaches, most with named corners, matched against the live wind and swell. This is the owners' own research and the best thing you have.
+- **The outdoors pack** (suggest_outdoors) — 11 trails, 14 waterfalls, 7 summits and miradouros, and three local guides.
+- **Rainy-day options** (get_rainy_day_options) and the weather (get_weather).
+- **The guide cards** (get_guide_cards) and the house manual (get_house_manual).
+
+Never invent a restaurant, price, phone number or booking link. If it isn't in your tools, say you'll have the owners confirm.
+
+**The beach is the point, not the restaurants.** Guests come here for a beach week. When someone asks what to do, where to go, or how to spend a day, your first instinct should be the water and the land — which corner is out of the wind today, which waterfall is worth the drive, which morro to climb at sunset — NOT a list of places to eat. Food is what you offer when they ask about food, or as one line at the end of a day you have already planned. A week of recommendations that reads as a restaurant crawl is a failure, however good the restaurants are.
+
+**Answer with a corner.** "Praia da Silveira" is not an answer; "Silveira, the north corner, because the nordestão is blowing and that end is the shelter" is. recommend_beach gives you the corner and the reason — use both, in your own words, in one or two sentences.
 
 **The house's own details are yours to give.** Its Instagram, its Airbnb listing, its site, its contact email, its address, the floor plans — all of that is in get_house_manual, and all of it is public. Someone asking "what's the house's Instagram?" should get the handle, not a redirection to Estar. CALL THE TOOL before you say you do not have something: answering "I don't have that in my toolkit" about a detail that is sitting in your manual is the worst thing you can do here, and pointing a guest at Estar for a public link is a non-answer. Estar is the right answer for check-in, door codes and payments — the things you genuinely cannot see — and for nothing else.
 
@@ -2683,6 +2693,14 @@ const SISAY_TOOLS = [
   { name:'get_rainy_day_options', description:"Indoor and covered things to do near the house when the weather turns — an indoor whale museum, a covered children's play area, a chocolate factory, and the house's own Cinema Mode. Each option carries how to get there, what is known about hours and prices, and the follow-up chips to offer. Use this instead of saying your guide is focused on food and beaches.",
     input_schema:{ type:'object', properties:{ kind:{ type:'string',
       description:"Optional filter: 'museum', 'kids', 'food', 'in-house'. Omit for all." } } } },
+  { name:'recommend_beach', description:"Which beach — and which CORNER of it — works right now, from the owners' own matrix of 13 beaches against the live wind and swell. Nearly every beach here is a pick-the-corner beach, so this is the single most useful thing you can do for a guest. Call it for any 'which beach', 'where should we swim/surf today', 'is it a beach day' question, and whenever someone is planning a day outdoors.",
+    input_schema:{ type:'object', properties:{
+      goodFor:{ type:'array', items:{type:'string'}, description:"What they need, from: toddlers, kids, kids-channel, kids-lagoon, kids-river, kids-rockpools, teens, swimming, swimming-ocean, surf-beginner, surf-intermediate, surf-advanced, longboard, sup, canoe, kayak, snorkel, kitesurf, windsurf, sandboard, dunes, walk, quiet, scene, sunset, sunrise, shade, picnic, food-on-beach, whales-winter, off-the-beaten-path. Pick 1-3 that match what they actually said." },
+      maxDriveMinutes:{ type:'number', description:'Optional cap on driving time.' } } } },
+  { name:'suggest_outdoors', description:"Trails, waterfalls, summits and miradouros around Garopaba, plus the local guides who run them — 11 trails, 14 waterfalls, 7 summits. Use it when a guest wants something other than the beach: a walk, a hike, a swim in fresh water, a viewpoint, or a rainy spell that is clearing.",
+    input_schema:{ type:'object', properties:{
+      kind:{ type:'string', enum:['trails','waterfalls','summits','guides'], description:'Which set to look at. Omit for a mix.' },
+      maxDriveMinutes:{ type:'number' } } } },
   { name:'suggest_experience', description:'Pick the best guide cards for what the guest is after and reveal them. Prefer this over describing places in prose.',
     input_schema:{ type:'object', required:['ids'], properties:{
       ids:{ type:'array', items:{type:'string'}, description:'Card ids from get_guide_cards, best first, at most three.' } } } },
@@ -2712,6 +2730,14 @@ const WMO = {
   85:'snow showers', 86:'heavy snow showers',
   95:'thunderstorm', 96:'thunderstorm with hail', 99:'thunderstorm with heavy hail',
 };
+/*  The owners' own vocabulary. "Vento sul" and "nordestão" are how every
+    local describes the day; degrees are how the matrix stores it. */
+const COMPASS_PT = ['norte','nordeste','leste','sudeste','sul','sudoeste','oeste','noroeste'];
+function compassName(deg) {
+  if (deg == null || isNaN(deg)) return null;
+  return COMPASS_PT[Math.round(((deg % 360) + 360) % 360 / 45) % 8];
+}
+
 const wmoWet  = c => (c >= 51 && c <= 67) || (c >= 80 && c <= 82) || (c >= 95 && c <= 99);
 const wmoText = c => WMO[c] || 'unsettled';
 
@@ -2722,7 +2748,7 @@ async function sisayWeather() {
   if (TG_WX && Date.now() - TG_WX_AT < 600000) return TG_WX;
   const url = 'https://api.open-meteo.com/v1/forecast'
     + `?latitude=${TG_COORDS.lat}&longitude=${TG_COORDS.lon}`
-    + '&current=temperature_2m,precipitation,weather_code'
+    + '&current=temperature_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m'
     + '&daily=weather_code,precipitation_sum,precipitation_probability_max,'
     + 'temperature_2m_max,temperature_2m_min,wind_speed_10m_max'
     + '&timezone=America%2FSao_Paulo&forecast_days=3';
@@ -2741,6 +2767,22 @@ async function sisayWeather() {
     windMaxKmh: d.daily.wind_speed_10m_max[i],
   });
 
+  /*  Swell, from the marine model. Optional: if it fails the beach matrix
+      still works on wind alone, which is the dominant factor here anyway. */
+  let sea = null;
+  try {
+    const m = await fetch('https://marine-api.open-meteo.com/v1/marine'
+      + `?latitude=${TG_COORDS.lat}&longitude=${TG_COORDS.lon}`
+      + '&current=wave_height,wave_direction,wave_period,swell_wave_height,'
+      + 'swell_wave_direction,swell_wave_period&timezone=America%2FSao_Paulo');
+    if (m.ok) {
+      const md = (await m.json()).current || {};
+      sea = { waveM: md.wave_height, wavePeriodS: md.wave_period,
+              swellM: md.swell_wave_height, swellFromDeg: md.swell_wave_direction,
+              swellPeriodS: md.swell_wave_period };
+    }
+  } catch (e) {}
+
   const today = day(0);
   // "Wet enough to change the plan" is a judgement, so make it here, once,
   // rather than leaving it to be re-decided differently every turn.
@@ -2749,7 +2791,13 @@ async function sisayWeather() {
     place: 'Praia da Silveira, Garopaba',
     now: { tempC: d.current.temperature_2m,
            summary: wmoText(d.current.weather_code),
-           rainingNow: wetNow },
+           rainingNow: wetNow,
+           // Direction is where the wind is coming FROM, in degrees — the
+           // beach matrix is built on exactly this.
+           windFromDeg: d.current.wind_direction_10m,
+           windName: compassName(d.current.wind_direction_10m),
+           windKmh: d.current.wind_speed_10m },
+    sea,
     today, tomorrow: day(1), dayAfter: day(2),
     isRainyDay: wetNow || today.wet || (today.rainChancePct >= 60) || (today.rainMm >= 1),
     note: 'Live from Open-Meteo for the house itself. If isRainyDay is true, lead with '
@@ -2757,6 +2805,113 @@ async function sisayWeather() {
   };
   TG_WX_AT = Date.now();
   return TG_WX;
+}
+
+/* ══ THE BEACH MATRIX ══════════════════════════════════════════
+   Owner-researched: 13 beaches, most of them with named corners, each with
+   the wind directions that make it clean, sheltered or blown out. This is
+   the local knowledge a search engine cannot give you — "vento sul, so the
+   north corner of Silveira, not the middle" — and until now Sisay could not
+   read a byte of it.
+
+   Kept in KV rather than the repo (the repo is public and this is the
+   owners' own work), fetched once per session through the Worker. */
+
+let TG_BEACHES = null, TG_TRAILS = null;
+
+async function sisayKnowledge(pack) {
+  const cached = pack === 'beaches' ? TG_BEACHES : TG_TRAILS;
+  if (cached) return cached;
+  const res = await fetch(SISAY_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json',
+               'Authorization': 'Bearer ' + await sisayToken() },
+    body: JSON.stringify({ action: 'knowledge', pack }),
+  });
+  if (!res.ok) throw new Error('knowledge ' + res.status);
+  const data = await res.json();
+  if (pack === 'beaches') TG_BEACHES = data; else TG_TRAILS = data;
+  return data;
+}
+
+/*  Is a compass bearing inside a range? Ranges WRAP: Rosa Norte is sheltered
+    from [340, 30], which spans north. Comparing lo <= x <= hi would call a
+    350° wind out of range and recommend the wrong corner on exactly the days
+    the shelter matters. */
+function degInRange(deg, [lo, hi]) {
+  const d = ((deg % 360) + 360) % 360;
+  return lo <= hi ? (d >= lo && d <= hi) : (d >= lo || d <= hi);
+}
+const degInAny = (deg, ranges) => (ranges || []).some(r => degInRange(deg, r));
+
+/*  Score one spot against the live wind. Negative means stay away. */
+function windScore(w, windDeg) {
+  if (!w || windDeg == null) return 0;
+  if (degInAny(windDeg, w.blownOut))  return -10;   // ruled out, not merely worse
+  if (degInAny(windDeg, w.clean))     return  10;   // offshore / groomed
+  if (degInAny(windDeg, w.sheltered)) return   6;   // out of the wind
+  return 1;
+}
+
+/*  Rank beaches AND their corners for the conditions right now.
+    Returns whole beaches, each carrying its best corner, because the answer
+    here is nearly always a corner rather than a beach. */
+function rankBeaches(pack, wx, opts) {
+  opts = opts || {};
+  const windDeg = wx && wx.now ? wx.now.windFromDeg : null;
+  const swellDeg = wx && wx.sea ? wx.sea.swellFromDeg : null;
+  const swellM   = wx && wx.sea ? wx.sea.swellM : null;
+  const want     = (opts.goodFor || []).filter(Boolean);
+  const maxDrive = opts.maxDriveMinutes || 999;
+
+  const out = [];
+  for (const b of (pack.beaches || [])) {
+    if (b.driveMinutes > maxDrive) continue;
+
+    // Corners first — the whole point of this data.
+    const spots = (b.sections || []).map(sec => ({
+      name: sec.name, notes: sec.notes, goodFor: sec.goodFor || [],
+      score: windScore(sec.wind, windDeg),
+    })).sort((a, c) => c.score - a.score);
+
+    const beachWind = windScore(b.wind, windDeg);
+    const best = spots.length ? spots[0] : null;
+    // A beach is only as good as its best usable corner.
+    let score = best ? Math.max(best.score, beachWind) : beachWind;
+
+    // Does the swell actually reach it, and is it in range?
+    if (b.swell && swellDeg != null) {
+      if (!degInAny(swellDeg, b.swell.worksFrom)) score -= 2;
+      if (swellM != null && b.swell.minM && swellM < b.swell.minM) score -= 1;
+      if (swellM != null && b.swell.maxM && swellM > b.swell.maxM) score -= 2;
+    }
+
+    // What the guest actually wants beats a clean lineup they cannot use.
+    if (want.length) {
+      const tags = new Set([...(b.goodFor || []), ...spots.flatMap(x => x.goodFor)]);
+      const hits = want.filter(t => tags.has(t)).length;
+      const bad  = want.filter(t => (b.badFor || []).includes(t)).length;
+      if (!hits && !bad) continue;                 // irrelevant to the ask
+      score += hits * 8 - bad * 12;
+    }
+
+    score -= Math.min(b.driveMinutes, 60) / 20;    // closer wins ties
+
+    out.push({
+      beach: b.name,
+      driveMinutes: b.driveMinutes,
+      bestCorner: best && best.score > 0 ? best.name : null,
+      cornerNote: best && best.score > 0 ? best.notes : null,
+      allCorners: spots.map(x => ({ name: x.name, verdict:
+        x.score < 0 ? 'blown out today' : x.score >= 10 ? 'clean today'
+        : x.score >= 6 ? 'sheltered today' : 'ordinary today', notes: x.notes })),
+      goodFor: b.goodFor, badFor: b.badFor,
+      notes: b.notes, crowd: b.crowd,
+      verdict: score < 0 ? 'avoid today' : score >= 10 ? 'today’s pick' : 'workable',
+      _score: Math.round(score * 10) / 10,
+    });
+  }
+  return out.sort((a, b) => b._score - a._score);
 }
 
 async function sisayRunTool(name, input) {
@@ -2808,6 +2963,73 @@ async function sisayRunTool(name, input) {
                    + 'place, add the caveat, move on. Sending a family out in the rain to '
                    + 'a closed door is the one unforgivable mistake here. Offer each option chips '
                    + 'from its own list.' };
+    }
+
+    case 'recommend_beach': {
+      let wx = null;
+      try { wx = await sisayWeather(); } catch (e) {}
+      let pack;
+      try { pack = await sisayKnowledge('beaches'); }
+      catch (e) { return { error: 'The beach matrix is not reachable right now. Say so rather '
+                                + 'than guessing which beach — the corner is the whole answer.' }; }
+      const ranked = rankBeaches(pack, wx, {
+        goodFor: input.goodFor || [], maxDriveMinutes: input.maxDriveMinutes });
+      return {
+        conditions: wx ? { wind: wx.now.windName, windFromDeg: wx.now.windFromDeg,
+                           windKmh: wx.now.windKmh, sky: wx.now.summary,
+                           rainingNow: wx.now.rainingNow, isRainyDay: wx.isRainyDay,
+                           sea: wx.sea } : null,
+        rules: pack._regionalRules ? pack._regionalRules.map(r => r.rule) : [],
+        picks: ranked.slice(0, 4),
+        note: 'Lead with the CORNER, not just the beach — "Silveira, but the north end" is the '
+            + 'answer, "Silveira" is not. Give one reason from the notes, in your own words. '
+            + 'Anything marked avoid today should be named as such if the guest asks for it by '
+            + 'name. The regional rules are real constraints: dogs are banned on every beach '
+            + 'here, and whale watching is land-based only — never suggest a whale boat.',
+      };
+    }
+
+    case 'suggest_outdoors': {
+      let pack;
+      try { pack = await sisayKnowledge('trails'); }
+      catch (e) { return { error: 'The trail pack is not reachable right now.' }; }
+      const cap = input.maxDriveMinutes || 999;
+      const near = xs => (xs || []).filter(x => (x.driveMinutes == null || x.driveMinutes <= cap));
+
+      /*  recommend:false means people have DIED there. Three waterfalls carry
+          documented drownings — Poço Preto (two), Caixa d'Água, Salto de Cima —
+          and two of them are inside a 45-minute drive, so a naive "waterfalls
+          within an hour" query surfaced them as suggestions. They are pulled
+          out of everything Sisay can offer and handed back separately, so the
+          only way one reaches a guest is if the guest names it first and she
+          warns them off it. */
+      const offerable = xs => near(xs).filter(x => x.recommend !== false);
+      const tier = x => ({ tier1: 0, tier2: 1, tier3: 2 })[x.recommend] ?? 3;
+      const byTier = xs => offerable(xs).sort((a, b) => tier(a) - tier(b));
+
+      const sets = {
+        trails:     byTier(pack.trails),
+        waterfalls: byTier(pack.waterfalls),
+        summits:    byTier(pack.summits),
+        guides:     pack.guides || [],
+      };
+      const out = input.kind ? { [input.kind]: sets[input.kind] }
+                             : { trails: sets.trails.slice(0, 5),
+                                 waterfalls: sets.waterfalls.slice(0, 5),
+                                 summits: sets.summits.slice(0, 4) };
+
+      const banned = (pack.waterfalls || []).filter(w => w.recommend === false)
+        .map(w => ({ name: w.name, why: w.accidents, hazards: w.hazards }));
+
+      return { ...out,
+        seasonal: pack.seasonalExperience || null,
+        neverRecommend: banned,
+        note: 'Safety fields are not decoration. Where an entry flags no lifeguards, a hard '
+            + 'access road or unknown depth, say it plainly in the same breath as recommending '
+            + 'it, especially to anyone bringing children. The neverRecommend list is places '
+            + 'where people have drowned: NEVER offer one. If a guest raises one by name, say '
+            + 'plainly that there have been deaths there and steer them somewhere else. Give '
+            + 'one or two picks with a reason, never a list of everything.' };
     }
 
     case 'get_house_manual':

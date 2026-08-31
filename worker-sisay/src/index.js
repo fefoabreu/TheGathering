@@ -130,9 +130,35 @@ export default {
     const check = await verifyFirebaseToken(idToken, env.FIREBASE_API_KEY || FIREBASE_API_KEY);
     if (!check.ok) return json({ error: 'Unauthorized: ' + check.reason }, 401, origin);
 
-    if (!env.ANTHROPIC_API_KEY) return json({ error: 'Proxy is not configured.' }, 500, origin);
-
     const kv = env.SISAY_LIMITS;
+
+    /*  LOCAL KNOWLEDGE — the beach matrix and the trail/waterfall pack.
+     *
+     *  These are the owners' own research: which corner of which beach works
+     *  on which wind, which waterfalls have drowned people. Deliberately NOT
+     *  in the repo (it is public) — they live in KV and are served from here.
+     *
+     *  Handled BEFORE the Anthropic key check and outside the message limit
+     *  on purpose: this is a data read, not a model call. Charging a guest a
+     *  message from their daily allowance for the page to load a beach list
+     *  would be absurd, and it must keep working after the model budget for
+     *  the day is spent. Auth still applies — the check above already ran. */
+    let body0 = null;
+    try { body0 = await request.clone().json(); } catch (e) {}
+    if (body0 && body0.action === 'knowledge') {
+      if (!kv) return json({ error: 'Knowledge store not bound.' }, 500, origin);
+      const want = String(body0.pack || '');
+      const KEYS = { beaches: 'beaches:v1', trails: 'trails:v1' };
+      if (!KEYS[want]) return json({ error: 'Unknown pack.' }, 400, origin);
+      const raw = await kv.get(KEYS[want], { cacheTtl: 3600 });
+      if (!raw) return json({ error: 'Pack not loaded yet: ' + want }, 404, origin);
+      return new Response(raw, {
+        status: 200,
+        headers: { ...cors(origin), 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!env.ANTHROPIC_API_KEY) return json({ error: 'Proxy is not configured.' }, 500, origin);
 
     // 1. Daily ceiling — the one that actually protects the balance.
     if (kv) {
