@@ -435,3 +435,40 @@ function tgRainyGuideCards() {
     };
   });
 }
+
+// ──────────────────────────────────────────────────────────────
+//  The stay — arrival, departure, and how the house runs
+// ──────────────────────────────────────────────────────────────
+//  Owner decision: Sisay answers the check-in and check-out PROCEDURE.
+//  Door codes and anything credential-shaped stay with Estar Garopaba, who
+//  coordinate them directly with the guest.
+//
+//  Anything left null she will NOT guess at — she says the owners will
+//  confirm it. A wrong check-out time is a real-world failure, so a blank
+//  here is strictly better than a plausible invention. Fill these in and she
+//  starts answering them immediately; nothing else needs changing.
+// ──────────────────────────────────────────────────────────────
+const TG_STAY = {
+  checkInFrom:   null,   // e.g. "15:00"
+  checkOutBy:    null,   // e.g. "11:00"
+  arrival:       null,   // how a guest actually gets in and parks
+  departure:     null,   // what to leave done: dishes, towels, windows, keys
+  parking:       null,
+  trash:         null,   // collection days, where the bins live
+  quietHours:    null,
+  earlyLateNote: 'Early check-in and late check-out are sometimes possible — Estar arranges it.',
+
+  // Deliberately NOT here, and not Sisay's to give.
+  _withEstar: ['door codes', 'the WiFi password', 'payment and the caução',
+               'the arrival window itself once a booking is confirmed'],
+};
+
+/** Only the parts the owners have actually filled in. */
+function tgStayKnown() {
+  const out = {};
+  for (const [k, v] of Object.entries(TG_STAY)) {
+    if (k.startsWith('_')) continue;
+    if (v != null && v !== '') out[k] = v;
+  }
+  return out;
+}

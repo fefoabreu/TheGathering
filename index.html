@@ -39,8 +39,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202608311308"></script>
-  <script src="agent-ui.js?v=202608311308"></script>
+  <script src="firebase-config.js?v=202609012153"></script>
+  <script src="agent-ui.js?v=202609012153"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
     :root {
@@ -859,18 +859,56 @@
       background:linear-gradient(112deg, var(--sunset) 0%, #D9633F 42%, var(--dusk-pink) 100%);
       color:var(--sand-light);
     }
-    .sh-id { display:flex; align-items:center; gap:.65rem; }
+    .sh-id { display:flex; align-items:center; gap:.7rem; min-width:0; }
+
+    /*  THE INSTRUMENT.
+        This was a 🧭 emoji in a frosted circle — decoration, and the giveaway
+        that the panel was a chat widget dressed in house colours. It is now a
+        working compass: the needle points at the real wind bearing off the
+        house, and the line beneath her name reads the sea instead of saying
+        "Guest AI Concierge". Nothing here is added furniture — a label was
+        removed and the space given to information. Before a guest types a
+        word, the panel has already told them what kind of day it is. */
     .sh-avatar {
-      width:38px; height:38px; border-radius:50%; flex-shrink:0;
-      display:grid; place-items:center; font-size:1.05rem;
-      background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.4);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+      width:40px; height:40px; flex-shrink:0; display:block;
+      border-radius:50%;
+      background:radial-gradient(circle at 38% 32%, rgba(255,255,255,.30), rgba(13,33,55,.28));
+      border:1px solid rgba(255,255,255,.45);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.4);
+    }
+    .sh-avatar svg { width:100%; height:100%; display:block; }
+    /*  The needle swings to the true bearing when she opens — one moment,
+        not a loop. Until the reading lands it rests at north. */
+    .sh-needle {
+      transform-origin:50% 50%;
+      transform:rotate(var(--wind-deg, 0deg));
+      transition:transform 1.1s cubic-bezier(.34,1.2,.5,1);
     }
     .sh-name { font-family:'Cinzel',serif; font-size:1rem; color:#fff; letter-spacing:.08em; }
+    /*  The readout. Tabular figures so the numbers do not shuffle as the
+        wind updates, and small-caps labels in the house's own display face. */
     .sh-role {
-      font-size:.63rem; color:rgba(255,255,255,.88); margin-top:.1rem;
-      letter-spacing:.13em; text-transform:uppercase; font-weight:600;
+      font-size:.62rem; color:rgba(255,255,255,.92); margin-top:.15rem;
+      letter-spacing:.06em; font-weight:500; font-variant-numeric:tabular-nums;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     }
+    /*  The labels are gone, and this is why: the readout box is ~200px no
+        matter the screen, because the PANEL is a fixed 408px. I first keyed
+        the responsive rule on viewport width, which fixed the phone and left
+        desktop clipping in exactly the same way — the constraint was never
+        the screen. "WIND sudoeste 16 km/h · SEA 1.6 m" needs 219px; without
+        labels it needs 142px and always fits. The needle says wind, and
+        "1.6 m" can only be the sea. */
+    /*  The separator belongs to the item, not between items. As sibling
+        spans, hiding the sky reading left its separator behind — and
+        :last-of-type matches by ELEMENT type, and everything here is a span,
+        so it never selected what it looked like it selected. */
+    .sh-role .rd-i + .rd-i::before { content:'·'; opacity:.45; margin:0 .42rem; }
+    /*  Never let the instrument truncate. On a narrow phone the sky reading
+        is dropped rather than clipped mid-word — "SEA 1.6…" reads as broken,
+        and the sky is the one you can check by looking out of the window. */
+    .sh-role .rd-lbl, .sh-role .rd-sky { display:none; }
+    @media (prefers-reduced-motion: reduce) { .sh-needle { transition:none; } }
     .sisay-close {
       width:30px; height:30px; border-radius:50%; cursor:pointer; flex-shrink:0;
       background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35);
@@ -883,19 +921,38 @@
       padding:1rem; display:flex; flex-direction:column; gap:.7rem;
       background:linear-gradient(180deg, var(--sand-light) 0%, #FAF1E2 100%);
     }
-    .s-bubble { max-width:88%; padding:.7rem .9rem; border-radius:14px; font-size:.88rem; line-height:1.62; }
+    /*  THE GRAMMAR INVERSION.
+        Two rounded, drop-shadowed bubbles facing each other is the chat
+        template, and no amount of house colour rescues it. So Sisay loses her
+        bubble: her words sit directly on the page under a sunset rule, the way
+        an entry sits in a log. The GUEST keeps the contained block. The person
+        is the visitor here; she is the place they are visiting. That single
+        swap is what stops the panel reading as a chat window. */
+    .s-bubble { max-width:88%; font-size:.88rem; line-height:1.65; }
+
     .s-guest {
-      align-self:flex-end; background:linear-gradient(135deg, var(--ocean-light), var(--ocean-mid));
-      color:#fff; border-bottom-right-radius:5px;
-      box-shadow:0 2px 8px rgba(22,58,95,.24);
+      align-self:flex-end; max-width:82%;
+      padding:.62rem .85rem; border-radius:12px; border-bottom-right-radius:4px;
+      background:var(--ocean-mid); color:var(--text-light);
+      box-shadow:0 1px 6px rgba(13,33,55,.18);
     }
+
     .s-sisay {
-      align-self:flex-start; background:#fff; color:var(--text-dark);
-      border:1px solid rgba(224,120,64,.16); border-left:3px solid var(--sunset);
-      border-bottom-left-radius:5px; box-shadow:var(--sh-sm);
+      align-self:stretch; max-width:100%;
+      background:none; border:0; box-shadow:none;
+      color:var(--text-dark);
+      padding:.1rem 0 .1rem .85rem;
+      border-left:2px solid var(--sunset);
     }
-    .sb-who { font-family:'Cinzel',serif; font-size:.56rem; letter-spacing:.16em;
-              text-transform:uppercase; color:var(--sunset); margin-bottom:.3rem; }
+    /*  Her name is the only ornament she gets, in the house's display face. */
+    .sb-who { font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.2em;
+              text-transform:uppercase; color:var(--sunset); margin-bottom:.35rem; }
+    /*  The greeting is the one line allowed to be lyrical — it is the first
+        thing anyone reads, and it should sound like the house, not a product. */
+    .s-sisay.s-greet .sb-body p:first-child {
+      font-family:'Cormorant Garamond',serif; font-style:italic;
+      font-size:1.12rem; line-height:1.45; color:var(--ocean-deep);
+    }
     .sb-body { white-space:normal; }
 
     /* Rendered model output — links, lists and tables inside a narrow panel. */
@@ -958,12 +1015,16 @@
       border-top:1px solid rgba(224,120,64,.12);
     }
     .sisay-chips::-webkit-scrollbar { display:none; }
+    /*  Chart tabs rather than pills. A rounded pill row under a message is
+        the other half of the chatbot signature; these are squared, hairline,
+        and set in the display face so they read as labels on a chart. */
     .sisay-chips button {
-      flex-shrink:0; padding:.4rem .8rem; border-radius:16px; cursor:pointer; font-size:.7rem;
-      background:#fff; border:1px solid rgba(224,120,64,.3);
-      color:var(--ocean-mid); font-weight:500; transition:var(--ease);
+      flex-shrink:0; padding:.42rem .8rem; border-radius:3px; cursor:pointer;
+      font-family:'Cinzel',serif; font-size:.6rem; letter-spacing:.05em; white-space:nowrap;
+      background:transparent; border:1px solid rgba(13,33,55,.22);
+      color:var(--ocean-deep); font-weight:500; transition:var(--ease);
     }
-    .sisay-chips button:hover { background:var(--sunset); border-color:var(--sunset); color:#fff; }
+    .sisay-chips button:hover { background:var(--ocean-deep); border-color:var(--ocean-deep); color:var(--sand-light); }
 
     .sisay-input-row {
       display:flex; gap:.5rem; padding:.75rem 1rem .9rem; align-items:flex-end; flex-shrink:0;
@@ -1515,10 +1576,26 @@
 <div class="sisay-panel" id="sisay-panel">
   <div class="sisay-head">
     <div class="sh-id">
-      <div class="sh-avatar">🧭</div>
-      <div>
+      <!-- A working compass, not an icon: the needle points at the real wind. -->
+      <div class="sh-avatar" id="sisay-compass" aria-hidden="true">
+        <svg viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="18" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="1"/>
+          <g stroke="rgba(255,255,255,.55)" stroke-width="1" stroke-linecap="round">
+            <line x1="20" y1="3.5" x2="20" y2="7"/><line x1="20" y1="33" x2="20" y2="36.5"/>
+            <line x1="3.5" y1="20" x2="7" y2="20"/><line x1="33" y1="20" x2="36.5" y2="20"/>
+          </g>
+          <g class="sh-needle" id="sisay-needle">
+            <!-- Filled half points where the wind comes FROM. -->
+            <path d="M20 8 L23.4 21 L20 19 L16.6 21 Z" fill="#F5E6C8"/>
+            <path d="M20 32 L16.6 19 L20 21 L23.4 19 Z" fill="rgba(255,255,255,.34)"/>
+          </g>
+          <circle cx="20" cy="20" r="1.9" fill="#fff" opacity=".92"/>
+        </svg>
+      </div>
+      <div style="min-width:0">
         <div class="sh-name">Sisay</div>
-        <div class="sh-role">Guest AI Concierge</div>
+        <!-- Replaced "Guest AI Concierge" — a live reading of the sea. -->
+        <div class="sh-role" id="sisay-readout">Reading the sea…</div>
       </div>
     </div>
     <div style="display:flex;gap:.4rem;flex-shrink:0">
@@ -2611,7 +2688,7 @@ let SISAY_MANUAL = {
   pool:      'Heated pool on the hillside deck. Heating is a paid add-on — arrange it before arrival so it is warm when you get here.',
   wifi:      'Guest WiFi details are on the welcome card in the kitchen and in the check-in message.',
   house:     '4 suites — Planície, Ilha, Montanha, Floresta. Sleeps 12 (max 8 adults + 4 children up to 10). No pets. Not suitable for children under 2.',
-  checkin:   'Managed by Estar Garopaba. They send check-in details, door codes and arrival instructions before your stay.',
+  checkin:   'Arrival and departure are Sisay\u2019s to explain — see the stay entry. Estar Garopaba coordinates door codes and the arrival window directly with the guest.',
 };
 
 // The soundtrack is DATA, shared with Hanna via firebase-config.js rather than
@@ -2620,6 +2697,13 @@ if (typeof TG_SOUNDTRACK !== 'undefined') SISAY_MANUAL.soundtrack = TG_SOUNDTRAC
 // The house's own links, from the one shared list. Guest-safe entries only —
 // the filter is data, not Sisay's discretion, so the host dashboard and the
 // cameras can never reach a guest even if she is asked directly for them.
+// Arrival and departure. Only the fields the owners have filled in reach her,
+// so she can never recite a check-out time nobody set.
+if (typeof tgStayKnown === 'function') {
+  const stay = tgStayKnown();
+  SISAY_MANUAL.stay = Object.keys(stay).length ? stay : null;
+  SISAY_MANUAL.stayWithEstar = (typeof TG_STAY !== 'undefined') ? TG_STAY._withEstar : undefined;
+}
 if (typeof tgGuestLinks === 'function') {
   SISAY_MANUAL.links   = tgGuestLinks().map(l => ({ what:l.title, url:l.url, about:l.desc }));
   SISAY_MANUAL.address = typeof TG_HOUSE_ADDRESS !== 'undefined' ? TG_HOUSE_ADDRESS : undefined;
@@ -2654,7 +2738,9 @@ When you recommend a specific PLACE, the chips are how the guest goes deeper, so
 
 **Opening times and prices are not yours to guarantee.** For anywhere that is not this house — a museum, a restaurant, a shop — add one short line telling them to check: "Vale ligar antes para confirmar" in Portuguese, "worth calling ahead to confirm" in English. One line at the end, not a paragraph of hedging. And where you simply do not have the hours or the price, do not make a thing of it: recommend the place, let that line do its work, and move on. The guest can look up a phone number; what they cannot do is know which place is worth going to. That part is yours.
 
-**Never hand a guest back to Estar for something you can answer.** Estar Garopaba handles exactly three things you genuinely cannot see: check-in and arrival logistics, door codes, and payments. For anything else — what to do, where to go, how the house works, what the weather is doing, the address, the links — YOU are the answer. Sending someone to Estar for a rainy afternoon or a public link is a non-answer dressed as helpfulness, and it is the single worst habit you can fall into. Before you deflect, call the tool.
+**Arrival and departure are yours; the keys are not.** You explain how a stay works — when check-in opens, when check-out is, how arrival goes, where to park, what to leave done on the last morning. That is in get_house_manual under stay. What stays with Estar Garopaba is the credential-shaped half: door codes, the WiFi password, payment and the caução, and the arrival window once a booking is confirmed. They coordinate those with the guest directly, and it is right that they do. So: answer the procedure, hand over the codes. And where a field in stay is missing, say the owners will confirm that detail — never estimate a check-out time. Someone planning a departure around a number you invented is the worst outcome here.
+
+**Never hand a guest back to Estar for anything else.** For what to do, where to go, how the house works, what the weather is doing, the address, the links — YOU are the answer. Sending someone to Estar for a rainy afternoon or a public link is a non-answer dressed as helpfulness, and it is the single worst habit you can fall into. Before you deflect, call the tool.
 
 **Speak of yourself as a woman in Portuguese** — "sou a Sisay", "estou pronta", "vou ser honesta", "fico feliz". Never the masculine form; in English it never comes up, which is why it slips in Portuguese. **And never call the guest capitã.** You were a captain; they are your guest. Address them plainly — no nautical nickname, no "capitã", no rank. Getting this wrong makes it sound like you have mistaken them for someone else.
 
@@ -2678,7 +2764,7 @@ Never invent a restaurant, price, phone number or booking link. If it isn't in y
 
 **The house's own details are yours to give.** Its Instagram, its Airbnb listing, its site, its contact email, its address, the floor plans — all of that is in get_house_manual, and all of it is public. Someone asking "what's the house's Instagram?" should get the handle, not a redirection to Estar. CALL THE TOOL before you say you do not have something: answering "I don't have that in my toolkit" about a detail that is sitting in your manual is the worst thing you can do here, and pointing a guest at Estar for a public link is a non-answer. Estar is the right answer for check-in, door codes and payments — the things you genuinely cannot see — and for nothing else.
 
-**What you must never do:** you have no access to bookings, guest names, door codes, WiFi passwords, vendor details or anything financial, and you must not speculate about them. If asked, say warmly that check-in details come from Estar Garopaba directly. Never discuss commissions, contracts or owner matters — you serve the guests, and the crew keeps its own counsel.`;
+**What you must never do:** you have no access to bookings, guest names, door codes, WiFi passwords, vendor details or anything financial, and you must not speculate about them. If asked for any of those, say warmly that Estar Garopaba sends them directly — that one is genuinely theirs. Never discuss commissions, contracts or owner matters — you serve the guests, and the crew keeps its own counsel.`;
 
 const SISAY_TOOLS = [
   { name:'get_guide_cards', description:'The curated Garopaba Guide — restaurants, bars, coffee, surf, adventure. Optionally filter by category.',
@@ -2686,7 +2772,7 @@ const SISAY_TOOLS = [
       description:'coffee, burgers, sushi, cowork, poke, happy-hour, sandboarding, acougue, pizza' } } } },
   { name:'get_house_manual', description:"How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity, rules, the house soundtrack, AND the house's own links and address: Instagram, the Airbnb listing, the house site, the contact email, the map, the floor plans. Call it for any 'what is the house's X' question, social handles included.",
     input_schema:{ type:'object', properties:{ topic:{ type:'string',
-      description:'tv, projector, sonos, pool, wifi, house, checkin, soundtrack, links, address' } } } },
+      description:'tv, projector, sonos, pool, wifi, house, checkin, stay, soundtrack, links, address' } } } },
   TG_CHOICES_TOOL,
   { name:'get_weather', description:"Live weather at the house (Praia da Silveira) — right now plus three days. Returns a decided isRainyDay flag, so you never have to interpret weather codes. Call it before recommending a beach, a surf session or anything outdoors, and whenever the guest asks what to do today.",
     input_schema:{ type:'object', properties:{} } },
@@ -2804,6 +2890,7 @@ async function sisayWeather() {
         + 'the indoor options from get_rainy_day_options — do not make the guest ask twice.',
   };
   TG_WX_AT = Date.now();
+  try { sisayPaintReadout(); } catch (e) {}
   return TG_WX;
 }
 
@@ -2912,6 +2999,46 @@ function rankBeaches(pack, wx, opts) {
     });
   }
   return out.sort((a, b) => b._score - a._score);
+}
+
+/*  The readout under her name. Wind in the vocabulary people here actually
+    use — nordestão, vento sul — then the sea, then the sky. Written once on
+    open and refreshed whenever a weather call lands, so the panel is already
+    telling the guest what kind of day it is before they type. */
+function sisayPaintReadout() {
+  const el = document.getElementById('sisay-readout');
+  if (!el) return;
+  const pt = sisayLang() === 'pt';
+  if (!TG_WX) { el.textContent = pt ? 'Lendo o mar…' : 'Reading the sea…'; return; }
+
+  const n = TG_WX.now || {};
+  const sea = TG_WX.sea || null;
+  const bits = [];
+
+  /*  Ordered by usefulness, because a phone cannot hold all three. Wind
+      decides which corner to stand on; the sea decides whether to swim; the
+      sky you can see by looking up — so the sky is the one that goes. */
+  if (n.windName) {
+    const kmh = n.windKmh != null ? ' ' + Math.round(n.windKmh) + ' km/h' : '';
+    bits.push(`<span class="rd-i"><span class="rd-lbl">${pt ? 'vento' : 'wind'}</span>${n.windName}${kmh}</span>`);
+  }
+  if (sea && sea.waveM != null) {
+    const m = sea.waveM.toFixed(1).replace('.', pt ? ',' : '.');
+    bits.push(`<span class="rd-i"><span class="rd-lbl">${pt ? 'mar' : 'sea'}</span>${m} m</span>`);
+  }
+  if (n.summary) {
+    bits.push(`<span class="rd-i rd-sky"><span class="rd-lbl">${pt ? 'céu' : 'sky'}</span>${tgEscape(n.summary)}</span>`);
+  }
+  // No separator spans: the separator is a ::before on each item after the
+  // first, so hiding an item takes its separator with it.
+  el.innerHTML = bits.length ? bits.join('') : 'Praia da Silveira, Garopaba';
+
+  // Swing the needle to the true bearing. The wind is named for where it
+  // comes FROM, which is exactly what the filled half should point at.
+  const needle = document.getElementById('sisay-needle');
+  if (needle && n.windFromDeg != null) {
+    document.getElementById('sisay-compass').style.setProperty('--wind-deg', n.windFromDeg + 'deg');
+  }
 }
 
 async function sisayRunTool(name, input) {
@@ -3092,6 +3219,7 @@ function sisayApplyCopy() {
     .map(([ask, label]) => `<button onclick="sisayAsk('${ask.replace(/'/g, "\\'")}')">${label}</button>`).join('');
   // Re-lay the greeting in the new language, but only while it is still the
   // only thing said — once the guest has asked something the log is theirs.
+  try { sisayPaintReadout(); } catch (e) {}
   if (sisayStarted && !sisayConversed) sisayGreet();
 }
 
@@ -3252,7 +3380,7 @@ function sisayGreet() {
 
   const el = document.createElement('div');
   el.id = 'sisay-greeting';
-  el.className = 's-bubble s-sisay';
+  el.className = 's-bubble s-sisay s-greet';
   el.style.maxWidth = '100%';
   el.innerHTML =
     '<div class="sb-who">⚓ Sisay</div><div class="sb-body"></div>' +
@@ -3261,7 +3389,7 @@ function sisayGreet() {
                onclick="sisayPick(${i})">
          <span class="s-cat-emoji">${emoji}</span><span class="s-cat-label">${label}</span>
        </button>`).join('') + '</div>';
-  el.querySelector('.sb-body').textContent = c.hello;
+  el.querySelector('.sb-body').innerHTML = '<p>' + tgEscape(c.hello) + '</p>';
   log.appendChild(el);
   log.scrollTop = log.scrollHeight;
 }
@@ -3276,6 +3404,14 @@ function sisayOpen() {
   document.getElementById('sisay-panel').classList.add('show');
   document.getElementById('sisay-fab').classList.add('hidden');
   if (!sisayStarted) { sisayStarted = true; sisayGreet(); }
+  /*  Take the reading as she opens. Deliberately not awaited — the panel must
+      never wait on a network call to appear, so the readout says "reading the
+      sea" and the needle swings in when the answer lands. */
+  sisayPaintReadout();
+  sisayWeather().catch(() => {
+    const el = document.getElementById('sisay-readout');
+    if (el) el.textContent = 'Praia da Silveira, Garopaba';
+  });
   setTimeout(() => document.getElementById('sisay-input').focus(), 250);
 }
 function sisayNewChat() {
