@@ -681,26 +681,6 @@
     .hanna-panel.hp-max .h-bubble { max-width:74%; font-size:.95rem; }
     .hanna-panel.hp-max .hanna-suggest { flex-wrap:wrap; overflow-x:visible; }
 
-    /*  Minimised: the header bar alone, still showing who it is and that the
-        conversation is intact. Deliberately NOT the same as closing — close
-        returns to the astrolabe, minimise parks the conversation in reach. */
-    .hanna-panel.hp-min { max-height:none; height:auto; }
-    .hanna-panel.hp-min .hanna-log,
-    .hanna-panel.hp-min .hanna-typing,
-    .hanna-panel.hp-min .hanna-suggest,
-    .hanna-panel.hp-min .hanna-input-row { display:none !important; }
-    .hanna-panel.hp-min .hanna-head { border-bottom:0; cursor:pointer; }
-    .hanna-panel.hp-min { width:min(300px,calc(100vw - 3rem)); }
-
-    /*  A quiet count of what is parked in there, so a minimised panel does
-        not look like an empty title bar. */
-    .hh-parked {
-      display:none; font-size:.58rem; letter-spacing:.1em; text-transform:uppercase;
-      color:var(--gold); opacity:.75; margin-top:.2rem;
-    }
-    .hanna-panel.hp-min .hh-parked { display:block; }
-    .hanna-panel.hp-min .hh-role { display:none; }
-
     @media(max-width:650px){
       .hanna-panel.hp-max { right:0; left:0; top:0; bottom:0; height:100vh; border-radius:0; }
       .hanna-panel.hp-max .h-bubble { max-width:92%; }
@@ -2025,21 +2005,18 @@
 </button>
 
 <div class="hanna-panel" id="hanna-panel">
-  <div class="hanna-head" onclick="hannaHeadClick(event)">
+  <div class="hanna-head">
     <div>
       <!-- Her name is the second doorway into the Manifest, for owners who
            meet her here rather than at the foot of the Chronicle. -->
       <button class="hh-name" onclick="openManifest()"
               title="The Weatherlight Manifest — how this crew came to keep the house">Hanna</button>
       <div class="hh-role">Ship's Navigator · Commander Deck</div>
-      <div class="hh-parked" id="hanna-parked">Conversation parked</div>
     </div>
     <div style="display:flex;gap:.35rem">
       <button class="hanna-icon" onclick="hannaNewSession()" title="New chart" aria-label="New chart">✦</button>
       <button class="hanna-icon" id="hanna-max" onclick="hannaToggleMax(event)"
               title="Maximise" aria-label="Maximise">⤢</button>
-      <button class="hanna-icon" id="hanna-min" onclick="hannaToggleMin(event)"
-              title="Minimise" aria-label="Minimise">–</button>
       <button class="hanna-icon" onclick="hannaClose()" title="Close" aria-label="Close">✕</button>
     </div>
   </div>
@@ -4178,7 +4155,6 @@ async function hannaSend(text) {
     hannaTyping(false);
     hannaBusy = false;
     hannaScroll();
-    hannaParkedLabel();
     hannaPersist();
   }
 }
@@ -4403,8 +4379,8 @@ function hannaOpen() {
   document.getElementById('hanna-fab').classList.add('hidden');
   const chips = document.getElementById('hanna-chips');
   if (chips && !chips.children.length) hannaOpenerChips();
-  // Restore the remembered size. Never open straight into minimised: the
-  // owner just asked for the panel, so give them a usable one.
+  // Restore the remembered size. Anything that is not 'max' — including a
+  // stale 'min' left in storage from when minimise existed — opens docked.
   let want = 'dock';
   try { want = localStorage.getItem('tg_hanna_state') || 'dock'; } catch (e) {}
   hannaSetState(want === 'max' ? 'max' : 'dock');
@@ -4414,69 +4390,39 @@ function hannaOpen() {
   setTimeout(() => box && box.focus(), 250);
 }
 /* ══ WINDOW CONTROLS ══════════════════════════════════════════
-   Maximise for a focused read, minimise to park the conversation without
-   losing it. The two are mutually exclusive — a panel cannot be both, and
-   letting them combine produces a 96vh-tall title bar. */
+   Two states: docked, or maximised for a focused read. Close returns to the
+   astrolabe. Minimise used to be a third — it parked the conversation in the
+   header bar — but between an always-present astrolabe and a Close that keeps
+   the session, it was a third way to do what two already did. */
 
 function hannaPanel() { return document.getElementById('hanna-panel'); }
 
-function hannaSetState(state) {          // 'max' | 'min' | 'dock'
+function hannaSetState(state) {          // 'max' | 'dock'
   const p = hannaPanel(); if (!p) return;
-  p.classList.remove('hp-max', 'hp-min');
-  if (state === 'max') p.classList.add('hp-max');
-  if (state === 'min') p.classList.add('hp-min');
+  const on = state === 'max';
+  p.classList.toggle('hp-max', on);
 
   const maxBtn = document.getElementById('hanna-max');
   if (maxBtn) {
-    const on = state === 'max';
     maxBtn.textContent = on ? '⤡' : '⤢';
     maxBtn.title = on ? 'Restore' : 'Maximise';
     maxBtn.setAttribute('aria-label', maxBtn.title);
   }
-  const minBtn = document.getElementById('hanna-min');
-  if (minBtn) {
-    const on = state === 'min';
-    minBtn.textContent = on ? '▢' : '–';
-    minBtn.title = on ? 'Restore' : 'Minimise';
-    minBtn.setAttribute('aria-label', minBtn.title);
-  }
   // Size is a preference, not session state — it should survive a reload.
-  try { localStorage.setItem('tg_hanna_state', state); } catch (e) {}
-  if (state === 'min') hannaParkedLabel(); else hannaScroll();
+  try { localStorage.setItem('tg_hanna_state', on ? 'max' : 'dock'); } catch (e) {}
+  hannaScroll();
 }
 
 function hannaState() {
   const p = hannaPanel();
-  if (!p) return 'dock';
-  return p.classList.contains('hp-max') ? 'max'
-       : p.classList.contains('hp-min') ? 'min' : 'dock';
+  return p && p.classList.contains('hp-max') ? 'max' : 'dock';
 }
 
 function hannaToggleMax(e) {
-  if (e) e.stopPropagation();               // the header itself restores; don't double-fire
+  if (e) e.stopPropagation();
   hannaSetState(hannaState() === 'max' ? 'dock' : 'max');
   const box = document.getElementById('hanna-input');
   if (box) setTimeout(() => box.focus(), 120);
-}
-
-function hannaToggleMin(e) {
-  if (e) e.stopPropagation();
-  hannaSetState(hannaState() === 'min' ? 'dock' : 'min');
-}
-
-/** A minimised panel restores when its bar is clicked, anywhere but a button. */
-function hannaHeadClick(e) {
-  if (e && e.target.closest('button')) return;
-  if (hannaState() === 'min') hannaSetState('dock');
-}
-
-/** How much is parked in there, shown only while minimised. */
-function hannaParkedLabel() {
-  const el = document.getElementById('hanna-parked');
-  if (!el) return;
-  const turns = HANNA_MSGS.filter(m => m.role === 'user' && typeof m.content === 'string').length;
-  el.textContent = turns ? turns + (turns === 1 ? ' question parked' : ' questions parked')
-                         : 'Conversation parked';
 }
 
 function hannaClose() {
