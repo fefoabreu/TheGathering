@@ -14,3 +14,7 @@ assets/Sisay MTG Card
 # The beach matrix — the owners' local knowledge, pushed to KV not to git.
 worker-sisay/beaches.local.json
 worker-sisay/trails.local.json
+
+# Guest-facing house facts that are still credentials — the WiFi password.
+# Lives in KV, served to Sisay through the Worker. The repo is public.
+worker-sisay/house.local.json

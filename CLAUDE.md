@@ -96,6 +96,34 @@ Entries carry `guest: true/false`; Sisay only ever receives the filtered list, s
 guest-safety is data rather than model discretion. URLs and public handles only —
 passwords live in the Vault (`gathering/secrets`), because this repo is public.
 
+## Who can read Firestore (fixed 2026-09-09)
+
+`signedIn()` used to mean `request.auth != null`. The @tgs gate and the public
+guest site BOTH sign in anonymously — Sisay needs a Firebase token to reach her
+Worker — so the rules could not tell an owner from a passer-by. **Anyone loading
+the guest site could read `gathering/secrets` (lock codes, WiFi, vendor payment
+details) and `gathering/bookings` (guest names, origins, travel).** Verified
+against the live database, then closed.
+
+`isOwner()` now requires `sign_in_provider != 'anonymous'`, which the client
+cannot forge. Public reads are limited to `gathering/guide` and
+`gathering/houseGuide`, the only two docs the guest site renders.
+
+**The @tgs password path can no longer open the portal** — it can only mint an
+anonymous session. Google sign-in on the house account is the way in, and
+`TG_ALLOW_PASSWORD_FALLBACK` should stay false. Rollback, if ever needed, is the
+previous rules file in git history plus `firebase deploy --only firestore:rules`.
+
+## The guest WiFi
+
+Owner decision: Sisay hands out the guest WiFi; lock codes stay with Estar.
+
+It cannot live in this repo (public) and cannot live in Firestore (owner-only
+now, and Sisay is anonymous like every guest). It sits in KV as `house:v1`,
+served through the Worker's `action: 'knowledge'` route with `pack: 'house'`,
+source `worker-sisay/house.local.json` — **gitignored**. `get_house_manual`
+fetches it only when the topic is wifi/stay, never eagerly.
+
 The guest footer stays hardcoded on purpose: its labels are `TG_PT` translation
 keys, so rendering it from data would break i18n.
 

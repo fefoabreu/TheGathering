@@ -136,9 +136,14 @@ const TG_DRIVE_SCOPE = TG_GOOGLE_SCOPES[0];   // kept for older call sites
 // can see — provenance, not a restriction. See the sync-scope note in the brief.
 const TG_PROPERTY_FOLDER_ID = "1Q3Wo8OoiDPC_hls-2cgRextAZueU3gIV";
 
-// Legacy password path. Leave true until Google sign-in is confirmed working,
-// then set false — while it is true the old hole is still open.
-const TG_ALLOW_PASSWORD_FALLBACK = true;
+// Legacy password path — RETIRED 2026-09-09, and now it must stay retired.
+// The gate signed in ANONYMOUSLY, which is the same auth class every visitor
+// to the public guest site gets. firestore.rules could not tell the two
+// apart, so the Vault and the bookings were world-readable. The rules now
+// require a non-anonymous provider, which means this path could not reach
+// the data even if it were re-enabled — it would just fail confusingly.
+// Google sign-in on the house account is the way in.
+const TG_ALLOW_PASSWORD_FALLBACK = false;
 
 // The portal gate. Owner decision (Aug 12): this is the only access control
 // for now — inside, all three owners see everything, as in the shared Google
@@ -448,6 +453,8 @@ function tgRainyGuideCards() {
 //  here is strictly better than a plausible invention. Fill these in and she
 //  starts answering them immediately; nothing else needs changing.
 // ──────────────────────────────────────────────────────────────
+// These stay null until the Estar Garopaba site is live — the owners will
+// import them from there rather than hand-maintaining them here.
 const TG_STAY = {
   checkInFrom:   null,   // e.g. "15:00"
   checkOutBy:    null,   // e.g. "11:00"
@@ -458,8 +465,9 @@ const TG_STAY = {
   quietHours:    null,
   earlyLateNote: 'Early check-in and late check-out are sometimes possible — Estar arranges it.',
 
-  // Deliberately NOT here, and not Sisay's to give.
-  _withEstar: ['door codes', 'the WiFi password', 'payment and the caução',
+  // Deliberately NOT here, and not Sisay's to give. The guest WiFi came OFF
+  // this list at the owners' request — she hands that out, from KV.
+  _withEstar: ['door and lock codes', 'payment and the caução',
                'the arrival window itself once a booking is confirmed'],
 };
 

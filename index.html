@@ -39,8 +39,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202609012153"></script>
-  <script src="agent-ui.js?v=202609012153"></script>
+  <script src="firebase-config.js?v=202609092100"></script>
+  <script src="agent-ui.js?v=202609092100"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
     :root {
@@ -2686,7 +2686,7 @@ let SISAY_MANUAL = {
   projector: 'Projector serves the deck for movie nights. Power on, then select HDMI. Pair audio to the Sonos rather than the built-in speaker.',
   sonos:     'Sonos is grouped across living room, kitchen and deck. Use the Sonos app on the guest WiFi, pick the rooms you want, then AirPlay or Spotify Connect to them.',
   pool:      'Heated pool on the hillside deck. Heating is a paid add-on — arrange it before arrival so it is warm when you get here.',
-  wifi:      'Guest WiFi details are on the welcome card in the kitchen and in the check-in message.',
+  wifi:      'Guest WiFi — call get_house_manual with topic wifi and the live network name and password are filled in.',
   house:     '4 suites — Planície, Ilha, Montanha, Floresta. Sleeps 12 (max 8 adults + 4 children up to 10). No pets. Not suitable for children under 2.',
   checkin:   'Arrival and departure are Sisay\u2019s to explain — see the stay entry. Estar Garopaba coordinates door codes and the arrival window directly with the guest.',
 };
@@ -2738,7 +2738,7 @@ When you recommend a specific PLACE, the chips are how the guest goes deeper, so
 
 **Opening times and prices are not yours to guarantee.** For anywhere that is not this house — a museum, a restaurant, a shop — add one short line telling them to check: "Vale ligar antes para confirmar" in Portuguese, "worth calling ahead to confirm" in English. One line at the end, not a paragraph of hedging. And where you simply do not have the hours or the price, do not make a thing of it: recommend the place, let that line do its work, and move on. The guest can look up a phone number; what they cannot do is know which place is worth going to. That part is yours.
 
-**Arrival and departure are yours; the keys are not.** You explain how a stay works — when check-in opens, when check-out is, how arrival goes, where to park, what to leave done on the last morning. That is in get_house_manual under stay. What stays with Estar Garopaba is the credential-shaped half: door codes, the WiFi password, payment and the caução, and the arrival window once a booking is confirmed. They coordinate those with the guest directly, and it is right that they do. So: answer the procedure, hand over the codes. And where a field in stay is missing, say the owners will confirm that detail — never estimate a check-out time. Someone planning a departure around a number you invented is the worst outcome here.
+**Arrival and departure are yours; the door codes are not.** You explain how a stay works — when check-in opens, when check-out is, how arrival goes, where to park, what to leave done on the last morning. That is in get_house_manual under stay. **The guest WiFi is yours to give too** — call get_house_manual with topic wifi and hand over the network and password without fuss; it is on the welcome card in the kitchen anyway, and a guest who has just walked in should not have to ask twice. What stays with Estar Garopaba is the rest of the credential-shaped half: door and lock codes, payment and the caução, and the arrival window once a booking is confirmed. They coordinate those with the guest directly, and it is right that they do. So: answer the procedure, hand over the codes. And where a field in stay is missing, say the owners will confirm that detail — never estimate a check-out time. Someone planning a departure around a number you invented is the worst outcome here.
 
 **Never hand a guest back to Estar for anything else.** For what to do, where to go, how the house works, what the weather is doing, the address, the links — YOU are the answer. Sending someone to Estar for a rainy afternoon or a public link is a non-answer dressed as helpfulness, and it is the single worst habit you can fall into. Before you deflect, call the tool.
 
@@ -2764,7 +2764,7 @@ Never invent a restaurant, price, phone number or booking link. If it isn't in y
 
 **The house's own details are yours to give.** Its Instagram, its Airbnb listing, its site, its contact email, its address, the floor plans — all of that is in get_house_manual, and all of it is public. Someone asking "what's the house's Instagram?" should get the handle, not a redirection to Estar. CALL THE TOOL before you say you do not have something: answering "I don't have that in my toolkit" about a detail that is sitting in your manual is the worst thing you can do here, and pointing a guest at Estar for a public link is a non-answer. Estar is the right answer for check-in, door codes and payments — the things you genuinely cannot see — and for nothing else.
 
-**What you must never do:** you have no access to bookings, guest names, door codes, WiFi passwords, vendor details or anything financial, and you must not speculate about them. If asked for any of those, say warmly that Estar Garopaba sends them directly — that one is genuinely theirs. Never discuss commissions, contracts or owner matters — you serve the guests, and the crew keeps its own counsel.`;
+**What you must never do:** you have no access to bookings, guest names, door and lock codes, vendor payment details or anything financial, and you must not speculate about them. The guest WiFi is the one credential that IS yours to share. If asked for any of those, say warmly that Estar Garopaba sends them directly — that one is genuinely theirs. Never discuss commissions, contracts or owner matters — you serve the guests, and the crew keeps its own counsel.`;
 
 const SISAY_TOOLS = [
   { name:'get_guide_cards', description:'The curated Garopaba Guide — restaurants, bars, coffee, surf, adventure. Optionally filter by category.',
@@ -2904,10 +2904,11 @@ async function sisayWeather() {
    Kept in KV rather than the repo (the repo is public and this is the
    owners' own work), fetched once per session through the Worker. */
 
-let TG_BEACHES = null, TG_TRAILS = null;
+let TG_BEACHES = null, TG_TRAILS = null, TG_HOUSEPACK = null;
 
 async function sisayKnowledge(pack) {
-  const cached = pack === 'beaches' ? TG_BEACHES : TG_TRAILS;
+  const cached = pack === 'beaches' ? TG_BEACHES
+               : pack === 'trails'  ? TG_TRAILS : TG_HOUSEPACK;
   if (cached) return cached;
   const res = await fetch(SISAY_PROXY, {
     method: 'POST',
@@ -2917,7 +2918,9 @@ async function sisayKnowledge(pack) {
   });
   if (!res.ok) throw new Error('knowledge ' + res.status);
   const data = await res.json();
-  if (pack === 'beaches') TG_BEACHES = data; else TG_TRAILS = data;
+  if (pack === 'beaches') TG_BEACHES = data;
+  else if (pack === 'trails') TG_TRAILS = data;
+  else TG_HOUSEPACK = data;
   return data;
 }
 
@@ -3159,8 +3162,21 @@ async function sisayRunTool(name, input) {
             + 'one or two picks with a reason, never a list of everything.' };
     }
 
-    case 'get_house_manual':
-      return input.topic ? (SISAY_MANUAL[input.topic] || 'Not covered — the owners can confirm.') : SISAY_MANUAL;
+    case 'get_house_manual': {
+      /*  The guest WiFi is a credential, so it is not in this repo (public)
+          and not in Firestore (gathering/secrets is owner-only, and Sisay
+          authenticates anonymously exactly as every guest does). It comes
+          from KV through the Worker, on request, and only on request. */
+      if (input.topic === 'wifi' || input.topic === 'stay' || !input.topic) {
+        try {
+          const h = await sisayKnowledge('house');
+          if (h && h.wifi) SISAY_MANUAL.wifi = {
+            network: h.wifi.network, password: h.wifi.password, note: h.wifi.note };
+        } catch (e) { /* fall back to the built-in line */ }
+      }
+      return input.topic ? (SISAY_MANUAL[input.topic] || 'Not covered — the owners can confirm.')
+                         : SISAY_MANUAL;
+    }
     case 'suggest_experience': {
       const picked = (input.ids || []).map(id => cards.find(c => c.id === id)).filter(Boolean).slice(0, 3);
       if (!picked.length) return 'No matching cards.';

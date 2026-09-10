@@ -3,55 +3,67 @@ rules_version = '2';
 // ──────────────────────────────────────────────────────────────
 //  TheGathering · Firestore Security Rules
 // ──────────────────────────────────────────────────────────────
-//  The guest site reads the published Garopaba Guide without signing
-//  in. Everything else — bookings, projects, door codes, vendor
-//  payment details — requires an owner session.
+//  The public guest site reads the published Garopaba Guide and the
+//  published house manual without signing in to anything meaningful.
+//  Everything else — bookings, projects, lock codes, vendor payment
+//  details — requires an OWNER session, which means Google.
 //
-//  Access control is deliberately light at this stage — see the
-//  signedIn() note below. config/access stays reserved and locked
-//  so tightening to a UID allowlist later is a data change, not a
-//  rules rewrite.
+//  See the isOwner() note below: that distinction is the whole point
+//  of this file. config/access stays reserved and locked so tightening
+//  further to a UID allowlist is a data change, not a rules rewrite.
 // ──────────────────────────────────────────────────────────────
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Owner decision (Aug 12): the @tgs gate is the only access control for
-    // now — inside the portal everyone sees everything, as they always did in
-    // the shared Google Doc. The portal signs in anonymously so Firestore has
-    // a session; that keeps the data out of reach of unauthenticated REST
-    // calls (no drive-by reads or wipes) without adding any login friction.
-    //
-    // To tighten later, swap this for the UID allowlist — config/access is
-    // already reserved below and rules can read it without a redeploy:
-    //   request.auth.uid in get(/databases/$(database)/documents/config/access).data.uids
-    function signedIn() {
-      return request.auth != null;
+    /*  ANONYMOUS IS NOT AN OWNER.
+     *
+     *  This used to be signedIn(), meaning `request.auth != null`, and the
+     *  intent was "has been through the @tgs gate". But that gate signs in
+     *  ANONYMOUSLY — and so does every visitor to the public guest site,
+     *  because Sisay needs a Firebase token to reach her Worker. One auth
+     *  class for both, so the rules could not tell them apart: an anonymous
+     *  token minted by simply loading fefoabreu.me/TheGathering/ could read
+     *  gathering/secrets (lock codes, WiFi, vendor payment details) and
+     *  gathering/bookings (guest names, origins, travel details). Verified
+     *  against the live database on 2026-09-09, before this change.
+     *
+     *  Owners sign in with Google, so their token carries a sign_in_provider
+     *  that is not 'anonymous'. That is the line, and the client cannot forge
+     *  it — Firebase stamps the provider into the token itself.
+     *
+     *  Consequence, and it is intended: the @tgs password path can only ever
+     *  mint an anonymous session, so it no longer opens the portal. Google
+     *  sign-in on the house account is the way in.
+     */
+    function isOwner() {
+      return request.auth != null
+          && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
     match /gathering/{doc} {
-      // The published guide is what the guest booster pack renders.
-      allow read: if doc == 'guide';
+      // The two documents the public guest site renders, and only those.
+      // 'guide' is the Garopaba deck; 'houseGuide' is the published manual.
+      allow read: if doc == 'guide' || doc == 'houseGuide';
 
       // Everything else, and every write anywhere, is owners-only.
-      allow read, write: if signedIn();
+      allow read, write: if isOwner();
     }
 
     // The Chronicle and agent chat history. Collections rather than
     // documents because both grow over time and want ordering.
     match /decisions/{id} {
-      allow read, write: if signedIn();
+      allow read, write: if isOwner();
     }
     match /agentSessions/{id} {
-      allow read, write: if signedIn();
+      allow read, write: if isOwner();
       match /messages/{msg} {
-        allow read, write: if signedIn();
+        allow read, write: if isOwner();
       }
     }
 
     // The allowlist itself is console-only. Never readable by a client:
-    // rules `get()` runs server-side and is not subject to these rules,
-    // so isOwner() still works.
+    // rules `get()` runs server-side and is not subject to these rules.
     match /config/{doc} {
       allow read, write: if false;
     }

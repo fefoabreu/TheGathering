@@ -148,7 +148,7 @@ export default {
     if (body0 && body0.action === 'knowledge') {
       if (!kv) return json({ error: 'Knowledge store not bound.' }, 500, origin);
       const want = String(body0.pack || '');
-      const KEYS = { beaches: 'beaches:v1', trails: 'trails:v1' };
+      const KEYS = { beaches: 'beaches:v1', trails: 'trails:v1', house: 'house:v1' };
       if (!KEYS[want]) return json({ error: 'Unknown pack.' }, 400, origin);
       const raw = await kv.get(KEYS[want], { cacheTtl: 3600 });
       if (!raw) return json({ error: 'Pack not loaded yet: ' + want }, 404, origin);
