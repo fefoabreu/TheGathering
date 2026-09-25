@@ -879,6 +879,14 @@
     /*  Standing instructions about a contact — "call X before you call them",
         what the relationship is, what matter they are engaged on. Set apart
         from the contact details so it reads as guidance, not metadata. */
+    /*  .mtg-card sets its own display, which beats the UA's [hidden] rule —
+        without this the form would never close. */
+    .vendor-form[hidden] { display:none; }
+    .vendor-form { margin-bottom:1.5rem; }
+    .vf-opt { font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; opacity:.6; margin-left:.3rem; }
+    .vf-status { font-size:.8rem; color:var(--text-dim); margin-left:.4rem; }
+    .vf-status.ok  { color:var(--success); }
+    .vf-status.err { color:#E08050; }
     .vendor-notes {
       font-size:.76rem; line-height:1.5; color:var(--text-dim); margin-top:.55rem;
       padding-top:.55rem; border-top:1px solid var(--border);
@@ -1900,8 +1908,56 @@
 
       <div class="section-title" style="align-items:center"><i class="ms ms-c ms-cost"></i> Vendor Directory
         <span style="font-family:Inter,sans-serif;font-size:.7rem;letter-spacing:0;text-transform:none;color:var(--text-mute);margin-left:.6rem" id="vendor-count"></span>
-        <button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0" onclick="openVault()">🔐 Vault</button>
+        <button class="btn-sm btn-gold" style="margin-left:auto;flex-shrink:0" id="vendor-add-btn" onclick="toggleVendorForm()">+ Add vendor</button>
+        <button class="btn-sm btn-ghost" style="margin-left:.5rem;flex-shrink:0" onclick="openVault()">🔐 Vault</button>
       </div>
+
+      <!-- Add a vendor. Writes through the owner's Google session inside a
+           transaction; see addVendor(). -->
+      <div class="mtg-card vendor-form" id="vendor-form" hidden>
+        <div class="form-row">
+          <div class="form-field" style="flex:1;min-width:190px">
+            <label for="vf-role">Service</label>
+            <input type="text" id="vf-role" maxlength="60" placeholder="🎛️ Persianas Automáticas">
+          </div>
+          <div class="form-field" style="flex:1;min-width:190px">
+            <label for="vf-name">Name</label>
+            <input type="text" id="vf-name" maxlength="60" placeholder="Jonas — Esquadritec">
+          </div>
+          <div class="form-field" style="min-width:170px">
+            <label for="vf-phone">Phone</label>
+            <input type="text" id="vf-phone" inputmode="tel" maxlength="30" placeholder="+55 48 9…" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:.8rem">
+          <div class="form-field">
+            <label for="vf-group">Group</label>
+            <select id="vf-group"></select>
+          </div>
+          <div class="form-field" style="min-width:180px">
+            <label for="vf-cadence">Cadence</label>
+            <input type="text" id="vf-cadence" list="vf-cadences" placeholder="Sob demanda">
+          </div>
+          <div class="form-field" style="min-width:150px">
+            <label for="vf-cost">Cost <span class="vf-opt">optional</span></label>
+            <input type="text" id="vf-cost" placeholder="R$…">
+          </div>
+        </div>
+        <div class="form-field full" style="margin-top:.8rem">
+          <label for="vf-notes">Notes <span class="vf-opt">optional</span></label>
+          <textarea id="vf-notes" placeholder="Anything the next owner should know before calling"></textarea>
+        </div>
+        <datalist id="vf-cadences">
+          <option value="Sob demanda"><option value="Mensal">
+          <option value="Antes de cada check-in"><option value="Antes de cada temporada">
+        </datalist>
+        <div class="form-row" style="margin-top:1rem;align-items:center">
+          <button class="btn-sm btn-gold" id="vf-save" onclick="addVendor()">Add to directory</button>
+          <button class="btn-sm btn-ghost" onclick="toggleVendorForm(false)">Cancel</button>
+          <span class="vf-status" id="vf-status" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+
       <div class="grid-3" id="vendor-grid" style="margin-bottom:2.5rem"><div class="empty-state">Loading vendors…</div></div>
 
       <div class="section-title" style="align-items:center"><i class="ms ms-r ms-cost"></i> Keyless Entry Codes<button class="btn-sm btn-gold" style="margin-left:auto;flex-shrink:0" onclick="openVault()">🔐 Vault</button></div>
@@ -3416,6 +3472,22 @@ function copyIcal(btn) {
 }
 
 // ── Vault editor ─────────────────────────────────────────────
+/* ══ THE VAULT ════════════════════════════════════════════════
+   Saving used to be ref.set() of the whole secrets document — all five fields,
+   straight out of this browser's textareas. That is last-write-wins. Open the
+   Vault, get distracted, and meanwhile another owner adds a vendor through the
+   form or through Hanna: their number lands in vendorPhone. Your Save then puts
+   the map back the way it looked when YOU opened it, and the number is gone —
+   no error, no warning. Adding vendors is now an ordinary three-owner thing, so
+   this collision stopped being exotic the day the form shipped.
+
+   So: remember what was loaded (VAULT_BASE) and send only what this owner
+   actually changed, merged inside a transaction onto whatever the server holds
+   at save time. Untouched fields are not written at all, and in the two maps a
+   key the owner never touched keeps the server's value — including keys that
+   appeared after the Vault was opened. */
+let VAULT_BASE = null;
+
 function openVault() {
   const s = TG_SECRETS || {};
   const val = o => JSON.stringify(o == null ? [] : o, null, 2);
@@ -3424,29 +3496,96 @@ function openVault() {
   document.getElementById('vault-ical').value   = s.airbnbIcal || '';
   document.getElementById('vault-pay').value    = JSON.stringify(s.vendorPay || {}, null, 2);
   document.getElementById('vault-phones').value = JSON.stringify(s.vendorPhone || {}, null, 2);
+  // The baseline is what the owner was SHOWN, not what the server holds now.
+  VAULT_BASE = {
+    lockCodes:   s.lockCodes == null ? [] : JSON.parse(JSON.stringify(s.lockCodes)),
+    wifi:        s.wifi == null ? [] : JSON.parse(JSON.stringify(s.wifi)),
+    airbnbIcal:  s.airbnbIcal || '',
+    vendorPay:   Object.assign({}, s.vendorPay || {}),
+    vendorPhone: Object.assign({}, s.vendorPhone || {})
+  };
   document.getElementById('vault-status').textContent = '';
   document.getElementById('vault-overlay').classList.add('show');
 }
 function closeVault(){ document.getElementById('vault-overlay').classList.remove('show'); }
 
+/** What this owner did to a Vault map, measured against what they were shown. */
+function vaultMapDiff(base, now) {
+  base = base || {}; now = now || {};
+  const set = {}, del = [];
+  Object.keys(now).forEach(k => {
+    if (JSON.stringify(now[k]) !== JSON.stringify(base[k])) set[k] = now[k];
+  });
+  Object.keys(base).forEach(k => { if (!(k in now)) del.push(k); });
+  return { set, del, touched: Object.keys(set).length > 0 || del.length > 0 };
+}
+
+/** Replay that diff onto the server's current map. `rescued` counts keys that
+    were not on screen when the Vault opened — the ones the old save ate. */
+function vaultApplyDiff(server, base, diff) {
+  const map = Object.assign({}, server || {});
+  base = base || {};
+  let rescued = 0;
+  Object.keys(map).forEach(k => { if (!(k in base) && !(k in diff.set)) rescued++; });
+  Object.assign(map, diff.set);
+  diff.del.forEach(k => { delete map[k]; });
+  return { map, rescued };
+}
+
 async function saveVault() {
-  const st = document.getElementById('vault-status');
+  const st  = document.getElementById('vault-status');
   const ref = tgDbRef('secrets');
   if (!ref) { st.textContent = '✕ Not connected to Firestore.'; return; }
-  let payload;
+  const base = VAULT_BASE || { lockCodes: [], wifi: [], airbnbIcal: '', vendorPay: {}, vendorPhone: {} };
+
+  let now;
   try {
-    payload = {
+    now = {
       lockCodes:  JSON.parse(document.getElementById('vault-codes').value || '[]'),
       wifi:       JSON.parse(document.getElementById('vault-wifi').value || '[]'),
       airbnbIcal: document.getElementById('vault-ical').value.trim(),
       vendorPay:  JSON.parse(document.getElementById('vault-pay').value || '{}'),
-      vendorPhone:JSON.parse(document.getElementById('vault-phones').value || '{}'),
-      updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+      vendorPhone:JSON.parse(document.getElementById('vault-phones').value || '{}')
     };
   } catch (e) { st.textContent = '✕ Invalid JSON: ' + e.message; return; }
+
+  const same      = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const codes     = !same(now.lockCodes, base.lockCodes);
+  const wifi      = !same(now.wifi, base.wifi);
+  const ical      = now.airbnbIcal !== (base.airbnbIcal || '');
+  const payDiff   = vaultMapDiff(base.vendorPay,   now.vendorPay);
+  const phoneDiff = vaultMapDiff(base.vendorPhone, now.vendorPhone);
+
+  if (!codes && !wifi && !ical && !payDiff.touched && !phoneDiff.touched) {
+    st.textContent = '✓ Nothing changed.'; setTimeout(closeVault, 700); return;
+  }
+
   st.textContent = '⟳ Saving…';
-  try { await ref.set(payload); st.textContent = '✓ Saved to the Vault.'; setTimeout(closeVault, 900); }
-  catch (e) { st.textContent = '✕ ' + (e.code === 'permission-denied'
+  try {
+    let rescued = 0;
+    await firebase.firestore().runTransaction(async tx => {
+      const snap = await tx.get(ref);
+      const srv  = (snap.exists && snap.data()) || {};
+      const out  = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      if (codes) out.lockCodes  = now.lockCodes;
+      if (wifi)  out.wifi       = now.wifi;
+      if (ical)  out.airbnbIcal = now.airbnbIcal;
+      rescued = 0;
+      if (payDiff.touched) {
+        const r = vaultApplyDiff(srv.vendorPay, base.vendorPay, payDiff);
+        out.vendorPay = r.map; rescued += r.rescued;
+      }
+      if (phoneDiff.touched) {
+        const r = vaultApplyDiff(srv.vendorPhone, base.vendorPhone, phoneDiff);
+        out.vendorPhone = r.map; rescued += r.rescued;
+      }
+      tx.set(ref, out, { merge: true });
+    });
+    st.textContent = rescued
+      ? `✓ Saved — and kept ${rescued} entr${rescued === 1 ? 'y' : 'ies'} another owner added meanwhile.`
+      : '✓ Saved to the Vault.';
+    setTimeout(closeVault, rescued ? 2400 : 900);
+  } catch (e) { st.textContent = '✕ ' + (e.code === 'permission-denied'
       ? 'Permission denied — this account is not on the owner allowlist.' : e.message); }
 }
 
@@ -3606,6 +3745,214 @@ function vendorCard(v) {
   </div>`;
 }
 
+/* ══ ADD VENDOR ═══════════════════════════════════════════════
+   The directory had no way in except a console snippet. Luana and Fabiano
+   both went in that way, through an anonymous session that the 2026-09-09
+   rules fix correctly closed, so owners could not add a vendor at all.
+
+   The write is a TRANSACTION, not storeSet(). storeSet overwrites the whole
+   document with this browser's cache: if the cache is stale, or another owner
+   added someone a minute ago, "append and save" silently deletes entries.
+   Here the server's current list is read inside the transaction and the new
+   vendor is appended to THAT list, so every existing entry survives by
+   construction rather than by luck. */
+
+// Numbers pasted from WhatsApp or a contact card carry invisible bidi marks
+// and non-breaking hyphens (Fabiano's did); left in, they break tel: links.
+const VF_BIDI = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+function vfPhone(raw) {
+  return String(raw || '').replace(VF_BIDI, '').replace(/[\u2010-\u2015]/g, '-')
+    .replace(/\s+/g, ' ').trim();
+}
+function vfSlug(text) {
+  return String(text || '').normalize('NFD').replace(/[\u0300-\u036F]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'vendor';
+}
+function vfIsOwner() {
+  const u = firebase.auth && firebase.auth().currentUser;
+  return !!(u && !u.isAnonymous);
+}
+function vfStatus(msg, kind) {
+  const el = document.getElementById('vf-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'vf-status' + (kind ? ' ' + kind : '');
+}
+
+function toggleVendorForm(force) {
+  const f = document.getElementById('vendor-form');
+  if (!f) return;
+  const open = force === undefined ? f.hidden : !!force;
+  f.hidden = !open;
+  if (!open) return;
+  const sel = document.getElementById('vf-group');
+  if (sel && !sel.options.length) {
+    // Built from VENDOR_GROUPS so a new group shows up here without an edit.
+    sel.innerHTML = Object.entries(VENDOR_GROUPS)
+      .map(([k, label]) => `<option value="${esc(k)}">${esc(label)}</option>`).join('');
+    sel.value = 'service';
+  }
+  const owner = vfIsOwner();
+  document.getElementById('vf-save').disabled = !owner;
+  vfStatus(owner ? '' : 'Sign in with Google to add vendors — the directory only accepts owner writes.',
+           owner ? '' : 'err');
+  setTimeout(() => document.getElementById('vf-role').focus(), 50);
+}
+
+/* One write path for the directory. The form and Hanna both come through here,
+   so there is a single transaction to reason about and one set of rules about
+   duplicates, slugs and where a phone number is allowed to live. */
+const VF_ERRORS = {
+  NOT_OWNER: 'Sign in with Google first — the directory only accepts owner writes.',
+  NO_ROLE:   'Say what they do — the Service field.',
+  NO_NAME:   'Add a name.',
+  BAD_PHONE: 'That phone number looks too short.',
+  DUPLICATE: 'Already listed for that service.'
+};
+
+async function vendorAppend(fields) {
+  const role    = String(fields.role || '').trim();
+  const name    = String(fields.name || '').trim();
+  const phone   = vfPhone(fields.phone);
+  const group   = VENDOR_GROUPS[fields.group] ? fields.group : 'service';
+  const cadence = String(fields.cadence || '').trim();
+  const cost    = String(fields.cost || '').trim();
+  const notes   = String(fields.notes || '').trim();
+
+  if (!vfIsOwner()) throw new Error('NOT_OWNER');
+  if (!role)       throw new Error('NO_ROLE');
+  if (!name)       throw new Error('NO_NAME');
+  if (phone && phone.replace(/\D/g, '').length < 8) throw new Error('BAD_PHONE');
+
+  const db   = firebase.firestore();
+  const vref = db.collection(TG_VENDORS_PATH.collection).doc(TG_VENDORS_PATH.doc);
+
+  let id, before = 0, after = 0;
+  await db.runTransaction(async tx => {
+    const snap  = await tx.get(vref);
+    const items = (snap.exists && Array.isArray(snap.data().items)) ? snap.data().items : [];
+    before = items.length;
+    const same = v => (v.name || '').trim().toLowerCase() === name.toLowerCase()
+                   && (v.role || '').trim().toLowerCase() === role.toLowerCase();
+    if (items.some(same)) throw new Error('DUPLICATE');
+    const taken = new Set(items.map(v => v.id));
+    const base = vfSlug(role);
+    id = base;
+    for (let n = 2; taken.has(id); n++) id = base + '-' + n;
+    const vendor = { id, group, role, name, phone: '', cost, cadence, payKey: id };
+    if (notes) vendor.notes = notes;
+    after = before + 1;
+    tx.set(vref, { items: [...items, vendor],
+                   updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  });
+
+  const phoneNote = phone ? await vendorPhoneWrite(id, phone) : '';
+  return { id, role, name, group, cadence, cost, notes, before, after, phoneNote };
+}
+
+/* The number goes to the Vault as ONE field. Never a rewrite of the document —
+   that was the bug the Vault modal used to have. */
+async function vendorPhoneWrite(id, phone) {
+  const sref = firebase.firestore()
+    .collection(TG_SECRETS_PATH.collection).doc(TG_SECRETS_PATH.doc);
+  try { await sref.update(new firebase.firestore.FieldPath('vendorPhone', id), phone); return ''; }
+  catch (e) {
+    try { await sref.set({ vendorPhone: { [id]: phone } }, { merge: true }); return ''; }
+    catch (e2) { return ' The phone did not save — add it in the Vault.'; }
+  }
+}
+
+/** Find a vendor by id, name or role — however the owner happened to say it. */
+function vendorFind(items, who) {
+  const q = String(who || '').trim().toLowerCase();
+  if (!q) return null;
+  const hit = f => items.find(v => f(v));
+  return hit(v => (v.id || '').toLowerCase() === q)
+      || hit(v => (v.name || '').toLowerCase() === q)
+      || hit(v => (v.name || '').toLowerCase().includes(q))
+      || hit(v => (v.role || '').toLowerCase().includes(q))
+      || null;
+}
+
+/** Change fields on an existing entry, again inside a transaction so the rest
+    of the directory is whatever the server has rather than this browser's copy. */
+async function vendorEdit(who, fields) {
+  if (!vfIsOwner()) throw new Error('NOT_OWNER');
+  const db   = firebase.firestore();
+  const vref = db.collection(TG_VENDORS_PATH.collection).doc(TG_VENDORS_PATH.doc);
+  const phone = vfPhone(fields.phone);
+  if (phone && phone.replace(/\D/g, '').length < 8) throw new Error('BAD_PHONE');
+
+  let changed = [], target = null;
+  await db.runTransaction(async tx => {
+    const snap  = await tx.get(vref);
+    const items = (snap.exists && Array.isArray(snap.data().items)) ? snap.data().items : [];
+    const hit   = vendorFind(items, who);
+    if (!hit) throw new Error('NO_MATCH');
+    const next = Object.assign({}, hit);
+    ['role', 'name', 'cadence', 'cost', 'notes'].forEach(k => {
+      const v = fields[k] == null ? '' : String(fields[k]).trim();
+      if (v && v !== (hit[k] || '')) { next[k] = v; changed.push(k); }
+    });
+    if (fields.group && VENDOR_GROUPS[fields.group] && fields.group !== hit.group) {
+      next.group = fields.group; changed.push('group');
+    }
+    if (phone) changed.push('phone');
+    if (!changed.length) throw new Error('NO_CHANGE');
+    target = next;
+    tx.set(vref, { items: items.map(v => v.id === hit.id ? next : v),
+                   updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  });
+
+  const phoneNote = phone ? await vendorPhoneWrite(target.id, phone) : '';
+  return { vendor: target, changed, phoneNote };
+}
+
+/** Remove an entry. The Vault key is deliberately left alone: an orphaned
+    phone number costs nothing, and it means an accidental removal can be put
+    back complete. */
+async function vendorRemove(who) {
+  if (!vfIsOwner()) throw new Error('NOT_OWNER');
+  const db   = firebase.firestore();
+  const vref = db.collection(TG_VENDORS_PATH.collection).doc(TG_VENDORS_PATH.doc);
+  let removed = null, after = 0;
+  await db.runTransaction(async tx => {
+    const snap  = await tx.get(vref);
+    const items = (snap.exists && Array.isArray(snap.data().items)) ? snap.data().items : [];
+    const hit   = vendorFind(items, who);
+    if (!hit) throw new Error('NO_MATCH');
+    removed = hit;
+    const next = items.filter(v => v.id !== hit.id);
+    after = next.length;
+    tx.set(vref, { items: next,
+                   updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  });
+  return { removed, after };
+}
+
+async function addVendor() {
+  const val = k => document.getElementById(k).value.trim();
+  const btn = document.getElementById('vf-save');
+  btn.disabled = true; vfStatus('Adding…');
+  let res;
+  try {
+    res = await vendorAppend({
+      role: val('vf-role'), name: val('vf-name'), phone: val('vf-phone'),
+      group: document.getElementById('vf-group').value || 'service',
+      cadence: val('vf-cadence'), cost: val('vf-cost'), notes: val('vf-notes')
+    });
+  } catch (e) {
+    btn.disabled = false;
+    if (e.message === 'DUPLICATE') return vfStatus(`${val('vf-name')} is already listed for that service.`, 'err');
+    return vfStatus(VF_ERRORS[e.message] || ('Could not add: ' + (e.code || e.message)), 'err');
+  }
+  btn.disabled = false;
+  ['vf-role','vf-name','vf-phone','vf-cadence','vf-cost','vf-notes']
+    .forEach(k => { document.getElementById(k).value = ''; });
+  vfStatus(`Added ${res.name} — ${res.after} contacts, was ${res.before}.${res.phoneNote}`,
+           res.phoneNote ? 'err' : 'ok');
+}
+
 /** Recurring Services is the subset of the directory that has a cadence. */
 function renderRecurring() {
   const el = document.getElementById('recurring-grid');
@@ -3752,7 +4099,7 @@ Only two cases are not live, and both announce themselves. A source of stored-sn
 
 **The archive.** You hold a distilled copy of the owners' Drive folder — the partnership agreement of 22 Nov 2023, the purchase and construction timeline, ownership and equity, registry costs, funding, rental terms and ROI, and the rules on selling a share or inheritance. Reach it with search_property_docs, and reach for it whenever a question touches the history, the deal or the paperwork. It is a snapshot, not a live feed: for current money — balances, contributions to date, this year's costs — say the Finanças spreadsheet in Drive is the authority rather than quoting a figure that may have moved. It deliberately holds no CPFs, bank accounts or personal contact details; if asked for those, say they are in the agreement in Drive and you do not carry them.
 
-**Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks, tasks and vendor records on request. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
+**Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks and tasks on request. **Keep the vendor directory yourself:** when an owner mentions engaging, hiring or being quoted by someone, add them with add_vendor there and then — do not make them go and fill in a form, and do not wait to be asked. Ask only for what is genuinely missing. Removing a vendor needs a spoken yes first. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
 
 You are talking to one of the three owners but you do not know which — there is a single shared login. When the answer depends on it, just ask ("whose dates should I block?").
 
@@ -3770,6 +4117,30 @@ const HANNA_TOOLS = [
       label:{type:'string', description:'Who or what the block is for'} } } },
   { name:'get_vendors', description:'List vendors — role, name, phone, cost and cadence.',
     input_schema:{ type:'object', properties:{} } },
+  /* Entering a contractor by hand is the fallback, not the point. The owners
+     meet these people in the field — the natural moment is telling Hanna "we
+     had Jonas in for the blinds, his number is X", and having the directory
+     already updated the next time anyone opens the portal. */
+  { name:'add_vendor', description:"Add a contractor or vendor to the house directory. Reach for it whenever an owner MENTIONS engaging, hiring, being quoted by or being recommended someone — you do not need to be asked to add them. Pull the role, name and number out of what they said; ask only for what is genuinely missing and matters (a name and what they do). Role is a short Portuguese label led by a fitting emoji, matching the entries already there: '🔧 Hidráulico', '🌿 Jardinagem & Corte Grama', '🎛️ Persianas Automáticas'. Say what you added and how many contacts the directory now holds.",
+    input_schema:{ type:'object', required:['role','name'], properties:{
+      role:{ type:'string', description:'What they do — emoji + short Portuguese label' },
+      name:{ type:'string', description:'Person or company, e.g. "Jonas — Esquadritec"' },
+      phone:{ type:'string', description:'Any format, pasted as given; it is cleaned and stored in the Vault, never in the page' },
+      group:{ type:'string', enum:['service','build','mgmt','legal'],
+              description:'service = recurring upkeep, build = the works, mgmt = letting the house, legal = lawyers and disputes. Defaults to service.' },
+      cadence:{ type:'string', description:'How often — "Mensal", "Sob demanda", "Antes de cada check-in"' },
+      cost:{ type:'string', description:'As agreed, e.g. "R$450/visita" or "Sob orçamento"' },
+      notes:{ type:'string', description:'Worth remembering — who referred them, what they fixed, where the invoice lives' } } } },
+  { name:'update_vendor', description:'Correct or fill in an entry that already exists — a number, an agreed price, a cadence, a spelling. Use this rather than add_vendor when the person is already listed.',
+    input_schema:{ type:'object', required:['who'], properties:{
+      who:{ type:'string', description:'Name or role of the vendor to change' },
+      name:{ type:'string' }, role:{ type:'string' }, phone:{ type:'string' },
+      group:{ type:'string', enum:['service','build','mgmt','legal'] },
+      cadence:{ type:'string' }, cost:{ type:'string' }, notes:{ type:'string' } } } },
+  { name:'remove_vendor', description:'Remove a vendor from the directory. This is destructive and the other two owners see it — say who you are about to remove and get a yes in words FIRST, then call this with confirm true. Their number stays in the Vault, so a mistake can be put back whole.',
+    input_schema:{ type:'object', required:['who','confirm'], properties:{
+      who:{ type:'string', description:'Name or role of the vendor to remove' },
+      confirm:{ type:'boolean', description:'True only after the owner has agreed in this conversation' } } } },
   { name:'get_tasks', description:'List house projects (Sorceries) with category, priority and done state.',
     input_schema:{ type:'object', properties:{ include_done:{type:'boolean'} } } },
   { name:'add_task', description:'Add a house project.',
@@ -3839,6 +4210,41 @@ async function hannaRunTool(name, input) {
                reminder: 'Added to the portal calendar only. This block must ALSO be confirmed in writing with Estar Garopaba (clauses 5.3/5.5), or a collision with a confirmed booking is owner-fault under 6.4.' };
     }
     case 'get_vendors': return storeGet('vendors') || [];
+    case 'add_vendor': {
+      try {
+        const r = await vendorAppend(input);
+        return { added: true, id: r.id, role: r.role, name: r.name, group: r.group,
+                 contactsBefore: r.before, contactsNow: r.after,
+                 phone: r.phone ? 'stored in the Vault' : 'none given',
+                 note: (r.phoneNote || '') +
+                   ' Every existing entry was kept — the write appends inside a transaction.' };
+      } catch (e) { return { added: false, error: VF_ERRORS[e.message] || (e.code || e.message) }; }
+    }
+    case 'update_vendor': {
+      try {
+        const r = await vendorEdit(input.who, input);
+        return { updated: true, id: r.vendor.id, name: r.vendor.name, role: r.vendor.role,
+                 fieldsChanged: r.changed, note: r.phoneNote || '' };
+      } catch (e) {
+        if (e.message === 'NO_MATCH')  return { updated: false, error: 'No vendor matches "' + (input.who||'') + '".' };
+        if (e.message === 'NO_CHANGE') return { updated: false, error: 'Nothing to change — those values are already what is stored.' };
+        return { updated: false, error: VF_ERRORS[e.message] || (e.code || e.message) };
+      }
+    }
+    case 'remove_vendor': {
+      if (input.confirm !== true)
+        return { removed: false, error: 'Not removed. Ask the owner to confirm in words first, then call this again with confirm true.' };
+      try {
+        const r = await vendorRemove(input.who);
+        return { removed: true, was: { id: r.removed.id, role: r.removed.role, name: r.removed.name,
+                                       cost: r.removed.cost, cadence: r.removed.cadence },
+                 contactsNow: r.after,
+                 note: 'Their number is still in the Vault, so add_vendor with the same details restores them whole.' };
+      } catch (e) {
+        if (e.message === 'NO_MATCH') return { removed: false, error: 'No vendor matches "' + (input.who||'') + '".' };
+        return { removed: false, error: VF_ERRORS[e.message] || (e.code || e.message) };
+      }
+    }
     case 'get_tasks': {
       const all = getProjects() || [];
       return input.include_done ? all : all.filter(p => !p.done);

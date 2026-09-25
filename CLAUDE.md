@@ -127,6 +127,52 @@ fetches it only when the topic is wifi/stay, never eagerly.
 The guest footer stays hardcoded on purpose: its labels are `TG_PT` translation
 keys, so rendering it from data would break i18n.
 
+## The vendor directory
+
+Owner decision: **Hanna keeps the directory, the form is the fallback.** When an
+owner mentions engaging or being quoted by someone, she adds them with
+`add_vendor` there and then rather than pointing at a form — entering a
+contractor by hand is the 2019 way round. `update_vendor` corrects an entry;
+`remove_vendor` refuses unless `confirm: true`, which the prompt tells her to earn
+with a spoken yes. The `+ Add vendor` form in the Upkeep header does the same
+thing for whoever prefers typing.
+
+All four paths funnel through **`vendorAppend()` / `vendorEdit()` /
+`vendorRemove()`** — one transaction each, one set of rules about duplicates,
+slugs and phones. Do not add a second write path.
+
+**Writes are transactions, never `storeSet()`.** `storeSet()` puts this browser's
+whole cache back with `ref.set()`; if the cache is stale, or another owner added
+someone a minute ago, "append and save" silently deletes entries. The
+transactions read the server's current list and append to *that*, so existing
+entries survive by construction rather than by luck.
+
+Phone numbers go to the Vault as **one field** —
+`update(new FieldPath('vendorPhone', id), phone)` — because the repo is public
+and the page renders from `vendorPhone`. Pasted numbers carry invisible bidi
+marks and non-breaking hyphens (Fabiano's did); `vfPhone()` strips them, or the
+`tel:` link breaks.
+
+`remove_vendor` leaves the Vault key behind on purpose. An orphaned phone number
+costs nothing and it means an accidental removal can be put back whole.
+
+## The Vault no longer clobbers (fixed 2026-09-25)
+
+`saveVault()` used to `ref.set()` the whole secrets document from five
+textareas — last-write-wins. Open the Vault, get distracted while another owner
+adds a vendor, hit Save, and their number was gone with no error. Once adding
+vendors became routine for three owners, that stopped being exotic.
+
+`openVault()` now records what was **shown** in `VAULT_BASE`. `saveVault()` sends
+only the fields this owner actually changed, merged inside a transaction onto
+whatever the server holds at save time: untouched fields are not written at all,
+and in `vendorPay` / `vendorPhone` a key the owner never touched keeps the
+server's value, including keys that appeared after the Vault was opened. Those
+are counted and reported ("kept 1 entry another owner added meanwhile").
+
+Deliberate deletions still delete — the diff distinguishes "absent because
+someone else added it later" from "absent because I removed it".
+
 ## Hanna's panel
 
 Two states, set through `hannaSetState('dock'|'max')` — never by adding the
