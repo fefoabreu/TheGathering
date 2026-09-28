@@ -40,6 +40,34 @@ const TG_VENDORS_PATH  = { collection: "gathering", doc: "vendors"   };
 const TG_HOUSE_PATH    = { collection: "gathering", doc: "houseInfo" };
 const TG_COSTS_PATH    = { collection: "gathering", doc: "costs"     };
 
+// Anexo II — the Estar photographic inventory (vistoria 2026-09-03). A
+// collection, one document per ambiente, because 197 items in a single
+// document is a 1 MB ceiling waiting to happen and owners edit one room at
+// a time. OWNERS-ONLY: conditions, damage and the bar are in there.
+//
+// inventoryGuest is the derived projection Sisay reads — guestFacing items
+// with condition, notes, photoRef and pendências STRIPPED. It is public by
+// rule, so nothing may be written to it that a guest should not see.
+const TG_INVENTORY_COLL       = "inventory";
+const TG_INVENTORY_GUEST_PATH = { collection: "gathering", doc: "inventoryGuest" };
+
+// Estar's room references on the left, the house's own names on the right.
+// The two disagree: Estar's "Quarto Verde"/"Quarto Azul" come from the
+// decorative box in each room, and Q04's box is yellow, which is not a suite
+// at all. Owners confirmed the right-hand column on 2026-09-28.
+const TG_AMBIENTES = [
+  { id:'suite1_q01',        label:'Suíte 1 — Q01',                  suite:'Planície (Branco)'   },
+  { id:'suite2_q02_verde',  label:'Suíte 2 — Q02 (Quarto Verde)',   suite:'Ilha (Azul)'         },
+  { id:'suite3_q03_azul',   label:'Suíte 3 — Q03 (Quarto Azul)',    suite:'Montanha (Vermelho)' },
+  { id:'suite4_q04_master', label:'Suíte 4 — Q04 (Suíte Master)',   suite:'Floresta (Verde)'    },
+  { id:'biblioteca_kids',   label:'Biblioteca / Espaço Kids',       suite:null },
+  { id:'escada_circulacao', label:'Escada e Circulação',            suite:null },
+  { id:'lavanderia',        label:'Lavanderia / Área de Serviço',   suite:null },
+  { id:'lavabo',            label:'Lavabo',                         suite:null },
+  { id:'cozinha_gourmet',   label:'Cozinha, Ilha e Área Gourmet',   suite:null },
+  { id:'sala_bar',          label:'Sala de Estar / Bar',            suite:null },
+];
+
 // The Chronicle. A real collection, not a document: it grows over time and
 // wants ordering and limits. Same for agent chat sessions in Phase 3.
 const TG_DECISIONS_COLL = "decisions";

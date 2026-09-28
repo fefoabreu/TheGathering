@@ -32,8 +32,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202609092100"></script>
-  <script src="agent-ui.js?v=202609092100"></script>
+  <script src="firebase-config.js?v=202609281000"></script>
+  <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ══ BATTLEFIELD TOKENS ══════════════════════════════════ */
     :root {
@@ -885,6 +885,27 @@
     .vendor-form { margin-bottom:1.5rem; }
     .vf-opt { font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; opacity:.6; margin-left:.3rem; }
     .vf-status { font-size:.8rem; color:var(--text-dim); margin-left:.4rem; }
+    .inv-meta { font-family:'Inter',sans-serif; font-size:.72rem; text-transform:none;
+                letter-spacing:0; color:var(--text-dim); margin-left:.6rem; }
+    .inv-status { font-size:.8rem; color:var(--text-dim); min-height:1.1em; }
+    .inv-status.ok { color:var(--success); } .inv-status.err { color:#E08050; }
+    .inv-rooms { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+                 gap:0 1.6rem; margin-bottom:1.4rem; }
+    .inv-room { display:flex; justify-content:space-between; gap:.6rem; font-size:.84rem;
+                padding:.32rem 0; border-bottom:1px solid rgba(255,255,255,.06); }
+    .inv-room b { font-weight:500; }
+    .inv-room span { color:var(--text-dim); flex-shrink:0; }
+    .inv-sub { font-size:.75rem; letter-spacing:.06em; text-transform:uppercase;
+               color:var(--text-dim); margin-bottom:.5rem; }
+    .inv-pend-row { display:flex; gap:.6rem; align-items:baseline; padding:.42rem 0;
+                    font-size:.85rem; border-bottom:1px solid rgba(255,255,255,.06); }
+    .inv-where { color:var(--text-dim); font-size:.76rem; }
+    .inv-kind { font-size:.62rem; letter-spacing:.08em; text-transform:uppercase;
+                padding:.12rem .42rem; border-radius:3px; flex-shrink:0; white-space:nowrap; }
+    .inv-kind.defect       { background:rgba(224,128,80,.18); color:#E08050; }
+    .inv-kind.untested     { background:rgba(212,175,55,.16); color:var(--gold); }
+    .inv-kind.undocumented { background:rgba(255,255,255,.08); color:var(--text-dim); }
+    .inv-kind.decision     { background:rgba(120,160,220,.18); color:#78A0DC; }
     .vf-status.ok  { color:var(--success); }
     .vf-status.err { color:#E08050; }
     .vendor-notes {
@@ -1960,6 +1981,17 @@
 
       <div class="grid-3" id="vendor-grid" style="margin-bottom:2.5rem"><div class="empty-state">Loading vendors…</div></div>
 
+      <div class="section-title" style="align-items:center"><i class="ms ms-r ms-cost"></i> House Inventory
+        <span class="inv-meta" id="inv-meta"></span>
+        <button class="btn-sm btn-ghost" style="margin-left:auto;flex-shrink:0"
+                onclick="document.getElementById('inv-file').click()">⤓ Import Anexo II</button>
+        <button class="btn-sm btn-gold" style="flex-shrink:0" onclick="publishGuestView()">Publish guest view</button>
+        <input type="file" id="inv-file" accept=".json,application/json" hidden
+               onchange="importInventory(this.files[0]); this.value='';">
+      </div>
+      <div class="mtg-card" id="inv-panel"><div class="empty-state">Loading inventory…</div></div>
+      <div class="inv-status" id="inv-status" role="status" aria-live="polite" style="margin-bottom:2.5rem"></div>
+
       <div class="section-title" style="align-items:center"><i class="ms ms-r ms-cost"></i> Keyless Entry Codes<button class="btn-sm btn-gold" style="margin-left:auto;flex-shrink:0" onclick="openVault()">🔐 Vault</button></div>
       <div class="mtg-card" style="overflow-x:auto">
         <table>
@@ -2952,6 +2984,7 @@ function openPortal() {
   if (!tgAppStarted) {
     tgAppStarted = true;
     init(); loadSecrets(); initStores(); initDecisions();
+    loadInventory();
     seedIfEmpty().then(d => { if (d.length) console.info('seeded:', d.join(', ')); });
   }
 }
@@ -3953,6 +3986,202 @@ async function addVendor() {
            res.phoneNote ? 'err' : 'ok');
 }
 
+/* ══ HOUSE INVENTORY — Anexo II ═══════════════════════════════
+   197 items over ten ambientes, from Estar's vistoria of 2026-09-03. One
+   Firestore document per ambiente: 197 items in a single document would sit
+   under the 1 MB ceiling with no headroom, and owners correct one room at a
+   time anyway.
+
+   The collection is owners-only and must stay that way. It carries the
+   conditions Estar will measure damage against, the bar bottles, the owners'
+   storage and every pendência. What Sisay gets is a PROJECTION, published
+   deliberately — see publishGuestView(). Nothing filters the real thing in a
+   guest's browser, because that would mean shipping it there first.
+
+   The seed is NOT in this repo. The repository is public, and a full list of
+   what is in the house, brands included, against a published address, is a
+   shopping list. It is imported from a file the owners keep locally. */
+let TG_INV = {};
+let TG_INV_META = null;
+
+function invStatus(msg, kind) {
+  const el = document.getElementById('inv-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'inv-status' + (kind ? ' ' + kind : '');
+}
+
+async function loadInventory() {
+  const panel = document.getElementById('inv-panel');
+  if (!vfIsOwner()) {
+    if (panel) panel.innerHTML = '<div class="empty-state">Sign in with Google to see the inventory.</div>';
+    return;
+  }
+  try {
+    const snap = await firebase.firestore().collection(TG_INVENTORY_COLL).get();
+    TG_INV = {}; TG_INV_META = null;
+    snap.forEach(d => { if (d.id === '_meta') TG_INV_META = d.data(); else TG_INV[d.id] = d.data(); });
+  } catch (e) {
+    if (panel) panel.innerHTML = '<div class="empty-state">Could not read the inventory: '
+      + esc(e.code || e.message) + '</div>';
+    return;
+  }
+  renderInventory();
+}
+
+/** Every item, flattened, each carrying where it lives. */
+function invItems() {
+  const out = [];
+  TG_AMBIENTES.forEach(a => {
+    const d = TG_INV[a.id];
+    if (!d || !Array.isArray(d.items)) return;
+    d.items.forEach(it => out.push(Object.assign(
+      { ambiente: d.ambiente || a.label, ambienteId: a.id, suite: a.suite }, it)));
+  });
+  return out;
+}
+
+const INV_KIND_LABEL = { defect:'defeito', untested:'não testado',
+                         undocumented:'sem foto', decision:'decisão' };
+
+function renderInventory() {
+  const panel = document.getElementById('inv-panel');
+  const meta  = document.getElementById('inv-meta');
+  if (!panel) return;
+  const all = invItems();
+  if (!all.length) {
+    panel.innerHTML = '<div class="empty-state">No inventory loaded yet — “Import Anexo II” brings in the '
+      + 'vistoria items from your local copy.</div>';
+    if (meta) meta.textContent = '';
+    return;
+  }
+  const pend     = all.filter(i => i.pendencia);
+  const untested = all.filter(i => i.tested === false);
+  const loaded   = TG_AMBIENTES.filter(a => TG_INV[a.id]);
+  if (meta) meta.textContent = all.length + ' items · ' + loaded.length + ' ambientes'
+    + (TG_INV_META && TG_INV_META.vistoriaDate ? ' · vistoria ' + TG_INV_META.vistoriaDate : '');
+
+  const rooms = loaded.map(a => {
+    const d = TG_INV[a.id];
+    const p = (d.items || []).filter(i => i.pendencia).length;
+    return '<div class="inv-room"><b>' + esc(a.suite || a.label) + '</b><span>'
+      + (d.items || []).length
+      + (p ? ' · <b style="color:#E08050">' + p + '⚠</b>' : '') + '</span></div>';
+  }).join('');
+
+  const rows = pend.map(i => '<div class="inv-pend-row">'
+    + '<span class="inv-kind ' + esc(i.pendenciaKind || '') + '">'
+    + esc(INV_KIND_LABEL[i.pendenciaKind] || i.pendenciaKind || '') + '</span>'
+    + '<div><b>' + esc(i.name) + '</b> <span class="inv-where">· '
+    + esc(i.suite || i.ambiente) + '</span>'
+    + '<div class="inv-where">' + esc(i.condition || '') + '</div></div></div>').join('');
+
+  // The conferência clock is a contract obligation, not a nicety — clause 4.12
+  // gives the owners five business days from receipt to dispute what is here.
+  const conf = (TG_INV_META && TG_INV_META.conferenciaStatus === 'pending')
+    ? '<div class="vendor-notes" style="margin-bottom:1.1rem">⚖️ Clause '
+      + esc(TG_INV_META.contractClause || '4.12') + ' — the Termo de conferência is still unsigned. '
+      + 'Anexo II is the baseline Estar measures damage against.</div>'
+    : '';
+
+  panel.innerHTML = conf + '<div class="inv-rooms">' + rooms + '</div>'
+    + '<div class="inv-sub">' + pend.length + ' pendências · ' + untested.length
+    + ' pieces of equipment never switched on</div>'
+    + '<div class="inv-pend">' + rows + '</div>';
+}
+
+async function importInventory(file) {
+  if (!file) return;
+  if (!vfIsOwner()) return invStatus('Sign in with Google first.', 'err');
+  let data;
+  try { data = JSON.parse(await file.text()); }
+  catch (e) { return invStatus('That file is not valid JSON.', 'err'); }
+
+  const present = TG_AMBIENTES.map(a => a.id)
+    .filter(id => data[id] && Array.isArray(data[id].items));
+  if (!present.length)
+    return invStatus('No ambientes in that file — expected keys like suite1_q01.', 'err');
+  const count = present.reduce((n, id) => n + data[id].items.length, 0);
+  // The file states its own total; disagreeing with it means a truncated copy.
+  if (data._meta && data._meta.itemCount && data._meta.itemCount !== count)
+    return invStatus('Refusing to import: the file says ' + data._meta.itemCount
+      + ' items but carries ' + count + '.', 'err');
+
+  const existing = Object.keys(TG_INV).length;
+  if (existing && !confirm('This replaces ' + existing + ' ambiente document(s) in Firestore with '
+      + present.length + ' from the file. Any corrections made in the portal since the last import '
+      + 'are lost. Continue?'))
+    return invStatus('Import cancelled.');
+
+  invStatus('Importing ' + count + ' items…');
+  try {
+    const db = firebase.firestore(), coll = db.collection(TG_INVENTORY_COLL), batch = db.batch();
+    present.forEach(id => {
+      const a = TG_AMBIENTES.find(x => x.id === id);
+      batch.set(coll.doc(id), Object.assign({}, data[id], {
+        ambiente: data[id].ambiente || a.label, suite: a.suite,
+        itemCount: data[id].items.length,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp() }));
+    });
+    if (data._meta) batch.set(coll.doc('_meta'), Object.assign({}, data._meta, {
+      importedAt: firebase.firestore.FieldValue.serverTimestamp() }));
+    await batch.commit();
+  } catch (e) { return invStatus('Import failed: ' + (e.code || e.message), 'err'); }
+  await loadInventory();
+  invStatus('Imported ' + count + ' items across ' + present.length + ' ambientes.', 'ok');
+}
+
+/* The guest projection. It DROPS condition, notes, photoRef and every
+   pendência flag rather than hiding them, because gathering/inventoryGuest is
+   world-readable by rule. Small utensils collapse into their guestGroup, so
+   "is there an air fryer" is answerable by name while sixty individual
+   utensils become one honest set instead of a recital. */
+function inventoryGuestView() {
+  const rooms = {};
+  TG_AMBIENTES.forEach(a => {
+    const d = TG_INV[a.id];
+    if (!d || !Array.isArray(d.items)) return;
+    const singles = [], groups = [];
+    d.items.forEach(it => {
+      if (!it.guestFacing) return;
+      if (it.guestGroup) { if (groups.indexOf(it.guestGroup) === -1) groups.push(it.guestGroup); return; }
+      singles.push({ name: it.name, qty: it.qty || '1', brand: it.brand || null });
+    });
+    groups.forEach(g => singles.push({ name: g, qty: 'conjunto', brand: null }));
+    if (singles.length) rooms[a.id] = { ambiente: a.suite || a.label, items: singles };
+  });
+  return rooms;
+}
+
+async function publishGuestView() {
+  if (!vfIsOwner()) return invStatus('Sign in with Google first.', 'err');
+  const rooms = inventoryGuestView();
+  const n = Object.keys(rooms).reduce((s, k) => s + rooms[k].items.length, 0);
+  if (!n) return invStatus('Nothing to publish — import the inventory first.', 'err');
+
+  // The projection is built from a whitelist of three fields, but this write
+  // is the one that leaves the owner boundary, so assert it rather than trust
+  // that the builder above never grows a fourth field.
+  const blob = JSON.stringify(rooms);
+  const banned = ['condition', 'notes', 'photoRef', 'pendencia', 'guestFacing',
+                  'tested', 'Chivas', 'Violão', 'Itens pessoais'];
+  const hit = banned.filter(w => blob.indexOf(w) !== -1);
+  if (hit.length) return invStatus('Aborted before publishing — the projection still contains: '
+    + hit.join(', ') + '.', 'err');
+
+  invStatus('Publishing…');
+  try {
+    await firebase.firestore()
+      .collection(TG_INVENTORY_GUEST_PATH.collection).doc(TG_INVENTORY_GUEST_PATH.doc)
+      .set({ rooms: rooms, itemCount: n,
+             vistoriaDate: (TG_INV_META && TG_INV_META.vistoriaDate) || null,
+             note: 'Amenities only, derived from Anexo II. Conditions, damage, valuables and '
+                 + 'owners-only items are deliberately not in here.',
+             updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+  } catch (e) { return invStatus('Publish failed: ' + (e.code || e.message), 'err'); }
+  invStatus('Published ' + n + ' guest-visible entries — Sisay answers from them now.', 'ok');
+}
+
 /** Recurring Services is the subset of the directory that has a cadence. */
 function renderRecurring() {
   const el = document.getElementById('recurring-grid');
@@ -4099,7 +4328,7 @@ Only two cases are not live, and both announce themselves. A source of stored-sn
 
 **The archive.** You hold a distilled copy of the owners' Drive folder — the partnership agreement of 22 Nov 2023, the purchase and construction timeline, ownership and equity, registry costs, funding, rental terms and ROI, and the rules on selling a share or inheritance. Reach it with search_property_docs, and reach for it whenever a question touches the history, the deal or the paperwork. It is a snapshot, not a live feed: for current money — balances, contributions to date, this year's costs — say the Finanças spreadsheet in Drive is the authority rather than quoting a figure that may have moved. It deliberately holds no CPFs, bank accounts or personal contact details; if asked for those, say they are in the agreement in Drive and you do not carry them.
 
-**Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks and tasks on request. **Keep the vendor directory yourself:** when an owner mentions engaging, hiring or being quoted by someone, add them with add_vendor there and then — do not make them go and fill in a form, and do not wait to be asked. Ask only for what is genuinely missing. Removing a vendor needs a spoken yes first. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
+**Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks and tasks on request. **Keep the vendor directory yourself:** when an owner mentions engaging, hiring or being quoted by someone, add them with add_vendor there and then — do not make them go and fill in a form, and do not wait to be asked. Ask only for what is genuinely missing. Removing a vendor needs a spoken yes first. **Readiness questions go through get_pendencias** — never answer whether the house is ready from memory or from the projects list alone, because the vistoria pendencias live in the inventory, not in Sorceries. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
 
 You are talking to one of the three owners but you do not know which — there is a single shared login. When the answer depends on it, just ask ("whose dates should I block?").
 
@@ -4141,6 +4370,18 @@ const HANNA_TOOLS = [
     input_schema:{ type:'object', required:['who','confirm'], properties:{
       who:{ type:'string', description:'Name or role of the vendor to remove' },
       confirm:{ type:'boolean', description:'True only after the owner has agreed in this conversation' } } } },
+  /* Anexo II. Hanna gets the whole thing — conditions, damage, the bar, the
+     pendencias — because deciding whether the house is ready to let is exactly
+     the judgement she is there for. Sisay gets the published projection only. */
+  { name:'get_inventory', description:"The house inventory from Estar's vistoria (Anexo II, 03/09/2026) — 197 items across the ten ambientes with brands, quantities and the condition Estar recorded for each. Use it for 'what is in the house', 'which suite has the bathtub', 'what brand is the fridge', 'what did Estar write about the wardrobe'. Owners-only: it carries damage notes, the bar bottles and the owners' storage, so say so before reading it out wholesale in a context that might be screenshared.",
+    input_schema:{ type:'object', properties:{
+      ambiente:{ type:'string', description:"Which room. An Estar id (suite1_q01, cozinha_gourmet, sala_bar, lavanderia...) or the house's own suite name (Planicie, Ilha, Montanha, Floresta). Omit for the whole house." },
+      search:{ type:'string', description:'Free text over item names and brands — "Sonos", "cafeteira", "banheira".' },
+      onlyPendencias:{ type:'boolean', description:'Restrict to items with something outstanding.' } } } },
+  { name:'get_pendencias', description:"What is outstanding on the house before it can be let: defects Estar recorded, equipment nobody switched on, items that were never photographed, and things waiting on an owners' decision. Reach for this on ANY readiness question — 'is the house ready', 'what needs fixing before the season', 'what should I chase'. It also reports whether the Anexo II conferencia has been signed, which clause 4.12 puts on a five-business-day clock from receipt.",
+    input_schema:{ type:'object', properties:{
+      kind:{ type:'string', enum:['defect','untested','undocumented','decision'],
+             description:'Narrow to one class of pendencia.' } } } },
   { name:'get_tasks', description:'List house projects (Sorceries) with category, priority and done state.',
     input_schema:{ type:'object', properties:{ include_done:{type:'boolean'} } } },
   { name:'add_task', description:'Add a house project.',
@@ -4244,6 +4485,49 @@ async function hannaRunTool(name, input) {
         if (e.message === 'NO_MATCH') return { removed: false, error: 'No vendor matches "' + (input.who||'') + '".' };
         return { removed: false, error: VF_ERRORS[e.message] || (e.code || e.message) };
       }
+    }
+    case 'get_inventory': {
+      if (!Object.keys(TG_INV).length) await loadInventory();
+      let rows = invItems();
+      if (!rows.length) return 'The inventory has not been imported yet — the Upkeep tab has an Import Anexo II action.';
+      if (input.ambiente) {
+        const q = String(input.ambiente).toLowerCase();
+        rows = rows.filter(i => (i.ambienteId || '').toLowerCase().indexOf(q) !== -1
+                             || (i.ambiente   || '').toLowerCase().indexOf(q) !== -1
+                             || (i.suite      || '').toLowerCase().indexOf(q) !== -1);
+      }
+      if (input.search) {
+        const q = String(input.search).toLowerCase();
+        rows = rows.filter(i => (i.name || '').toLowerCase().indexOf(q) !== -1
+                             || (i.brand || '').toLowerCase().indexOf(q) !== -1);
+      }
+      if (input.onlyPendencias) rows = rows.filter(i => i.pendencia);
+      if (!rows.length) return 'Nothing in the inventory matches that.';
+      const imeta = TG_INV_META || {};
+      return { vistoriaDate: imeta.vistoriaDate || null, matched: rows.length,
+               suiteNames: imeta.suiteNameMap || null,
+               items: rows.slice(0, 80).map(i => ({ ambiente: i.suite || i.ambiente, name: i.name,
+                 qty: i.qty, brand: i.brand, condition: i.condition, tested: i.tested,
+                 pendencia: i.pendenciaKind || null })),
+               truncated: rows.length > 80 ? rows.length - 80 : 0,
+               note: imeta.testedConvention
+                 || "Bom estado aparente is photographic only — Estar tested nothing it did not mark Funcionando." };
+    }
+    case 'get_pendencias': {
+      if (!Object.keys(TG_INV).length) await loadInventory();
+      let rows = invItems().filter(i => i.pendencia);
+      if (input.kind) rows = rows.filter(i => i.pendenciaKind === input.kind);
+      const pmeta = TG_INV_META || {};
+      const byKind = {};
+      rows.forEach(i => { byKind[i.pendenciaKind] = (byKind[i.pendenciaKind] || 0) + 1; });
+      return { open: rows.length, byKind: byKind,
+               items: rows.map(i => ({ ambiente: i.suite || i.ambiente, name: i.name,
+                                       kind: i.pendenciaKind, detail: i.condition })),
+               conferencia: { status: pmeta.conferenciaStatus || 'unknown',
+                              clause: pmeta.contractClause || '4.11/4.12',
+                              note: pmeta.conferenciaNote || null },
+               vistoriaDate: pmeta.vistoriaDate || null,
+               note: 'kind: defect = Estar recorded damage. untested = powered equipment nobody switched on. undocumented = present but never photographed. decision = waiting on the owners.' };
     }
     case 'get_tasks': {
       const all = getProjects() || [];

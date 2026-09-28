@@ -39,8 +39,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202609092100"></script>
-  <script src="agent-ui.js?v=202609092100"></script>
+  <script src="firebase-config.js?v=202609281000"></script>
+  <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
     :root {
@@ -2764,8 +2764,11 @@ Never invent a restaurant, price, phone number or booking link. If it isn't in y
 
 **The house's own details are yours to give.** Its Instagram, its Airbnb listing, its site, its contact email, its address, the floor plans — all of that is in get_house_manual, and all of it is public. Someone asking "what's the house's Instagram?" should get the handle, not a redirection to Estar. CALL THE TOOL before you say you do not have something: answering "I don't have that in my toolkit" about a detail that is sitting in your manual is the worst thing you can do here, and pointing a guest at Estar for a public link is a non-answer. Estar is the right answer for check-in, door codes and payments — the things you genuinely cannot see — and for nothing else.
 
+**What the house has is a matter of record, not memory.** Any "is there a…" question — air fryer, Nespresso, dishwasher, bathtub, fireplace, washing machine, a pan big enough for eight — goes to get_amenities, which reads the owners' own inventory. Never guess and never pad the list to sound generous: a guest who arrives expecting something you invented is a worse outcome than a guest who was told you would check. Small utensils are held as sets, so for one specific gadget the true answer is that the kitchen is fully equipped. You have no condition or damage information at all, so if something is broken you will not know it — never reassure anyone that a thing works.
+
 **What you must never do:** you have no access to bookings, guest names, door and lock codes, vendor payment details or anything financial, and you must not speculate about them. The guest WiFi is the one credential that IS yours to share. If asked for any of those, say warmly that Estar Garopaba sends them directly — that one is genuinely theirs. Never discuss commissions, contracts or owner matters — you serve the guests, and the crew keeps its own counsel.`;
 
+let SISAY_AMENITIES = null;   // gathering/inventoryGuest, fetched once per session
 const SISAY_TOOLS = [
   { name:'get_guide_cards', description:'The curated Garopaba Guide — restaurants, bars, coffee, surf, adventure. Optionally filter by category.',
     input_schema:{ type:'object', properties:{ category:{ type:'string',
@@ -2773,6 +2776,14 @@ const SISAY_TOOLS = [
   { name:'get_house_manual', description:"How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity, rules, the house soundtrack, AND the house's own links and address: Instagram, the Airbnb listing, the house site, the contact email, the map, the floor plans. Call it for any 'what is the house's X' question, social handles included.",
     input_schema:{ type:'object', properties:{ topic:{ type:'string',
       description:'tv, projector, sonos, pool, wifi, house, checkin, stay, soundtrack, links, address' } } } },
+  /* The amenities projection, published from the owner portal. Sisay reads
+     gathering/inventoryGuest, which is world-readable BY DESIGN and contains
+     only guestFacing items stripped of condition, damage, valuables and photo
+     references. The real inventory is owners-only and she cannot reach it. */
+  { name:'get_amenities', description:"What the house actually HAS, room by room, from the owners' own inventory — appliances, kitchen kit, beds, the churrasqueira, the bathtub, the fireplace, the wine fridge, the games and books. Call it for any 'is there a…', 'does the house have…', 'what's in the kitchen' question: an air fryer, a Nespresso, a dishwasher, a hairdryer, a washing machine. ANSWER FROM THIS, never from a guess — if it is not listed, say you will check with the owners rather than inventing it. Small utensils are recorded as sets, so if someone asks for one specific gadget the honest answer is that the kitchen is fully equipped.",
+    input_schema:{ type:'object', properties:{
+      room:{ type:'string', description:"Optional room: kitchen/cozinha, living/sala/bar, laundry/lavanderia, lavabo, library/kids, stairs, or a suite. Omit for the whole house." },
+      search:{ type:'string', description:'Optional item to look for, e.g. "air fryer", "cafeteira", "banheira".' } } } },
   TG_CHOICES_TOOL,
   { name:'get_weather', description:"Live weather at the house (Praia da Silveira) — right now plus three days. Returns a decided isRainyDay flag, so you never have to interpret weather codes. Call it before recommending a beach, a surf session or anything outdoors, and whenever the guest asks what to do today.",
     input_schema:{ type:'object', properties:{} } },
@@ -3176,6 +3187,49 @@ async function sisayRunTool(name, input) {
       }
       return input.topic ? (SISAY_MANUAL[input.topic] || 'Not covered — the owners can confirm.')
                          : SISAY_MANUAL;
+    }
+    case 'get_amenities': {
+      /*  One public document, fetched on demand and cached for the session.
+          If the owners have not published it yet, say so plainly — inventing
+          an amenity is how a guest arrives expecting a hairdryer. */
+      if (!SISAY_AMENITIES) {
+        try {
+          const ref = firebase.firestore()
+            .collection(TG_INVENTORY_GUEST_PATH.collection).doc(TG_INVENTORY_GUEST_PATH.doc);
+          const snap = await ref.get();
+          SISAY_AMENITIES = (snap.exists && snap.data()) || { rooms: {} };
+        } catch (e) {
+          return { error: 'The amenities list is not available right now. Say you will confirm with the owners rather than guessing.' };
+        }
+      }
+      const rooms = (SISAY_AMENITIES && SISAY_AMENITIES.rooms) || {};
+      if (!Object.keys(rooms).length)
+        return { error: 'The owners have not published the amenities list yet. Do not guess what the house has — offer to check.' };
+
+      const ALIAS = { kitchen:'cozinha', cozinha:'cozinha', living:'sala', sala:'sala', bar:'sala',
+                      laundry:'lavanderia', lavanderia:'lavanderia', lavabo:'lavabo',
+                      library:'biblioteca', kids:'biblioteca', biblioteca:'biblioteca',
+                      stairs:'escada', escada:'escada' };
+      let keys = Object.keys(rooms);
+      if (input.room) {
+        const raw = String(input.room).toLowerCase();
+        const q = ALIAS[raw] || raw;
+        const hit = keys.filter(k => k.indexOf(q) !== -1
+          || (rooms[k].ambiente || '').toLowerCase().indexOf(q) !== -1);
+        if (hit.length) keys = hit;
+      }
+      let out = keys.map(k => ({ room: rooms[k].ambiente, items: rooms[k].items }));
+      if (input.search) {
+        const q = String(input.search).toLowerCase();
+        out = out.map(r => ({ room: r.room,
+                items: r.items.filter(i => (i.name || '').toLowerCase().indexOf(q) !== -1
+                                        || (i.brand || '').toLowerCase().indexOf(q) !== -1) }))
+              .filter(r => r.items.length);
+        if (!out.length) return { found: false, searched: input.search,
+          note: 'Not in the list. Say you do not see it and offer to check with the owners — do not assume it is there, and do not assume it is absent either.' };
+      }
+      return { found: true, rooms: out,
+               note: 'Amenities only. You do not have condition or damage information and must not speculate about it. Entries like "Utensilios de cozinha" or "Talheres e facas" are sets, not single objects.' };
     }
     case 'suggest_experience': {
       const picked = (input.ids || []).map(id => cards.find(c => c.id === id)).filter(Boolean).slice(0, 3);

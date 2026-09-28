@@ -173,6 +173,60 @@ are counted and reported ("kept 1 entry another owner added meanwhile").
 Deliberate deletions still delete — the diff distinguishes "absent because
 someone else added it later" from "absent because I removed it".
 
+## The house inventory (Anexo II)
+
+Estar's photographic vistoria of 2026-09-03: **197 items across ten ambientes**,
+source PDF in the Drive, inside the *draft* owners' contract rather than as a
+standalone file. Firestore collection `inventory`, one document per ambiente
+plus `_meta` — a single document would sit under the 1 MB ceiling with no
+headroom, and owners correct one room at a time.
+
+**The collection is owners-only and must stay that way.** It carries the
+conditions Estar measures damage against, the bar bottles, the owners' storage
+and every pendência. `firestore.rules` grants `/inventory/{doc}` to `isOwner()`
+only.
+
+**Sisay reads a projection, never the real thing.** `gathering/inventoryGuest`
+is the third public document (with `guide` and `houseGuide`), written by
+"Publish guest view" in the Upkeep tab. The projection keeps `guestFacing`
+items and **drops** `condition`, `notes`, `photoRef` and `pendencia` — drops,
+not hides, because that document is world-readable by rule. Filtering in a
+guest browser would mean shipping the whole inventory there first. The publish
+step asserts against a banned-word list before writing; if the builder ever
+grows a fourth field, the write aborts.
+
+Small utensils carry a `guestGroup` and collapse into one entry, so the 92
+kitchen rows become 28 guest answers: appliances by name, "Talheres e facas" as
+a set. 197 items project to 109 guest entries.
+
+**The seed is never committed.** The repo is public, and a list of what is in
+the house, brands included, against a published address, is a shopping list.
+Owners import it from a local file through the Upkeep tab; the importer refuses
+a file whose `_meta.itemCount` disagrees with what it carries, and confirms
+before replacing documents that already exist.
+
+Two fields make readiness queryable instead of prose: `tested` (true only where
+Estar wrote "Funcionando" — "bom estado aparente" is photographic) and
+`pendenciaKind` (`defect` | `untested` | `undocumented` | `decision`). As
+imported: 21 pendências, 19 pieces of equipment nobody switched on. Hanna's
+`get_pendencias` is the readiness answer and her prompt routes every "is the
+house ready" question through it.
+
+**Suite names.** Estar's room labels disagree with the house's own, because
+they name rooms after the decorative box inside (Q02 verde, Q03 azul — and Q04
+amarela, a colour no suite has). Owners confirmed on 2026-09-28:
+Q01 Planície (Branco), Q02 Ilha (Azul), Q03 Montanha (Vermelho), Q04 Floresta
+(Verde). `TG_AMBIENTES` in `firebase-config.js` holds the pairing; document ids
+keep Estar's wording because they are Estar's references. **Known
+inconsistency:** under this mapping the portal's own `bed:` values for Planície
+and Floresta contradict Anexo II — Suíte 1 has bunks, Suíte 4 has the King and
+the banheira. Not yet resolved.
+
+Clause 4.11/4.12: Estar compiles the inventory and the owners have five
+business days from receipt to check and validate it. No Termo de conferência
+signed as of 2026-09-28, which `_meta.conferenciaStatus` records and the panel
+shows.
+
 ## Hanna's panel
 
 Two states, set through `hannaSetState('dock'|'max')` — never by adding the

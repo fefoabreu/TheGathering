@@ -42,11 +42,29 @@ service cloud.firestore {
     }
 
     match /gathering/{doc} {
-      // The two documents the public guest site renders, and only those.
-      // 'guide' is the Garopaba deck; 'houseGuide' is the published manual.
-      allow read: if doc == 'guide' || doc == 'houseGuide';
+      // The three documents the public guest site renders, and only those.
+      // 'guide' is the Garopaba deck; 'houseGuide' is the published manual;
+      // 'inventoryGuest' is the amenities projection Sisay answers from.
+      //
+      // inventoryGuest is DERIVED, never the real thing. The inventory itself
+      // lives in /inventory below and is owners-only: it carries conditions,
+      // damage, the bar bottles, owners' storage and the pendências Estar
+      // recorded. The portal's publish step writes a projection that keeps
+      // only guestFacing items and DROPS condition, notes, photoRef and the
+      // pendência flags — dropped, not hidden, because anything in this doc
+      // is world-readable by design. Filtering in Sisay's browser would mean
+      // shipping the whole inventory to every guest and trusting the filter.
+      allow read: if doc == 'guide' || doc == 'houseGuide' || doc == 'inventoryGuest';
 
       // Everything else, and every write anywhere, is owners-only.
+      allow read, write: if isOwner();
+    }
+
+    // Anexo II — the Estar photographic inventory, one document per ambiente.
+    // Owners-only, in full: item conditions are the baseline Estar measures
+    // damage against, and a public list of what is in the house, brands and
+    // all, tied to a published address, is a shopping list.
+    match /inventory/{doc} {
       allow read, write: if isOwner();
     }
 
