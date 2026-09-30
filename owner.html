@@ -1963,6 +1963,10 @@
             <label for="vf-cost">Cost <span class="vf-opt">optional</span></label>
             <input type="text" id="vf-cost" placeholder="R$…">
           </div>
+          <div class="form-field" style="min-width:150px">
+            <label for="vf-contact">Reach by</label>
+            <select id="vf-contact"></select>
+          </div>
         </div>
         <div class="form-field full" style="margin-top:.8rem">
           <label for="vf-notes">Notes <span class="vf-opt">optional</span></label>
@@ -2479,7 +2483,7 @@ const SEED_VENDORS = [
   { id:'plumbing',  group:'service', role:'🔧 Hidráulico',               name:'Emerson Alves',         phone:'', cost:'Sob orçamento',           cadence:'Sob demanda',              payKey:'plumbing' },
   { id:'windows',   group:'service', role:'🪟 Limpeza de Vidros',        name:'',                      phone:'', cost:'',                        cadence:'Antes de cada temporada',  payKey:'windows'  },
   // Construction and design team.
-  { id:'builder',   group:'build',   role:'👷 Empreiteiro',              name:'Renan Delavald',        phone:'', cost:'',                        cadence:'',                         payKey:'builder'  },
+  { id:'builder',   group:'build',   role:'👷 Empreiteiro',              name:'Renan Delavald',        phone:'', cost:'',                        cadence:'',                         payKey:'builder', contactVia:'whatsapp' },
   { id:'engineer',  group:'build',   role:'📐 Engenheiro Chefe',         name:'Ricardo',               phone:'', cost:'',                        cadence:'',                         payKey:'engineer' },
   { id:'foreman',   group:'build',   role:'🧱 Mestre de Obras',          name:'Gegê',                  phone:'', cost:'',                        cadence:'',                         payKey:'foreman'  },
   { id:'architect', group:'build',   role:'🛋️ Arquiteta & Designer',     name:'Giovana Munhoz',        phone:'', cost:'',                        cadence:'',                         payKey:'architect'},
@@ -2491,6 +2495,11 @@ const SEED_VENDORS = [
 
 const VENDOR_GROUPS = { service:'Serviços Recorrentes', build:'Obra & Design',
                         mgmt:'Gestão & Corretagem', legal:'Jurídico & Legal' };
+
+// How a vendor actually answers. Absent means no known preference. Renan lives
+// on WhatsApp and never replies to email; without this Hanna kept suggesting
+// she mail him.
+const VENDOR_CONTACT = { whatsapp:'WhatsApp', phone:'Phone call', email:'Email' };
 
 const SEED_HOUSE = {
   address:'Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000',
@@ -3767,11 +3776,17 @@ function renderVendors() {
 function vendorCard(v) {
   const phone = vendorPhone(v), pay = vendorPay(v);
   const tel = phone.replace(/[^\d+]/g, '');
+  const wa  = v.contactVia === 'whatsapp';
+  // wa.me needs the country code; a bare DDD + number is Brazilian.
+  const digits = tel.replace(/\D/g, '');
+  const dial = wa ? `https://wa.me/${tel.startsWith('+') || digits.length > 11 ? digits : '55' + digits}`
+                  : `tel:${esc(tel)}`;
   return `<div class="vendor-card">
     <div class="vendor-role">${esc(v.role || '')}</div>
     <div class="vendor-name">${esc(v.name || 'Not yet assigned')}</div>
-    ${phone ? `<div class="vendor-phone"><a href="tel:${esc(tel)}">📞 ${esc(phone)}</a></div>`
+    ${phone ? `<div class="vendor-phone"><a href="${dial}"${wa ? ' target="_blank" rel="noopener"' : ''}>${wa ? '💬' : '📞'} ${esc(phone)}</a></div>`
             : `<div class="vendor-phone" style="opacity:.45">📞 in the Vault</div>`}
+    ${VENDOR_CONTACT[v.contactVia] ? `<div class="vendor-phone" style="opacity:.7">Reach by ${esc(VENDOR_CONTACT[v.contactVia])}</div>` : ''}
     ${v.cost    ? `<div class="vendor-cost">${esc(v.cost)}${pay ? ' · Pix: ' + esc(pay) : ''}</div>` : ''}
     ${v.cadence ? `<div class="vendor-phone" style="opacity:.7">🗓 ${esc(v.cadence)}</div>` : ''}
     ${v.notes   ? `<div class="vendor-notes">${esc(v.notes)}</div>` : ''}
@@ -3825,6 +3840,11 @@ function toggleVendorForm(force) {
       .map(([k, label]) => `<option value="${esc(k)}">${esc(label)}</option>`).join('');
     sel.value = 'service';
   }
+  const via = document.getElementById('vf-contact');
+  if (via && !via.options.length) {
+    via.innerHTML = '<option value="">Anything</option>' + Object.entries(VENDOR_CONTACT)
+      .map(([k, label]) => `<option value="${esc(k)}">${esc(label)}</option>`).join('');
+  }
   const owner = vfIsOwner();
   document.getElementById('vf-save').disabled = !owner;
   vfStatus(owner ? '' : 'Sign in with Google to add vendors — the directory only accepts owner writes.',
@@ -3851,6 +3871,7 @@ async function vendorAppend(fields) {
   const cadence = String(fields.cadence || '').trim();
   const cost    = String(fields.cost || '').trim();
   const notes   = String(fields.notes || '').trim();
+  const via     = VENDOR_CONTACT[fields.contactVia] ? fields.contactVia : '';
 
   if (!vfIsOwner()) throw new Error('NOT_OWNER');
   if (!role)       throw new Error('NO_ROLE');
@@ -3874,13 +3895,14 @@ async function vendorAppend(fields) {
     for (let n = 2; taken.has(id); n++) id = base + '-' + n;
     const vendor = { id, group, role, name, phone: '', cost, cadence, payKey: id };
     if (notes) vendor.notes = notes;
+    if (via)   vendor.contactVia = via;
     after = before + 1;
     tx.set(vref, { items: [...items, vendor],
                    updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
   });
 
   const phoneNote = phone ? await vendorPhoneWrite(id, phone) : '';
-  return { id, role, name, group, cadence, cost, notes, before, after, phoneNote };
+  return { id, role, name, group, cadence, cost, notes, contactVia: via, before, after, phoneNote };
 }
 
 /* The number goes to the Vault as ONE field. Never a rewrite of the document —
@@ -3930,6 +3952,12 @@ async function vendorEdit(who, fields) {
     if (fields.group && VENDOR_GROUPS[fields.group] && fields.group !== hit.group) {
       next.group = fields.group; changed.push('group');
     }
+    // 'any' clears a preference; an empty value means "not mentioned" like every other field.
+    if (fields.contactVia === 'any' && hit.contactVia) {
+      delete next.contactVia; changed.push('contactVia');
+    } else if (VENDOR_CONTACT[fields.contactVia] && fields.contactVia !== hit.contactVia) {
+      next.contactVia = fields.contactVia; changed.push('contactVia');
+    }
     if (phone) changed.push('phone');
     if (!changed.length) throw new Error('NO_CHANGE');
     target = next;
@@ -3972,7 +4000,8 @@ async function addVendor() {
     res = await vendorAppend({
       role: val('vf-role'), name: val('vf-name'), phone: val('vf-phone'),
       group: document.getElementById('vf-group').value || 'service',
-      cadence: val('vf-cadence'), cost: val('vf-cost'), notes: val('vf-notes')
+      cadence: val('vf-cadence'), cost: val('vf-cost'), notes: val('vf-notes'),
+      contactVia: document.getElementById('vf-contact').value
     });
   } catch (e) {
     btn.disabled = false;
@@ -3982,6 +4011,7 @@ async function addVendor() {
   btn.disabled = false;
   ['vf-role','vf-name','vf-phone','vf-cadence','vf-cost','vf-notes']
     .forEach(k => { document.getElementById(k).value = ''; });
+  document.getElementById('vf-contact').value = '';
   vfStatus(`Added ${res.name} — ${res.after} contacts, was ${res.before}.${res.phoneNote}`,
            res.phoneNote ? 'err' : 'ok');
 }
@@ -4328,7 +4358,7 @@ Only two cases are not live, and both announce themselves. A source of stored-sn
 
 **The archive.** You hold a distilled copy of the owners' Drive folder — the partnership agreement of 22 Nov 2023, the purchase and construction timeline, ownership and equity, registry costs, funding, rental terms and ROI, and the rules on selling a share or inheritance. Reach it with search_property_docs, and reach for it whenever a question touches the history, the deal or the paperwork. It is a snapshot, not a live feed: for current money — balances, contributions to date, this year's costs — say the Finanças spreadsheet in Drive is the authority rather than quoting a figure that may have moved. It deliberately holds no CPFs, bank accounts or personal contact details; if asked for those, say they are in the agreement in Drive and you do not carry them.
 
-**Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks and tasks on request. **Keep the vendor directory yourself:** when an owner mentions engaging, hiring or being quoted by someone, add them with add_vendor there and then — do not make them go and fill in a form, and do not wait to be asked. Ask only for what is genuinely missing. Removing a vendor needs a spoken yes first. **Readiness questions go through get_pendencias** — never answer whether the house is ready from memory or from the projects list alone, because the vistoria pendencias live in the inventory, not in Sorceries. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
+**Your duties:** answer from live portal data using your tools — never invent a booking, code, date or number. If a tool returns nothing, say so rather than guessing. Manage calendar blocks and tasks on request. **Keep the vendor directory yourself:** when an owner mentions engaging, hiring or being quoted by someone, add them with add_vendor there and then — do not make them go and fill in a form, and do not wait to be asked. Ask only for what is genuinely missing. Removing a vendor needs a spoken yes first. **Reach people the way they answer:** every vendor may carry contactVia (whatsapp, phone or email). When it is whatsapp, never suggest emailing them or searching the mail for their reply — offer a WhatsApp message instead, drafted if useful. When an owner says someone only answers on one channel, record it with update_vendor. **Readiness questions go through get_pendencias** — never answer whether the house is ready from memory or from the projects list alone, because the vistoria pendencias live in the inventory, not in Sorceries. Flag risks: calendar conflicts, contract obligations, maintenance that affects rentability. Record significant decisions in the Chronicle so all three owners see them.
 
 You are talking to one of the three owners but you do not know which — there is a single shared login. When the answer depends on it, just ask ("whose dates should I block?").
 
@@ -4344,7 +4374,7 @@ const HANNA_TOOLS = [
       from:{type:'string', description:'Start date, YYYY-MM-DD'},
       to:{type:'string', description:'End date, YYYY-MM-DD'},
       label:{type:'string', description:'Who or what the block is for'} } } },
-  { name:'get_vendors', description:'List vendors — role, name, phone, cost and cadence.',
+  { name:'get_vendors', description:'List vendors — role, name, phone, cost, cadence, and contactVia: the channel they actually answer on. Check it before suggesting how to reach anyone.',
     input_schema:{ type:'object', properties:{} } },
   /* Entering a contractor by hand is the fallback, not the point. The owners
      meet these people in the field — the natural moment is telling Hanna "we
@@ -4359,13 +4389,17 @@ const HANNA_TOOLS = [
               description:'service = recurring upkeep, build = the works, mgmt = letting the house, legal = lawyers and disputes. Defaults to service.' },
       cadence:{ type:'string', description:'How often — "Mensal", "Sob demanda", "Antes de cada check-in"' },
       cost:{ type:'string', description:'As agreed, e.g. "R$450/visita" or "Sob orçamento"' },
-      notes:{ type:'string', description:'Worth remembering — who referred them, what they fixed, where the invoice lives' } } } },
+      notes:{ type:'string', description:'Worth remembering — who referred them, what they fixed, where the invoice lives' },
+      contactVia:{ type:'string', enum:['whatsapp','phone','email'],
+                   description:'The channel they actually answer on, when the owner says so — "he only does WhatsApp". Omit if unknown.' } } } },
   { name:'update_vendor', description:'Correct or fill in an entry that already exists — a number, an agreed price, a cadence, a spelling. Use this rather than add_vendor when the person is already listed.',
     input_schema:{ type:'object', required:['who'], properties:{
       who:{ type:'string', description:'Name or role of the vendor to change' },
       name:{ type:'string' }, role:{ type:'string' }, phone:{ type:'string' },
       group:{ type:'string', enum:['service','build','mgmt','legal'] },
-      cadence:{ type:'string' }, cost:{ type:'string' }, notes:{ type:'string' } } } },
+      cadence:{ type:'string' }, cost:{ type:'string' }, notes:{ type:'string' },
+      contactVia:{ type:'string', enum:['whatsapp','phone','email','any'],
+                   description:'The channel they answer on; any clears a recorded preference.' } } } },
   { name:'remove_vendor', description:'Remove a vendor from the directory. This is destructive and the other two owners see it — say who you are about to remove and get a yes in words FIRST, then call this with confirm true. Their number stays in the Vault, so a mistake can be put back whole.',
     input_schema:{ type:'object', required:['who','confirm'], properties:{
       who:{ type:'string', description:'Name or role of the vendor to remove' },
@@ -4405,7 +4439,7 @@ const HANNA_TOOLS = [
       nightlyBRL:{ type:'number', description:'Average nightly rate in R$' },
       monthlyCostsBRL:{ type:'number', description:'Monthly running costs; defaults to the known utilities + pool + garden' },
       purchaseBRL:{ type:'number', description:'Total invested, if known' } } } },
-  { name:'search_mail', description:"Search the house Gmail (TheGatheringSilveira@gmail.com) — vendor threads, Estar correspondence, quotes, bookings. Use it when a question is about something that would have arrived by email: 'did Renan ever reply', 'what did Estar send about the contract', 'what did we agree with Giovana'.",
+  { name:'search_mail', description:"Search the house Gmail (TheGatheringSilveira@gmail.com) — vendor threads, Estar correspondence, quotes, bookings. Use it when a question is about something that would have arrived by email: 'did the plumber send the quote', 'what did Estar send about the contract', 'what did we agree with Giovana'.",
     input_schema:{ type:'object', required:['query'], properties:{
       query:{ type:'string', description:"Gmail search syntax works, e.g. 'from:renan contrato' or 'estar garopaba after:2026/01/01'" } } } },
   { name:'search_calendar_events', description:'Search the house Google Calendar by keyword, beyond the blocked-dates feed — meetings, visits, deliveries, anything scheduled.',
@@ -4478,7 +4512,8 @@ async function hannaRunTool(name, input) {
       try {
         const r = await vendorRemove(input.who);
         return { removed: true, was: { id: r.removed.id, role: r.removed.role, name: r.removed.name,
-                                       cost: r.removed.cost, cadence: r.removed.cadence },
+                                       cost: r.removed.cost, cadence: r.removed.cadence,
+                                       contactVia: r.removed.contactVia || '' },
                  contactsNow: r.after,
                  note: 'Their number is still in the Vault, so add_vendor with the same details restores them whole.' };
       } catch (e) {

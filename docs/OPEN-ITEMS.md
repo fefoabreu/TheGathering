@@ -3,7 +3,7 @@
 Living handoff. A fresh session (local or cloud) should read this after
 `CLAUDE.md` to know what is half-done. Update it as things close.
 
-Last reviewed: 2026-09-29.
+Last reviewed: 2026-09-30.
 
 **Nothing secret goes in this file.** No phone numbers, no codes, no WiFi. The
 repository is public.
@@ -81,15 +81,14 @@ Either the portal table is stale or the mapping needs another look. Not resolved
 — confirm against the planta before editing, because the guest site renders
 these too.
 
-### 7. Hanna: contacts who only answer on WhatsApp
-Renan (empreiteiro) lives on WhatsApp and does not reply to email. Hanna
-currently has no way to know that, so she suggests mailing him. A `contactVia`
-field on vendor records, surfaced in her prompt, would fix it.
-
 ---
 
 ## Recently closed
 
+- Vendor `contactVia` (whatsapp | phone | email): form field, card badge with a
+  wa.me link, Hanna's add/update tools and prompt (2026-09-30). The seed marks
+  Renan whatsapp, but the live directory is already seeded — tell Hanna
+  "Renan only answers on WhatsApp" once to set it.
 - Vendor directory writes: form + Hanna's `add_vendor`/`update_vendor`/
   `remove_vendor`, all through one transaction (2026-09-25).
 - `saveVault()` last-write-wins clobber: now a per-field merge inside a
