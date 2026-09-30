@@ -253,6 +253,10 @@
        hand the page a horizontal scrollbar mid-animation. clip, not hidden,
        to leave position:sticky inside the panels working. */
     .content { max-width:1100px; margin:0 auto; padding:2rem 1.5rem; overflow-x:clip; }
+    .site-credit { text-align:center; font-size:.72rem; color:var(--text-mute); margin-top:2.5rem; position:relative; z-index:2; }
+    #gate .site-credit { margin-top:1.4rem; }
+    .site-credit a { color:inherit; text-decoration:underline; text-underline-offset:2px; }
+    .site-credit a:hover { color:var(--gold); }
     .tab-panel { display:none; }
     .tab-panel.active { display:block; animation:panel-in .38s cubic-bezier(.23,1,.32,1); }
     @keyframes panel-in { from{opacity:0;transform:translateX(22px)} to{opacity:1;transform:translateX(0)} }
@@ -1596,6 +1600,7 @@
       <br><small style="opacity:.5;font-style:normal">— Galadriel, Lady of Lothlórien</small>
     </p>
   </div>
+  <p class="site-credit">Designed in RVA, powered by <span style="white-space:nowrap"><a href="https://fefoabreu.me" target="_blank" rel="noopener">fefoabreu.me</a> | Ventures</span></p>
 </div>
 
 <!-- ══ APP ════════════════════════════════════════════════════ -->
@@ -2234,14 +2239,14 @@
     <!-- ══ PORTALS (Links) ══ -->
     <div class="tab-panel" id="tab-links">
       <div class="section-title"><i class="ms ms-w ms-cost"></i> Quick Links</div>
-      <div class="grid-2" id="portal-grid" style="margin-bottom:2rem"></div></div></a>
-      </div>
+      <div class="grid-2" id="portal-grid" style="margin-bottom:2rem"></div>
       <div class="section-title"><i class="ms ms-w ms-cost"></i> WiFi Credentials</div>
       <div class="grid-2">
         <div id="wifi-cards" style="display:contents"><div class="mtg-card"><div style="font-size:.85rem;color:var(--text-mute);font-style:italic">Loading network details…</div></div></div>
       </div>
     </div>
 
+    <p class="site-credit">Designed in RVA, powered by <span style="white-space:nowrap"><a href="https://fefoabreu.me" target="_blank" rel="noopener">fefoabreu.me</a> | Ventures</span></p>
   </div><!-- /content -->
 </div><!-- /app -->
 
