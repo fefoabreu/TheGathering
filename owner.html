@@ -1072,7 +1072,7 @@
     }
 
     .battlefield-landing {
-      height:calc(100vh - 108px); /* topbar ~60px + tabs ~48px */
+      height:calc(100vh - 113px); /* topbar 63px + tabs 50px, measured */
       display:flex; flex-direction:column;
       align-items:center; justify-content:center;
       padding-top:5rem; /* keep cards below the zone label */
@@ -1232,8 +1232,16 @@
         font-size, so widening the card scales its text with it. The
         landing is otherwise empty — small cards wasted the room and the
         rules text was unreadable. */
+    /*  Sized from the viewport HEIGHT, continuously, not stepped at breakpoints.
+        Two rows are 27.2em; the rest of the height (topbar, tabs, padding,
+        divider, a little air) is roughly 37% of the viewport, so the em anchor
+        is 63.3vh / 27.2, capped at the 1.34rem the deck was designed at.
+        Breakpoints at 800px and 680px left gaps: a 13" MacBook Air with
+        Chrome's bookmark bar shows ~800px and got the full-size deck, which
+        needs ~820, so the front row was cut off. */
     .battle-card {
-      width:236px; font-size:1.34rem;
+      width:11em;
+      font-size:clamp(14px, calc((63.3vh + 3px) / 27.2), 1.34rem);
       position:relative; cursor:pointer;
       transform-origin:50% 96%;
       transition:transform .48s cubic-bezier(.34,1.56,.64,1), filter .48s ease;
@@ -1303,22 +1311,12 @@
     }
     .battle-card:hover .bc-enter-hint { opacity:1; }
 
-    /* Two rows of the larger card need roughly 740px of viewport. Below that
-       the em anchor comes down rather than letting the deck clip — the
-       landing is `overflow:hidden`, so an overrun is invisible, not scrollable. */
-    @media (min-width:651px) and (max-height:800px) {
-      .battle-card                   { width:200px; font-size:1.14rem; }
-      .cards-row                     { gap:36px; }
-      .mat-divider                   { margin:1.1rem 0; }
-      .battlefield-landing           { padding-top:3.5rem; }
-    }
-    @media (min-width:651px) and (max-height:680px) {
-      .battle-card                   { width:172px; font-size:1rem; }
+    /* Short windows: the landing is `overflow:hidden`, so an overrun is
+       invisible, not scrollable. Below ~740px the full padding and divider
+       no longer fit beside the cards, so they tighten here. */
+    @media (min-width:651px) and (max-height:740px) {
       .cards-row                     { gap:28px; }
-      /* The Command card's flavour runs to two lines now, which pushed the
-         deck a few pixels past a 650px-tall window. Reclaim it from the
-         chrome rather than from the cards. */
-      .battlefield-landing           { padding-top:2.4rem; }
+      .battlefield-landing           { padding-top:3.6rem; }
       .mat-divider                   { margin:.8rem 0; }
     }
 
