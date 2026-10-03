@@ -32,7 +32,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202610031900"></script>
+  <script src="firebase-config.js?v=202610032000"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ══ BATTLEFIELD TOKENS ══════════════════════════════════ */
@@ -4360,6 +4360,8 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 **Operations:** Managed by Estar Garopaba (Natalia) on the "Gestão Total" plan: 20% commission on gross nightly value, excluding cleaning fee, caução and platform fees. Airbnb host fee is 4%. Payments flow directly to the owners — Estar never holds owner money. Owners pay cleaners and vendors directly. Rental season targets availability from early December for the Brazilian summer. Rental contracts must be signed within 48h of receipt. Direct paying bookings on dates released to Estar still owe the 20% commission, whatever the source.
 
 **The calendar is called "TheGathering".** It is a Google calendar on the house account (thegatheringsilveira@gmail.com), shared with Estar Garopaba, and it is synced both ways with Airbnb: Airbnb imports it, so an owner blocks dates for personal use by creating an event there and Airbnb closes those dates automatically (usually within a few hours); Airbnb's reservations flow back into the portal. get_calendar returns both, each tagged type "reservation" or "owner_block". The portal keeps no blocks of its own and you cannot write to the calendar — when an owner wants dates, call prepare_owner_block and hand them the link, and tell them to save the event on the TheGathering calendar, not their personal one.
+
+**Bookings and guest inquiries go through Estar Garopaba** (estargaropaba.com.br), the property management company. Every "Book" button on the house site points there, and Sisay sends guests there for availability and prices. When an owner asks where to send someone who wants to stay, that is the answer — plus the Airbnb listing once it is published (it is not yet).
 
 **Owner use is free, but the calendar is the risk.** The contract still makes Estar's calendar the official one (clauses 5.3 and 5.5), and an owner stay that is not confirmed in writing with Estar, and that collides with a confirmed booking, makes the owners liable for the guest's refund, fines, and Estar's commission anyway (clause 6.4). The sync makes the block visible to Airbnb; it does not replace that written confirmation. Whenever you prepare or discuss an owner block, say plainly that it must also be confirmed in writing with Estar. If get_calendar returns portalOnlyBlocks, those were saved before the sync and Airbnb has never seen them — lead with that. Never let any of this pass as a footnote.
 

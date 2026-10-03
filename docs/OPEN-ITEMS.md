@@ -58,23 +58,30 @@ the portal. Confirm the stay with Estar in writing (clauses 5.3/5.5).
 sample data; the Creatures tab still renders them. Clearing is a data delete,
 so it waits for an owner's yes.
 
+### 6. When the Airbnb listing is published
+Bookings currently go through Estar Garopaba: every "Book" button on the
+site points to estargaropaba.com.br, and both agents send booking questions
+there. Once the listing is live, update the `airbnb` entry's `desc` in
+`TG_HOUSE_LINKS` and the "not published yet" lines in Sisay's and Hanna's
+prompts. The footer's "🏡 Airbnb" link still points at the listing.
+
 ---
 
 ## Needs a signed-in Mac (local CLI credentials)
 
-### 6. Confirm the guest WiFi password
+### 7. Confirm the guest WiFi password
 `worker-sisay/house.local.json` (gitignored) holds a password transcribed from
 Fêfo's doc and **never confirmed by a human**. Sisay hands it to guests. Verify
 it, then re-push the pack to KV with wrangler. Until confirmed, treat it as
 suspect.
 
-### 7. Firebase Blaze, if the calendar should live in Firestore
+### 8. Firebase Blaze, if the calendar should live in Firestore
 The calendar sync runs in the `tgs-hanna` Worker because the project is on
 Spark and scheduled Functions need Blaze. Enabling billing is Fêfo's call;
 after that, `buildCalendar()` ports to a Function writing a `calendar`
 collection.
 
-### 8. Anything touching firestore.rules or Worker secrets
+### 9. Anything touching firestore.rules or Worker secrets
 `firebase deploy --only firestore:rules` and `wrangler secret put` need local
 auth. A cloud session cannot do these without re-authenticating.
 
@@ -82,7 +89,7 @@ auth. A cloud session cannot do these without re-authenticating.
 
 ## Code, any session
 
-### 9. Suite bed data contradicts Anexo II
+### 10. Suite bed data contradicts Anexo II
 Owners confirmed the suite mapping on 2026-09-28: Q01 Planície, Q02 Ilha,
 Q03 Montanha, Q04 Floresta. Under that mapping the portal's own room table
 (`owner.html`, the `planicie`/`ilha`/`montanha`/`floresta` array) is wrong for

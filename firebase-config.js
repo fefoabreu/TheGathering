@@ -216,9 +216,14 @@ const TG_HOUSE_LINKS = [
     url:'https://www.instagram.com/thegatheringsilveira/',
     handle:'@thegatheringsilveira',
     desc:'The house on Instagram — @thegatheringsilveira' },
+  // Estar Garopaba manages the house: bookings, availability and guest
+  // inquiries all go through them. Every "Book" button on the site points here.
+  { id:'book', guest:true,  icon:'🗓️', title:'Book a stay — Estar Garopaba',
+    url:'https://estargaropaba.com.br/',
+    desc:'Bookings, availability and guest inquiries — Estar Garopaba, the property management company' },
   { id:'airbnb', guest:true,  icon:'🏡', title:'Airbnb Listing',
     url:'https://www.airbnb.com/rooms/1608023407293236428',
-    desc:'The public listing — this is the one to share and to book through' },
+    desc:'The Airbnb listing — not published yet; until it is, bookings go through Estar Garopaba' },
   { id:'site', guest:true,  icon:'🌊', title:'House Site',
     url:'https://fefoabreu.me/TheGathering/',
     desc:'TheGathering Silveira — the house’s own site' },

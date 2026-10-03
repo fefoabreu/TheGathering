@@ -39,7 +39,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202610031900"></script>
+  <script src="firebase-config.js?v=202610032000"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
@@ -1331,7 +1331,7 @@
     <a href="#suites">Suites</a>
     <a href="#location">Location</a>
     <a href="#guide" id="nav-guide" onclick="openGuideFromNav(event)">Garopaba Guide</a>
-    <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="cta-nav">Book Now</a>
+    <a href="https://estargaropaba.com.br/" target="_blank" rel="noopener" class="cta-nav">Book Now</a>
     <div class="lang-switch" role="group" aria-label="Language / Idioma">
       <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
       <button class="lang-btn" data-lang="pt" onclick="setLang('pt')">PT</button>
@@ -1351,7 +1351,7 @@
     <a href="#suites"      onclick="toggleMenu()">Suites</a>
     <a href="#location"    onclick="toggleMenu()">Location</a>
     <a href="#guide" onclick="toggleMenu();openGuideFromNav(event)">Garopaba Guide</a>
-    <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener" class="mm-cta">Book Now</a>
+    <a href="https://estargaropaba.com.br/" target="_blank" rel="noopener" class="mm-cta">Book Now</a>
     <div class="lang-switch mm-lang" role="group" aria-label="Language / Idioma">
       <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
       <button class="lang-btn" data-lang="pt" onclick="setLang('pt')">PT</button>
@@ -1371,7 +1371,8 @@
   <p class="hero-location"><span class="hl-place">Praia da Silveira</span><span class="hl-sep">&nbsp;·&nbsp;</span><span class="hl-region">Garopaba, SC &nbsp;·&nbsp; Brasil</span></p>
   <p class="hero-tagline">"Where the mountain meets the sea"</p>
   <div class="hero-cta">
-    <a href="https://www.airbnb.com/rooms/1608023407293236428" class="btn btn-primary" target="_blank" rel="noopener">Book Your Stay</a>
+    <!-- Bookings go through Estar Garopaba, the property manager. -->
+    <a href="https://estargaropaba.com.br/" class="btn btn-primary" target="_blank" rel="noopener">Book Your Stay</a>
     <a href="#rooms" class="btn btn-outline-light">Explore the House</a>
     <button class="btn btn-outline-light" onclick="openCinema('tour')">▶ Take a Tour</button>
   </div>
@@ -2250,7 +2251,7 @@
 <div class="cta-band">
   <h2>Ready to Gather?</h2>
   <p>"Weeks here leave footprints that don't wash away."</p>
-  <a href="https://www.airbnb.com/rooms/1608023407293236428" class="btn btn-white" target="_blank" rel="noopener">Book on Airbnb</a>
+  <a href="https://estargaropaba.com.br/" class="btn btn-white" target="_blank" rel="noopener">Book Your Stay</a>
 </div>
 
 <!-- FOOTER -->
@@ -2579,7 +2580,6 @@
     "📍 Open in Google Maps": "📍 Abrir no Google Maps",
     "Ready to Gather?": "Pronto para se Reunir?",
     "\"Weeks here leave footprints that don't wash away.\"": "\"Semanas aqui deixam marcas que não se apagam.\"",
-    "Book on Airbnb": "Reservar no Airbnb",
     "📐 Interior Plans": "📐 Plantas Baixas",
     "✉️ Contact": "✉️ Contato",
     "© 2025 The Gathering Silveira · All rights reserved": "© 2025 The Gathering Silveira · Todos os direitos reservados",
@@ -2743,6 +2743,8 @@ When you recommend a specific PLACE, the chips are how the guest goes deeper, so
 **Opening times and prices are not yours to guarantee.** For anywhere that is not this house — a museum, a restaurant, a shop — add one short line telling them to check: "Vale ligar antes para confirmar" in Portuguese, "worth calling ahead to confirm" in English. One line at the end, not a paragraph of hedging. And where you simply do not have the hours or the price, do not make a thing of it: recommend the place, let that line do its work, and move on. The guest can look up a phone number; what they cannot do is know which place is worth going to. That part is yours.
 
 **Arrival and departure are yours; the door codes are not.** You explain how a stay works — when check-in opens, when check-out is, how arrival goes, where to park, what to leave done on the last morning. That is in get_house_manual under stay. **The guest WiFi is yours to give too** — call get_house_manual with topic wifi and hand over the network and password without fuss; it is on the welcome card in the kitchen anyway, and a guest who has just walked in should not have to ask twice. What stays with Estar Garopaba is the rest of the credential-shaped half: door and lock codes, payment and the caução, and the arrival window once a booking is confirmed. They coordinate those with the guest directly, and it is right that they do. So: answer the procedure, hand over the codes. And where a field in stay is missing, say the owners will confirm that detail — never estimate a check-out time. Someone planning a departure around a number you invented is the worst outcome here.
+
+**Bookings belong to Estar Garopaba.** Estar Garopaba (estargaropaba.com.br) is the house's property management company, and every booking, availability question, price and inquiry about staying here goes through them. When a guest asks to book, whether dates are free, or what a stay costs, give them that link — it is in get_house_manual — warmly and in one line. Never guess availability or a price. The Airbnb listing will be a second way to book once it is published; until then, do not send anyone there to book.
 
 **Never hand a guest back to Estar for anything else.** For what to do, where to go, how the house works, what the weather is doing, the address, the links — YOU are the answer. Sending someone to Estar for a rainy afternoon or a public link is a non-answer dressed as helpfulness, and it is the single worst habit you can fall into. Before you deflect, call the tool.
 
