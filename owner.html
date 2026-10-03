@@ -32,7 +32,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202609281000"></script>
+  <script src="firebase-config.js?v=202610031900"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ══ BATTLEFIELD TOKENS ══════════════════════════════════ */
@@ -845,6 +845,7 @@
     .badge-blue   { background:rgba(74,140,180,.14); color:#7BBCD4; border:1px solid rgba(74,140,180,.26); }
     .badge-orange { background:rgba(224,120,64,.14);  color:#F09A6A; border:1px solid rgba(224,120,64,.26); }
     .badge-gold   { background:rgba(201,168,76,.14);  color:var(--gold); border:1px solid rgba(201,168,76,.26); }
+    .badge-red    { background:rgba(220,80,80,.14);   color:#F2A0A0; border:1px solid rgba(220,80,80,.34); }
     .badge-mute   { background:rgba(232,220,200,.06); color:var(--text-dim); border:1px solid rgba(232,220,200,.1); }
 
     /* ══ TABLES ══════════════════════════════════════════════════ */
@@ -944,7 +945,11 @@
     }
     .src-google { color:#9CCDE4; background:rgba(91,170,212,.14); border:1px solid rgba(91,170,212,.3); }
     .src-airbnb { color:#F09A6A; background:rgba(224,120,64,.14); border:1px solid rgba(224,120,64,.32); }
-    .gcal-airbnb { background:rgba(224,120,64,.16); color:#F09A6A; border-color:rgba(224,120,64,.3); }
+    /* One colour per kind of day, matching .cal-day and the legend. */
+    .gcal-reservation  { background:rgba(74,140,180,.28); color:#BFE0F2; border-color:rgba(91,170,212,.5); font-weight:600; }
+    .gcal-owner-block  { background:rgba(201,168,76,.18); color:var(--gold); border-color:rgba(201,168,76,.4); }
+    .gcal-airbnb-block { background:rgba(224,120,64,.16); color:#F09A6A; border-color:rgba(224,120,64,.3); }
+    .gcal-legacy       { background:rgba(220,80,80,.16); color:#F2A0A0; border-color:rgba(220,80,80,.45); }
     .cal-legend {
       display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem;
       font-size:.72rem; color:var(--text-dim);
@@ -955,7 +960,7 @@
     .lg-owner  { background:rgba(201,168,76,.4); border:1px solid rgba(201,168,76,.7); }
     .lg-event  { background:rgba(91,170,212,.3); border:1px solid rgba(91,170,212,.6); }
     .lg-airbnb { background:rgba(224,120,64,.3); border:1px solid rgba(224,120,64,.6); }
-    .lg-avail  { background:rgba(91,170,114,.25); border:1px solid rgba(91,170,114,.5); }
+    .lg-legacy { background:rgba(220,80,80,.3); border:1px solid rgba(220,80,80,.6); }
     @media(max-width:760px){
       .cal-nav-title { font-size:.85rem; min-width:8rem; }
       .gcal-tag { font-size:.5rem; }
@@ -975,7 +980,10 @@
     .cal-day.booked .dn { color:var(--mu); }
     .cal-day.owner-block { background:rgba(201,168,76,.1); border-color:rgba(201,168,76,.28); }
     .cal-day.owner-block .dn { color:var(--gold); }
-    .cal-day.available { background:rgba(91,170,114,.07); border-color:rgba(91,170,114,.18); }
+    .cal-day.airbnb-block { background:rgba(224,120,64,.08); border-color:rgba(224,120,64,.22); }
+    .cal-day.legacy-block { background:repeating-linear-gradient(135deg, rgba(220,80,80,.1) 0 6px, transparent 6px 12px);
+                            border-color:rgba(220,80,80,.4); }
+    .cal-day.clash { box-shadow:inset 0 0 0 2px rgba(220,80,80,.75); }
     .cal-day.today { border-color:var(--gold) !important; box-shadow:0 0 8px rgba(201,168,76,.22); }
     .cal-day.empty { background:transparent; border:none; }
     .booking-tag { font-size:.6rem; line-height:1.3; margin-top:.22rem; color:rgba(91,170,212,.82); }
@@ -1882,7 +1890,7 @@
             </span>
             <button class="btn-sm btn-ghost" style="flex-shrink:0" onclick="loadGcal(true)" title="Refresh the property calendar">↻</button>
           </div>
-          <p class="scry-note">Google + Airbnb, merged · thegatheringsilveira@gmail.com · read-only</p>
+          <p class="scry-note">Google calendar “TheGathering” + Airbnb reservations · refreshed hourly · read-only</p>
           <div class="mtg-card">
             <div class="cal-wrap" id="cal-root"></div>
             <div id="gcal-list" hidden><div class="empty-state">Reading the property calendar…</div></div>
@@ -1891,14 +1899,23 @@
 
         <aside class="scry-side">
           <div class="section-title"><i class="ms ms-b ms-cost"></i> Block Dates for Owners</div>
+          <!-- The portal does not keep blocks of its own any more. An event on
+               the Google calendar "TheGathering" IS the block: Airbnb imports
+               that calendar and closes the dates by itself. A second list here
+               would be a third source of truth that Airbnb never sees. -->
           <div class="mtg-card">
-            <p class="scry-note" style="margin-bottom:1rem">Reserve dates for owner use. These appear on the calendar beside this.</p>
+            <p class="scry-note" style="margin-bottom:1rem">Block dates by adding an event to the Google calendar
+              <strong>TheGathering</strong> on the house account. Airbnb closes those dates automatically,
+              usually within a few hours, and the block shows here on the next refresh.</p>
             <div class="form-row scry-block-form">
-              <div class="form-field"><label>From</label><input type="date" id="block-from"></div>
-              <div class="form-field"><label>To</label><input type="date" id="block-to"></div>
-              <div class="form-field full"><label>Label</label><input type="text" id="block-label" placeholder="e.g. Owner Vacation"></div>
-              <button class="btn-sm btn-gold" onclick="addBlock()" style="align-self:flex-end">+ Add Block</button>
+              <div class="form-field"><label>Arrive</label><input type="date" id="block-from"></div>
+              <div class="form-field"><label>Leave</label><input type="date" id="block-to"></div>
+              <div class="form-field full"><label>Label</label><input type="text" id="block-label" placeholder="e.g. Pipo & Pri — Carnaval"></div>
+              <button class="btn-sm btn-gold" onclick="addBlock()" style="align-self:flex-end">Open in Google Calendar ↗</button>
             </div>
+            <p class="scry-note" style="margin-top:.8rem">Google opens with the dates filled in. Before saving, set the
+              calendar to <strong>TheGathering</strong> — an event on any other calendar does not reach Airbnb.
+              Clauses 5.3/5.5 still apply: confirm owner stays with Estar in writing.</p>
             <div id="block-list" style="margin-top:1.2rem"></div>
           </div>
           <!-- The Airbnb iCal panel is gone. It existed to hand out a feed URL
@@ -2521,12 +2538,8 @@ const SEED_BOOKINGS = [];
 // Guest names and origins used to sit here, which meant they shipped publicly.
 // They now live in gathering/bookings and are edited through the portal. This
 // stays empty so a fresh database seeds to nothing rather than re-publishing PII.
-// Emptied deliberately. These eight weeks were placeholder names carried over
-// from the original Google Doc — they were never real bookings, and they were
-// colouring the calendar as though the season were sold out. Real occupancy now
-// comes from the property calendar feed (TG_GCAL) and from owner blocks.
-const BOOKED_RANGES = [];
-const OWNER_RANGES  = [];
+// Occupancy comes from the property calendar feed (TG_GCAL) only: Airbnb
+// reservations and the owner blocks on Google calendar "TheGathering".
 
 // ── AUTH ──────────────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════
@@ -3125,11 +3138,13 @@ function upcomingStays() {
   const fromGcal = (typeof TG_GCAL !== 'undefined' ? TG_GCAL : [])
     .filter(e => (e.to || e.from) >= today)
     .map(e => ({ from:e.from, to:e.to || e.from, label:e.title || '(untitled)',
-                 source:e.source || 'google', recurring:!!e.recurring }));
-  const fromBlocks = (typeof getSavedBlocks === 'function' ? getSavedBlocks() : [])
-    .filter(b => (b.to || b.from) >= today)
-    .map(b => ({ from:b.from, to:b.to, label:b.label || 'Owner block', source:'owner' }));
-  return [...fromGcal, ...fromBlocks].sort((a, b) => a.from.localeCompare(b.from));
+                 kind:calKind(e), recurring:!!e.recurring }));
+  // Blocks saved in the portal before the calendar sync. Airbnb never saw
+  // them, so they are listed until someone moves them to Google.
+  const fromLegacy = legacyBlocks()
+    .filter(b => b.to > today)
+    .map(b => ({ from:b.from, to:b.to, label:b.label || 'Owner block', kind:'legacy' }));
+  return [...fromGcal, ...fromLegacy].sort((a, b) => a.from.localeCompare(b.from));
 }
 
 function nightsBetween(from, to) {
@@ -3137,9 +3152,19 @@ function nightsBetween(from, to) {
   return Math.max(1, Math.round(d) || 1);
 }
 
-function srcBadge(s) {
-  const m = { google:['badge-blue','Google'], airbnb:['badge-orange','Airbnb'], owner:['badge-gold','Owner block'] };
-  const [cls, label] = m[s] || ['badge-mute', s];
+/** reservation · owner block (Google) · blocked on Airbnb · legacy portal-only */
+function calKind(e) {
+  if (e.type === 'reservation') return 'reservation';
+  return e.source === 'airbnb' ? 'airbnb-block' : 'owner-block';
+}
+const CAL_KINDS = {
+  'reservation':  ['badge-blue',   'Reservation'],
+  'owner-block':  ['badge-gold',   'Owner block'],
+  'airbnb-block': ['badge-orange', 'Blocked on Airbnb'],
+  'legacy':       ['badge-red',    'Portal only — not on Airbnb'],
+};
+function srcBadge(k) {
+  const [cls, label] = CAL_KINDS[k] || ['badge-mute', k];
   return `<span class="badge ${cls}">${label}</span>`;
 }
 
@@ -3149,12 +3174,12 @@ function renderBookingTable() {
   const rows = upcomingStays();
   if (!rows.length) {
     body.innerHTML = `<tr><td colspan="4" style="color:var(--text-mute);font-style:italic">
-      Nothing on the calendar from today forward. Add a block in Scry, or check the property calendar feed.</td></tr>`;
+      Nothing on the calendar from today forward. Owners block dates by adding an event to the TheGathering Google calendar.</td></tr>`;
   } else {
     body.innerHTML = rows.slice(0, 20).map(r => `<tr>
       <td style="white-space:nowrap">${fmtRange(r.from, r.to)}</td>
       <td><strong>${esc(r.label)}</strong>${r.recurring ? ' <span style="font-size:.7rem;color:var(--text-mute)">· recurring</span>' : ''}</td>
-      <td>${srcBadge(r.source)}</td>
+      <td>${srcBadge(r.kind)}</td>
       <td style="color:var(--text-dim)">${nightsBetween(r.from, r.to)}n</td>
     </tr>`).join('');
   }
@@ -3222,9 +3247,7 @@ const MONTHS=['January','February','March','April','May','June','July','August',
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const todayISO = new Date().toISOString().slice(0,10);
 function dateInRange(d,f,t){return d>=f&&d<t;}
-function getBookingForDate(iso){for(const r of BOOKED_RANGES)if(dateInRange(iso,r.from,r.to))return r;return null;}
-function getOwnerForDate(iso){for(const b of getSavedBlocks())if(dateInRange(iso,b.from,b.to))return b;for(const r of OWNER_RANGES)if(dateInRange(iso,r.from,r.to))return r;return null;}
-function isAvailable(iso){return dateInRange(iso,'2026-06-28','2026-07-05')||dateInRange(iso,'2026-07-26','2026-08-02')||dateInRange(iso,'2026-08-16','2026-09-07');}
+function getLegacyForDate(iso){for(const b of legacyBlocks())if(dateInRange(iso,b.from,b.to))return b;return null;}
 function isoDate(y,m,d){return`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
 // Month cursor. The old version hardcoded May–Sep 2026 and rendered five
 // grids at once, so it went stale the moment the season moved on and buried
@@ -3288,31 +3311,35 @@ function renderCalendar() {
   for (let d = 1; d <= days; d++) {
     const iso = isoDate(y, m + 1, d), cell = document.createElement('div');
     cell.className = 'cal-day';
-    const bk = getBookingForDate(iso), ow = getOwnerForDate(iso), av = isAvailable(iso);
-    const ev = getGcalForDate(iso);
+    const ev = getGcalForDate(iso), legacy = getLegacyForDate(iso);
+    const kinds = ev.map(calKind);
 
-    if (ow) cell.classList.add('owner-block');
-    else if (bk) cell.classList.add('booked');
-    else if (av) cell.classList.add('available');
-    if (ev.length) cell.classList.add('has-event');
+    // A reservation outranks a block: if both cover a day, that is a clash
+    // worth seeing, and the 'clash' class marks it.
+    if (kinds.includes('reservation')) cell.classList.add('booked');
+    else if (kinds.includes('owner-block')) cell.classList.add('owner-block');
+    else if (kinds.includes('airbnb-block')) cell.classList.add('airbnb-block');
+    else if (legacy) cell.classList.add('legacy-block');
+    if (kinds.includes('reservation') && (kinds.length > 1 || legacy)) cell.classList.add('clash');
     if (iso === todayISO) cell.classList.add('today');
 
     cell.innerHTML = `<div class="dn">${d}</div>`;
     const startOfRun = d === 1 || new Date(y, m, d).getDay() === 0;
-    if (bk && (startOfRun || iso === bk.from)) {
-      const t = document.createElement('div'); t.className = 'booking-tag'; t.textContent = bk.label; cell.appendChild(t);
-    }
-    if (ow && (startOfRun || iso === ow.from)) {
-      const t = document.createElement('div'); t.className = 'owner-tag'; t.textContent = ow.label; cell.appendChild(t);
-    }
-    // Property-calendar events, on the day they begin or at the start of a week
+    // Each event's label on the day it begins, or at the start of a week.
     ev.forEach(e => {
       if (!(startOfRun || iso === e.from)) return;
       const t = document.createElement('div');
-      t.className = 'gcal-tag gcal-' + (e.source || 'google');
+      t.className = 'gcal-tag gcal-' + calKind(e);
       t.textContent = e.title; t.title = e.title + '  (' + e.from + (e.to !== e.from ? ' → ' + e.to : '') + ')';
       cell.appendChild(t);
     });
+    if (legacy && (startOfRun || iso === legacy.from)) {
+      const t = document.createElement('div');
+      t.className = 'gcal-tag gcal-legacy';
+      t.textContent = '⚠ ' + (legacy.label || 'Owner block');
+      t.title = 'Saved in the portal only — Airbnb does not know about it. Add it to the TheGathering calendar.';
+      cell.appendChild(t);
+    }
     grid.appendChild(cell);
   }
 
@@ -3321,11 +3348,10 @@ function renderCalendar() {
   const legend = document.createElement('div');
   legend.className = 'cal-legend';
   legend.innerHTML = `
-    <span><i class="lg lg-booked"></i>Booked</span>
-    <span><i class="lg lg-owner"></i>Owner block</span>
-    <span><i class="lg lg-event"></i>Google</span>
-    <span><i class="lg lg-airbnb"></i>Airbnb</span>
-    <span><i class="lg lg-avail"></i>Available</span>`;
+    <span><i class="lg lg-booked"></i>Reservation (Airbnb)</span>
+    <span><i class="lg lg-owner"></i>Owner block (TheGathering calendar)</span>
+    <span><i class="lg lg-airbnb"></i>Blocked on Airbnb</span>
+    ${legacyBlocks().length ? '<span><i class="lg lg-legacy"></i>Portal only — not on Airbnb</span>' : ''}`;
   root.appendChild(legend);
 }
 
@@ -4333,7 +4359,9 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 
 **Operations:** Managed by Estar Garopaba (Natalia) on the "Gestão Total" plan: 20% commission on gross nightly value, excluding cleaning fee, caução and platform fees. Airbnb host fee is 4%. Payments flow directly to the owners — Estar never holds owner money. Owners pay cleaners and vendors directly. Rental season targets availability from early December for the Brazilian summer. Rental contracts must be signed within 48h of receipt. Direct paying bookings on dates released to Estar still owe the 20% commission, whatever the source.
 
-**Owner use is free, but the calendar is the risk.** Blocking dates in this portal is NOT sufficient. The Estar-administered calendar is the official one (contract clauses 5.3 and 5.5). An owner block that is not confirmed in writing with Estar, and that collides with a confirmed booking, makes the owners liable for the guest's refund, fines, and Estar's commission anyway (clause 6.4). Whenever you add or discuss an owner block, say plainly that it must also be confirmed in writing with Estar. Never let this pass as a footnote.
+**The calendar is called "TheGathering".** It is a Google calendar on the house account (thegatheringsilveira@gmail.com), shared with Estar Garopaba, and it is synced both ways with Airbnb: Airbnb imports it, so an owner blocks dates for personal use by creating an event there and Airbnb closes those dates automatically (usually within a few hours); Airbnb's reservations flow back into the portal. get_calendar returns both, each tagged type "reservation" or "owner_block". The portal keeps no blocks of its own and you cannot write to the calendar — when an owner wants dates, call prepare_owner_block and hand them the link, and tell them to save the event on the TheGathering calendar, not their personal one.
+
+**Owner use is free, but the calendar is the risk.** The contract still makes Estar's calendar the official one (clauses 5.3 and 5.5), and an owner stay that is not confirmed in writing with Estar, and that collides with a confirmed booking, makes the owners liable for the guest's refund, fines, and Estar's commission anyway (clause 6.4). The sync makes the block visible to Airbnb; it does not replace that written confirmation. Whenever you prepare or discuss an owner block, say plainly that it must also be confirmed in writing with Estar. If get_calendar returns portalOnlyBlocks, those were saved before the sync and Airbnb has never seen them — lead with that. Never let any of this pass as a footnote.
 
 **The soundtrack.** The house has an official trilha sonora — a playlist the three owners curated to match the place. It is in get_house_info, with links for both Spotify and Apple Music. Mention it when it is genuinely useful — welcome and check-in material, anything about the Sonos or the sound system, or when someone is describing the house's character to a guest or a listing. It is a signature touch: offer it with pride, once, and never keep bringing it up.
 
@@ -4368,12 +4396,12 @@ Codes and payment details live in the Vault. If asked for them in a context that
 const HANNA_TOOLS = [
   { name:'list_bookings', description:'List the season bookings — weeks, dates, guest names, party size, origin and channel.',
     input_schema:{ type:'object', properties:{ month:{type:'string', description:'Optional month name or number to filter by, e.g. "January" or "1".'} } } },
-  { name:'get_calendar', description:'Get owner blocks and booked date ranges currently held in the portal calendar.',
+  { name:'get_calendar', description:'The property calendar "TheGathering": Airbnb reservations and owner blocks, merged and tagged by type, refreshed hourly. Also lists any portal-only blocks Airbnb has never seen.',
     input_schema:{ type:'object', properties:{} } },
-  { name:'add_owner_block', description:'Add an owner block to the portal calendar. Always remind the owner it must ALSO be confirmed in writing with Estar Garopaba.',
+  { name:'prepare_owner_block', description:'Prepare an owner block: returns a Google Calendar link with the dates filled in. You cannot save it — the owner opens the link and saves the event on the TheGathering calendar, which closes the dates on Airbnb. Always remind them it must ALSO be confirmed in writing with Estar Garopaba.',
     input_schema:{ type:'object', required:['from','to'], properties:{
-      from:{type:'string', description:'Start date, YYYY-MM-DD'},
-      to:{type:'string', description:'End date, YYYY-MM-DD'},
+      from:{type:'string', description:'Arrival date, YYYY-MM-DD'},
+      to:{type:'string', description:'Leaving date, YYYY-MM-DD — the first night NOT blocked'},
       label:{type:'string', description:'Who or what the block is for'} } } },
   { name:'get_vendors', description:'List vendors — role, name, phone, cost, cadence, and contactVia: the channel they actually answer on. Check it before suggesting how to reach anyone.',
     input_schema:{ type:'object', properties:{} } },
@@ -4472,18 +4500,24 @@ async function hannaRunTool(name, input) {
       return rows.length ? rows : 'No bookings recorded.';
     }
     case 'get_calendar': {
-      const gcal = await loadGcal();
-      return { propertyCalendar: gcal,          // Google, the source of truth
-               ownerBlocks: getSavedBlocks(),   // portal-side only
-               bookedRanges: BOOKED_RANGES, seasonBlocks: OWNER_RANGES };
+      const events = await loadGcal();
+      const legacy = legacyBlocks();
+      return { calendar: TG_CALENDAR.name,
+               events: events.map(e => ({ type: e.type, source: e.source, start: e.start || e.from,
+                                          end: e.end, lastNight: e.to, summary: e.summary || e.title,
+                                          recurring: !!e.recurring })),
+               ...(legacy.length ? { portalOnlyBlocks: legacy.map(b => ({ label: b.label, from: b.from, leave: b.to })),
+                 warning: 'portalOnlyBlocks were saved in the portal before the calendar sync. Airbnb has never seen them, so those dates are still open to guests until they are added to the TheGathering calendar.' } : {}),
+               note: 'Owner blocks are events on the Google calendar "TheGathering"; Airbnb imports it and closes those dates. Reservations come from the Airbnb listing feed.' };
     }
-    case 'add_owner_block': {
-      if (!input.from || !input.to || input.from >= input.to) return 'Invalid range — need from < to, as YYYY-MM-DD.';
-      const blocks = getSavedBlocks();
-      blocks.push({ id: Date.now(), from: input.from, to: input.to, label: input.label || 'Owner Block' });
-      saveBlocks(blocks); renderBlocks(); renderCalendar();
-      return { added: true, from: input.from, to: input.to,
-               reminder: 'Added to the portal calendar only. This block must ALSO be confirmed in writing with Estar Garopaba (clauses 5.3/5.5), or a collision with a confirmed booking is owner-fault under 6.4.' };
+    case 'prepare_owner_block': {
+      if (!input.from || !input.to || input.from >= input.to) return 'Invalid range — need arrival before leaving, as YYYY-MM-DD.';
+      const clash = (TG_GCAL || []).filter(e => e.type === 'reservation' && e.from < input.to && input.from <= e.to);
+      return { link: gcalBlockUrl(input.from, input.to, input.label || 'Owner block'),
+               from: input.from, leave: input.to, saved: false,
+               ...(clash.length ? { clashesWith: clash.map(e => ({ from: e.from, lastNight: e.to })),
+                                    clashWarning: 'These dates overlap an Airbnb reservation. Blocking over a confirmed booking is owner-fault under clause 6.4 — talk to Estar first.' } : {}),
+               instruction: 'Not saved yet. The owner opens the link and saves the event on the "' + TG_CALENDAR.name + '" calendar (not a personal one); Airbnb closes the dates automatically within a few hours. It must ALSO be confirmed in writing with Estar Garopaba (clauses 5.3/5.5).' };
     }
     case 'get_vendors': return storeGet('vendors') || [];
     case 'add_vendor': {
@@ -4618,7 +4652,9 @@ async function hannaRunTool(name, input) {
         const months = input.monthsAhead || 6;
         const min = new Date().toISOString();
         const max = new Date(Date.now() + months * 30 * 86400000).toISOString();
-        const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+        // The TheGathering calendar, not the account's primary one: owner
+        // blocks live there, and primary would miss every one of them.
+        const url = 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(TG_CALENDAR.id) + '/events'
           + `?q=${encodeURIComponent(input.query || '')}&timeMin=${min}&timeMax=${max}`
           + '&singleEvents=true&orderBy=startTime&maxResults=15';
         const res = await googleFetch(url);
@@ -5006,31 +5042,38 @@ function hannaOpeners() {
   const today = new Date().toISOString().slice(0, 10);
   const push = (ask, label) => { if (out.length < 5) out.push([ask, label]); };
 
-  // 1 — A collision between an owner block and the property calendar is the
-  //     one thing that costs real money (clause 6.4). It always leads.
+  // 1 — What costs real money (clause 6.4) always leads: an owner stay Airbnb
+  //     does not know about, or an owner block on top of a reservation.
   try {
-    const blocks = (typeof getSavedBlocks === 'function' ? getSavedBlocks() : []) || [];
+    const legacy = (typeof legacyBlocks === 'function' ? legacyBlocks() : []) || [];
     const cal    = (typeof TG_GCAL !== 'undefined' ? TG_GCAL : []) || [];
-    const clash  = blocks.find(b => cal.some(e => b.from <= e.to && e.from <= b.to));
-    if (clash) push('The owner block "' + clash.label + '" (' + clash.from + ' to ' + clash.to +
-                    ') looks like it overlaps the property calendar. Is that a real conflict, and what should I do about it?',
+    if (legacy.length) {
+      const b = legacy[0];
+      push('"' + b.label + '" (' + b.from + ' to ' + b.to + ') was saved in the portal only. Is it on the TheGathering calendar, or is Airbnb still selling those dates?',
+           'Not on Airbnb: <em>' + tgDayMonth(b.from) + '</em>');
+    }
+    const res   = cal.filter(e => e.type === 'reservation');
+    const clash = cal.find(e => e.type === 'owner_block' && res.some(r => e.from <= r.to && r.from <= e.to));
+    if (clash) push('The owner block "' + clash.title + '" (' + clash.from + ' to ' + clash.to +
+                    ') overlaps an Airbnb reservation. Is that a real conflict, and what should I do about it?',
                     'Conflict on <em>' + tgDayMonth(clash.from) + '</em>');
   } catch (e) {}
 
-  // 2 — Who is coming, and when. Airbnb writes its blocked spans as
-  //     "Airbnb (Not available)" — a placeholder, not an arrival. Offering
-  //     "what should I have ready for Not available?" is worse than offering
-  //     nothing, so titles that are plainly placeholders are skipped and the
-  //     next real event is used instead.
+  // 2 — Who is coming, and when. The next Airbnb reservation first (Airbnb
+  //     titles them all "Reserved", so the date is the label), then the next
+  //     owner stay with a real name. Airbnb's "Not available" spans arrive
+  //     typed as blocks titled "Blocked on Airbnb" and are not arrivals.
   try {
-    const noise = /not available|unavailable|blocked|bloquead|indispon|reserved|busy/i;
-    const cal = ((typeof TG_GCAL !== 'undefined' ? TG_GCAL : []) || [])
-      .filter(e => e.to >= today && e.title && !noise.test(e.title))
-      .sort((a, b) => a.from < b.from ? -1 : 1);
-    if (cal.length) {
-      const n = cal[0];
-      push('What do I need to have ready for "' + n.title + '" on ' + n.from + '?',
-           'Ready for <em>' + tgDayMonth(n.from) + '</em>');
+    const all = ((typeof TG_GCAL !== 'undefined' ? TG_GCAL : []) || [])
+      .filter(e => e.to >= today).sort((a, b) => a.from < b.from ? -1 : 1);
+    const nextRes = all.find(e => e.type === 'reservation');
+    const nextOwn = all.find(e => e.type === 'owner_block' && e.source === 'google');
+    if (nextRes) {
+      push('An Airbnb reservation arrives on ' + nextRes.from + '. What do I need to have ready?',
+           'Arrival <em>' + tgDayMonth(nextRes.from) + '</em>');
+    } else if (nextOwn) {
+      push('What do I need to have ready for "' + nextOwn.title + '" on ' + nextOwn.from + '?',
+           'Ready for <em>' + tgDayMonth(nextOwn.from) + '</em>');
     } else {
       // Everything ahead is a block rather than a booking — still worth asking.
       const blocked = ((typeof TG_GCAL !== 'undefined' ? TG_GCAL : []) || [])
@@ -5190,9 +5233,10 @@ function closeManifest() { document.getElementById('manifest-overlay').classList
 
 
 // ── Google Calendar (property account) ───────────────────────
-//  Read-only mirror of thegatheringsilveira@gmail.com, fetched through
-//  Hanna's Worker (which holds the feed URL). Kept separate from the
-//  portal's own owner blocks so a sync can never overwrite one.
+//  Read-only view of the Google calendar "TheGathering" (owner blocks) merged
+//  with the Airbnb listing feed (reservations). The Worker holds both secret
+//  feed URLs, refreshes the merge hourly, and tags every event with
+//  type 'reservation' | 'owner_block' and its source. ↻ asks for a fresh read.
 let TG_GCAL = [], gcalState = 'idle';
 
 async function loadGcal(force) {
@@ -5206,7 +5250,7 @@ async function loadGcal(force) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json',
                  'Authorization': 'Bearer ' + await u.getIdToken() },
-      body: JSON.stringify({ action: 'calendar' }),
+      body: JSON.stringify({ action: 'calendar', force: !!force }),
     });
     const d = await res.json();
     if (d.error) throw new Error(d.message || d.error);
@@ -5232,37 +5276,63 @@ function renderGcal() {
   const today = new Date().toISOString().slice(0,10);
   const upcoming = TG_GCAL.filter(e => e.to >= today);
   if (!upcoming.length) { el.innerHTML = '<div class="empty-state">Nothing upcoming on the property calendar.</div>'; return; }
+  const kindBg = { 'reservation':'rgba(74,140,180,.1)', 'owner-block':'rgba(201,168,76,.07)', 'airbnb-block':'rgba(224,120,64,.07)' };
   el.innerHTML = upcoming.slice(0, 40).map(e => `
     <div style="display:flex;gap:.8rem;align-items:baseline;padding:.6rem .9rem;margin-bottom:.35rem;
-                background:rgba(91,170,212,.05);border:1px solid rgba(91,170,212,.16);border-radius:8px">
+                background:${kindBg[calKind(e)] || 'rgba(91,170,212,.05)'};border:1px solid rgba(232,220,200,.1);border-radius:8px">
       <span style="font-size:.74rem;color:var(--mu);white-space:nowrap;font-variant-numeric:tabular-nums">
         ${esc(e.from)}${e.to !== e.from ? ' → ' + esc(e.to) : ''}</span>
       <span style="font-size:.86rem;flex:1">${esc(e.title)}</span>
-      <span class="src-tag src-${esc(e.source||'google')}">${e.source === 'airbnb' ? 'Airbnb' : 'Google'}</span>
+      ${srcBadge(calKind(e))}
       ${e.recurring ? '<span class="badge badge-mute" style="font-size:.58rem">repeats</span>' : ''}
     </div>`).join('');
 }
 
 // ── BLOCKS ────────────────────────────────────────────────────
+/*  Owner blocks live on the Google calendar "TheGathering", and nowhere else.
+    The portal used to keep its own list (gathering/calendar). Airbnb never saw
+    it, so a block saved only here left the dates open to guests — the
+    owner-fault case under clause 6.4. What remains of that list is shown as
+    a warning, with a link that moves each block to Google, and a Remove
+    for once it is there. Nothing new is ever added to it. */
 function getSavedBlocks(){return blocksCache;}
 function saveBlocks(a){blocksCache=a;localStorage.setItem('tg_blocks',JSON.stringify(a));tgPush('blocks',a);}
+/** Portal-only blocks still to come (end is the exclusive leave date). */
+function legacyBlocks(){
+  const today=new Date().toISOString().slice(0,10);
+  return (getSavedBlocks()||[]).filter(b=>b&&b.from&&b.to&&b.to>today);
+}
+/** Google Calendar's "new event" page, pre-filled. All-day end is exclusive. */
+function gcalBlockUrl(from,to,label){
+  const ymd=d=>String(d).replace(/-/g,'');
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    +'&text='+encodeURIComponent(label||'Owner block')
+    +'&dates='+ymd(from)+'/'+ymd(to)
+    +'&details='+encodeURIComponent('Owner block. Save on the "'+TG_CALENDAR.name+'" calendar so Airbnb closes these dates.');
+}
 function addBlock(){
   const from=document.getElementById('block-from').value, to=document.getElementById('block-to').value;
-  const label=document.getElementById('block-label').value.trim()||'Owner Block';
-  if(!from||!to||from>=to){alert('Please enter a valid date range.');return;}
-  const b=getSavedBlocks(); b.push({id:Date.now(),from,to,label}); saveBlocks(b);
-  renderBlocks(); renderCalendar();
-  ['block-from','block-to','block-label'].forEach(id=>document.getElementById(id).value='');
+  const label=document.getElementById('block-label').value.trim()||'Owner block';
+  if(!from||!to||from>=to){alert('Pick an arrival date and a later leave date.');return;}
+  window.open(gcalBlockUrl(from,to,label),'_blank','noopener');
 }
-function removeBlock(id){saveBlocks(getSavedBlocks().filter(b=>b.id!==id));renderBlocks();renderCalendar();}
+function removeBlock(id){
+  if(!confirm('Remove this portal-only block? Do it once the dates are on the TheGathering calendar.'))return;
+  saveBlocks(getSavedBlocks().filter(b=>b.id!==id));renderBlocks();renderCalendar();renderBookingTable();
+}
 function renderBlocks(){
-  const blocks=getSavedBlocks(), el=document.getElementById('block-list');
-  if(!blocks.length){el.innerHTML='<p style="font-size:.82rem;color:var(--text-mute);font-style:italic">No owner blocks added yet.</p>';return;}
-  el.innerHTML=blocks.map(b=>`
-    <div style="display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;background:rgba(201,168,76,.06);border-radius:8px;margin-bottom:.4rem;border:1px solid rgba(201,168,76,.22)">
-      <span style="font-size:.8rem;color:var(--gold);font-weight:600">🔒 ${b.label}</span>
-      <span style="font-size:.8rem;color:var(--text-dim)">${b.from} → ${b.to}</span>
-      <button onclick="removeBlock(${b.id})" class="btn-sm btn-danger" style="margin-left:auto">Remove</button>
+  const el=document.getElementById('block-list'); if(!el)return;
+  const blocks=legacyBlocks();
+  if(!blocks.length){el.innerHTML='';return;}
+  el.innerHTML=`<p style="font-size:.8rem;color:#F2A0A0;margin-bottom:.6rem">⚠ Saved in the portal only — Airbnb does not
+      know about ${blocks.length===1?'this block':'these blocks'}. Add each to the TheGathering calendar, then remove it here.</p>`
+    +blocks.map(b=>`
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;padding:.7rem 1rem;background:rgba(220,80,80,.07);border-radius:8px;margin-bottom:.4rem;border:1px solid rgba(220,80,80,.35)">
+      <span style="font-size:.8rem;color:#F2A0A0;font-weight:600">${esc(b.label||'Owner block')}</span>
+      <span style="font-size:.8rem;color:var(--text-dim)">${esc(b.from)} → ${esc(b.to)}</span>
+      <a class="btn-sm btn-gold" style="margin-left:auto;text-decoration:none" target="_blank" rel="noopener"
+         href="${esc(gcalBlockUrl(b.from,b.to,b.label))}">Add to Google ↗</a>
+      <button onclick="removeBlock(${Number(b.id)})" class="btn-sm btn-danger">Remove</button>
     </div>`).join('');
 }
 

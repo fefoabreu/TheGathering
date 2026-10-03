@@ -80,6 +80,34 @@ rather than Firestore because guests hold anonymous Firebase tokens and
 The pack omits CPFs, bank accounts, home addresses, personal phone numbers and
 all credentials. Re-run the script when the source documents change materially.
 
+## The property calendar (synced 2026-10-03)
+
+The calendar is the Google calendar **"TheGathering"** on the house account,
+shared with Estar Garopaba (edit). It is synced both ways with Airbnb outside
+this system: Airbnb imports it, so **an event there is an owner block and
+closes those dates on Airbnb**; the listing's iCal export carries reservations
+back. `TG_CALENDAR` in `firebase-config.js` holds the name and id (an address,
+not a credential).
+
+- **Server side:** `tgs-hanna` fetches both iCal feeds (Worker secrets
+  `GCAL_ICS_URL`, `AIRBNB_ICS_URL` — bearer credentials, never in the repo or
+  client), normalises them to `{type: reservation|owner_block, source, start,
+  end, summary}`, and writes KV `cal:v3` on an hourly cron. Airbnb's "Not
+  available" spans that echo a Google event are dropped; the rest show as
+  "Blocked on Airbnb". The `calendar` action is owner-allowlist-only even
+  while `ENFORCE_OWNER` is off.
+- **Portal:** a read view. It keeps **no blocks of its own** — "Open in Google
+  Calendar" pre-fills an event the owner saves on TheGathering. The old
+  portal-only list (`gathering/calendar`) is shown only as a red warning,
+  because Airbnb never saw it; do not revive writes to it.
+- **Hanna:** `get_calendar` returns the typed events; `prepare_owner_block`
+  returns a pre-filled link and never writes. She has no calendar write scope
+  — every Google scope is `.readonly` by owner decision.
+- **Not done:** the brief asked for a Firebase Function writing to a Firestore
+  `calendar` collection. The project is on Spark (no billing), and scheduled
+  Functions need Blaze, so the Worker does the job. Moving it is a port of
+  `buildCalendar()` once Fêfo enables Blaze.
+
 ## House links and other shared facts
 
 `TG_HOUSE_LINKS` in `firebase-config.js` is the single source for the house's

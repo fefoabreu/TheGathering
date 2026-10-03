@@ -3,7 +3,7 @@
 Living handoff. A fresh session (local or cloud) should read this after
 `CLAUDE.md` to know what is half-done. Update it as things close.
 
-Last reviewed: 2026-09-30.
+Last reviewed: 2026-10-03.
 
 **Nothing secret goes in this file.** No phone numbers, no codes, no WiFi. The
 repository is public.
@@ -47,17 +47,34 @@ end of the PDF is blank. Anexo II is the baseline Estar measures damage against,
 so the 21 pendências stand as recorded until disputed. Worth a Chronicle entry
 either way.
 
+### 4. Move "Pipo & Pri | Carnaval 2027" to the TheGathering calendar
+Feb 5–14, 2027 was saved in the portal before the calendar sync, so Airbnb has
+never seen it and is still selling those nights. Scry shows it in red with an
+"Add to Google ↗" link; save the event on **TheGathering**, then Remove it in
+the portal. Confirm the stay with Estar in writing (clauses 5.3/5.5).
+
+### 5. Clear the template weeks in `gathering/bookings`
+"Owners Beach Week" (Jul 5–12) and three empty summer-2026 weeks are leftover
+sample data; the Creatures tab still renders them. Clearing is a data delete,
+so it waits for an owner's yes.
+
 ---
 
 ## Needs a signed-in Mac (local CLI credentials)
 
-### 4. Confirm the guest WiFi password
+### 6. Confirm the guest WiFi password
 `worker-sisay/house.local.json` (gitignored) holds a password transcribed from
 Fêfo's doc and **never confirmed by a human**. Sisay hands it to guests. Verify
 it, then re-push the pack to KV with wrangler. Until confirmed, treat it as
 suspect.
 
-### 5. Anything touching firestore.rules or Worker secrets
+### 7. Firebase Blaze, if the calendar should live in Firestore
+The calendar sync runs in the `tgs-hanna` Worker because the project is on
+Spark and scheduled Functions need Blaze. Enabling billing is Fêfo's call;
+after that, `buildCalendar()` ports to a Function writing a `calendar`
+collection.
+
+### 8. Anything touching firestore.rules or Worker secrets
 `firebase deploy --only firestore:rules` and `wrangler secret put` need local
 auth. A cloud session cannot do these without re-authenticating.
 
@@ -65,7 +82,7 @@ auth. A cloud session cannot do these without re-authenticating.
 
 ## Code, any session
 
-### 6. Suite bed data contradicts Anexo II
+### 9. Suite bed data contradicts Anexo II
 Owners confirmed the suite mapping on 2026-09-28: Q01 Planície, Q02 Ilha,
 Q03 Montanha, Q04 Floresta. Under that mapping the portal's own room table
 (`owner.html`, the `planicie`/`ilha`/`montanha`/`floresta` array) is wrong for

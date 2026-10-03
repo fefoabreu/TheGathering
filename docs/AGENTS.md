@@ -86,7 +86,7 @@ split described in the brief, just without a conversational layer on top.
 | `gathering/guide` | Published guide cards — **world-readable**, the guest site needs it |
 | `gathering/houseGuide` | House manual Sisay answers from — **world-readable** |
 | `gathering/inventoryGuest` | Guest projection of the inventory, written by "Publish guest view" — **world-readable** |
-| `gathering/calendar` | Owner blocks |
+| `gathering/calendar` | Legacy portal-only owner blocks — read-only now; blocks live on the Google calendar "TheGathering" |
 | `gathering/bookings` | Season bookings |
 | `gathering/vendors` | Vendor directory (numbers live in the Vault, keyed by id) |
 | `gathering/houseInfo` | Suites, capacity, rules, Estar terms |

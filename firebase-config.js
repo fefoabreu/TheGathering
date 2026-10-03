@@ -159,6 +159,16 @@ const TG_GOOGLE_SCOPES = [
 ];
 const TG_DRIVE_SCOPE = TG_GOOGLE_SCOPES[0];   // kept for older call sites
 
+// The property calendar: Google calendar "TheGathering" on the house account,
+// shared with Estar Garopaba. Airbnb imports it, so an event there closes
+// those dates on Airbnb by itself; Airbnb's reservations flow back the other
+// way. The id is only an address — reading the calendar takes the house
+// account or the secret iCal URL, and that URL is a Worker secret, never here.
+const TG_CALENDAR = {
+  name: "TheGathering",
+  id:   "05eee0b3c05ce0591a2ba48355dbd49495429f56ab32216e941df3e430c775e6@group.calendar.google.com",
+};
+
 // Property Mgmt → Garopaba → The Gathering Silveira. Used to mark whether a
 // search hit came from the property folder or from somewhere else the account
 // can see — provenance, not a restriction. See the sync-scope note in the brief.

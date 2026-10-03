@@ -107,17 +107,22 @@ function isOwner(email, env) {
 
 
 /**
- * Google Calendar sync (read-only).
+ * Property calendar sync (read-only).
  *
- * The property's shared Google Calendar — thegatheringsilveira@gmail.com — is
- * where the three owners actually work, so it is the source of truth for what
- * is happening at the house. We read its secret iCal address server-side; the
- * URL is a bearer credential and never reaches the browser.
+ * Two sources, synced with each other outside this system:
+ *   - Google calendar "TheGathering" (owned by thegatheringsilveira@gmail.com,
+ *     shared with Estar). An event there is an owner block, and Airbnb imports
+ *     this calendar, so the event closes those dates on Airbnb automatically.
+ *   - The Airbnb listing's own iCal export, which carries the reservations.
  *
- * Read-only and additive by design. Synced events are returned separately from
- * the portal's own owner blocks and never overwrite them: losing a block a
- * human typed is exactly the failure that turns into an owner-fault
- * cancellation under clause 6.4.
+ * Both feed URLs are bearer credentials (anyone holding the Google one can
+ * read the calendar), so they are Worker secrets — GCAL_ICS_URL and
+ * AIRBNB_ICS_URL — and never reach the browser or this repo.
+ *
+ * An hourly cron (wrangler.toml) fetches both, normalises them and writes the
+ * result to KV; the portal reads that. Nothing here writes back to either
+ * calendar: the portal is a read view, and Google Calendar is where owners
+ * block dates.
  */
 
 function icsUnfold(text) {
@@ -192,32 +197,94 @@ async function fetchIcs(url, source) {
   }
 }
 
-async function handleCalendar(env, origin) {
+const CAL_KEY = 'cal:v3';
+
+const nextDay = iso => {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+};
+
+/**
+ * One event shape for both feeds:
+ *   type     'reservation' | 'owner_block'
+ *   source   'google' | 'airbnb'
+ *   start    first night, YYYY-MM-DD
+ *   end      check-out day, YYYY-MM-DD (exclusive, as in iCal)
+ *   summary  the event's title
+ * plus from/to (inclusive last night) and title, which the portal already reads.
+ *
+ * Airbnb's export lists reservations as "Reserved" and every closed date as
+ * "Airbnb (Not available)" — including the dates it imported FROM the Google
+ * calendar. Those echoes are dropped so an owner block is not shown twice;
+ * a closed span with no matching Google event was blocked on Airbnb directly
+ * and is kept as an owner block from Airbnb.
+ */
+function normalise(results) {
+  const google = (results.find(r => r.source === 'google') || { events: [] }).events;
+  const airbnb = (results.find(r => r.source === 'airbnb') || { events: [] }).events;
+  const shape = (e, type, source, summary) => ({
+    uid: e.uid, type, source, start: e.from, end: nextDay(e.to), summary,
+    from: e.from, to: e.to, title: summary,
+    recurring: !!e.recurring, rrule: e.rrule || '', timed: !!e.timed,
+    ...(source === 'google' && e.notes ? { notes: e.notes } : {}),
+  });
+
+  const out = google.map(e => shape(e, 'owner_block', 'google', e.title));
+  const covered = iso => google.some(g => iso >= g.from && iso <= g.to);
+  for (const e of airbnb) {
+    // Airbnb descriptions carry the guest's phone digits and a reservation
+    // link; neither is needed here, so neither is kept.
+    if (/^reserved$/i.test(e.title)) { out.push(shape(e, 'reservation', 'airbnb', 'Reserved')); continue; }
+    if (covered(e.from) && covered(e.to)) continue;          // echo of a Google block
+    out.push(shape(e, 'owner_block', 'airbnb', 'Blocked on Airbnb'));
+  }
+  return out.sort((a, b) => a.start.localeCompare(b.start));
+}
+
+async function buildCalendar(env) {
   const feeds = [];
   if (env.GCAL_ICS_URL)   feeds.push({ url: env.GCAL_ICS_URL,   source: 'google' });
   if (env.AIRBNB_ICS_URL) feeds.push({ url: env.AIRBNB_ICS_URL, source: 'airbnb' });
-
-  if (!feeds.length) {
-    return json({ error: 'calendar_not_configured',
-                  message: 'No calendar feeds are connected yet.' }, 503, origin);
-  }
-
-  const kv = env.HANNA_CACHE;
-  if (kv) {
-    const hit = await kv.get('cal:v2', 'json');
-    if (hit) return json({ ...hit, cached: true }, 200, origin);
-  }
+  if (!feeds.length) return null;
 
   // Both feeds in parallel; one failing must not take the other down.
   const results = await Promise.all(feeds.map(f => fetchIcs(f.url, f.source)));
-
-  const events = results.flatMap(r => r.events)
-                        .sort((a, b) => a.from.localeCompare(b.from));
+  const events = normalise(results);
   const sources = {};
   results.forEach(r => { sources[r.source] = r.error ? { error: r.error } : { count: r.events.length }; });
 
-  const payload = { events, count: events.length, sources, fetchedAt: new Date().toISOString() };
-  if (kv) await kv.put('cal:v2', JSON.stringify(payload), { expirationTtl: 600 });
+  const payload = { calendar: 'TheGathering', events, count: events.length, sources,
+                    fetchedAt: new Date().toISOString() };
+  // If a feed failed, keep serving the last good copy of it rather than
+  // showing the house as suddenly empty.
+  if (env.HANNA_CACHE) {
+    const failed = results.filter(r => r.error).map(r => r.source);
+    if (failed.length) {
+      const prev = await env.HANNA_CACHE.get(CAL_KEY, 'json');
+      if (prev) {
+        payload.events = [...events, ...prev.events.filter(e => failed.includes(e.source))]
+          .sort((a, b) => a.start.localeCompare(b.start));
+        payload.count = payload.events.length;
+        payload.stale = failed;
+      }
+    }
+    await env.HANNA_CACHE.put(CAL_KEY, JSON.stringify(payload));
+  }
+  return payload;
+}
+
+async function handleCalendar(env, origin, force) {
+  const kv = env.HANNA_CACHE;
+  if (kv && !force) {
+    const hit = await kv.get(CAL_KEY, 'json');
+    if (hit) return json({ ...hit, cached: true }, 200, origin);
+  }
+  const payload = await buildCalendar(env);
+  if (!payload) {
+    return json({ error: 'calendar_not_configured',
+                  message: 'No calendar feeds are connected yet.' }, 503, origin);
+  }
   return json(payload, 200, origin);
 }
 
@@ -284,6 +351,12 @@ async function handleDocs(env, origin, query) {
 }
 
 export default {
+  // Hourly, from the cron in wrangler.toml. Airbnb only refreshes its imports
+  // every few hours, so this is already faster than the slowest link.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(buildCalendar(env));
+  },
+
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
 
@@ -322,8 +395,15 @@ export default {
     catch { return json({ error: 'Body must be JSON' }, 400, origin); }
 
     // Calendar sync shares the proxy's auth rather than standing up a second
-    // authenticated surface.
-    if (payload.action === 'calendar') return handleCalendar(env, origin);
+    // authenticated surface. Reservations and blocks are owners' business, so
+    // this route checks the owner allowlist whether or not ENFORCE_OWNER is on:
+    // every guest on the public site holds an anonymous token.
+    if (payload.action === 'calendar') {
+      if (!isOwner(check.email, env)) {
+        return json({ error: 'Forbidden: the calendar is for the house account.' }, 403, origin);
+      }
+      return handleCalendar(env, origin, payload.force === true);
+    }
     if (payload.action === 'docs')     return handleDocs(env, origin, payload.query);
 
     /**

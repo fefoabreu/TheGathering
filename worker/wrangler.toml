@@ -14,7 +14,12 @@ workers_dev = false
 pattern = "hanna.fefoabreu.me"
 custom_domain = true
 
-# Caches the Google Calendar feed so we are not refetching it per page view.
+# Refreshes the merged property calendar (Google "TheGathering" + Airbnb) into
+# KV every hour. See buildCalendar() in src/index.js.
+[triggers]
+crons = ["7 * * * *"]
+
+# Holds the merged calendar (cal:v3) and Hanna's knowledge snapshot.
 [[kv_namespaces]]
 binding = "HANNA_CACHE"
 id = "78d83d4847bd4b02b9fb235db1b0be48"
