@@ -245,6 +245,11 @@
     }
     .btn-ig-icon:hover { transform:translateY(-3px) scale(1.06); box-shadow:0 10px 34px rgba(214,36,159,.58), 0 0 0 2px rgba(249,244,236,.55); }
     .btn-ig-icon .ig-icon { width:100%; height:100%; display:block; }
+    /* Airbnb beside it, the same tile in Airbnb's own coral. */
+    .hero-icons { display:flex; gap:.9rem; align-items:center; justify-content:center; margin:0 .4rem; }
+    .hero-icons .btn-ig-icon { margin:0; }
+    .btn-ig-icon.btn-airbnb { box-shadow:0 6px 26px rgba(255,90,95,.42), 0 0 0 2px rgba(249,244,236,.3); }
+    .btn-ig-icon.btn-airbnb:hover { box-shadow:0 10px 34px rgba(255,90,95,.58), 0 0 0 2px rgba(249,244,236,.55); }
 
     /* ══ HOUSE SOUNDTRACK ═════════════════════════════════════════
        A signature touch, so it gets its own strip under the amenities
@@ -1287,8 +1292,9 @@
       .hero { min-height:88vh; padding:2rem 1.25rem 3rem; }
       .hero-cta { flex-direction:column; align-items:stretch; gap:.7rem; padding:0 1.5rem; }
       .hero-cta a, .hero-cta button { width:100%; text-align:center; justify-content:center; }
-      /* Stacked, with the Instagram icon centred between the two buttons. */
-      .hero-cta a.btn-ig-icon { width:60px; height:60px; border-radius:17px; margin:.1rem auto; }
+      /* Stacked, with Instagram and Airbnb side by side between the two buttons. */
+      .hero-icons { margin:.1rem auto; gap:1.1rem; }
+      .hero-cta a.btn-ig-icon { width:60px; height:60px; border-radius:17px; margin:0; }
 
       /* Was position:absolute;bottom:110px — it landed on top of the third
          CTA once "Take a Tour" was added. In flow it can never collide. */
@@ -1438,14 +1444,18 @@
   <div class="hero-cta">
     <!-- Bookings go through Estar Garopaba, the property manager. -->
     <a href="https://estargaropaba.com.br/" class="btn btn-primary" target="_blank" rel="noopener">Book Your Stay</a>
-    <!-- Instagram as its own app icon, between the two buttons and larger
-         than them, so it reads as the centrepiece. The logo says it, no label.
-         #weblink is Instagram's own opt-out from app links (see its
-         apple-app-site-association), so a phone without the app stays in
-         the browser. On touch devices it also opens in the same tab
-         (tgInstagramLinks), so Back always returns here. -->
-    <a href="https://www.instagram.com/thegatheringsilveira/#weblink" class="btn-ig-icon" data-ig target="_blank" rel="noopener"
-       aria-label="TheGathering Silveira on Instagram" title="@thegatheringsilveira on Instagram"><svg class="ig-icon" viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="ig-g" cx="30%" cy="107%" r="150%"><stop offset="0" stop-color="#fdf497"/><stop offset=".05" stop-color="#fdf497"/><stop offset=".45" stop-color="#fd5949"/><stop offset=".6" stop-color="#d6249f"/><stop offset=".9" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig-g)"/><rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.4" cy="7.6" r="1.1" fill="#fff"/></svg></a>
+    <div class="hero-icons">
+      <!-- Instagram and Airbnb as their own app icons, between the two buttons
+           and larger than them, so they read as the centrepiece. The logo says it, no label.
+           #weblink is Instagram's own opt-out from app links (see its
+           apple-app-site-association), so a phone without the app stays in
+           the browser. On touch devices it also opens in the same tab
+           (tgInstagramLinks), so Back always returns here. -->
+      <a href="https://www.instagram.com/thegatheringsilveira/#weblink" class="btn-ig-icon" data-ig target="_blank" rel="noopener"
+         aria-label="TheGathering Silveira on Instagram" title="@thegatheringsilveira on Instagram"><svg class="ig-icon" viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="ig-g" cx="30%" cy="107%" r="150%"><stop offset="0" stop-color="#fdf497"/><stop offset=".05" stop-color="#fdf497"/><stop offset=".45" stop-color="#fd5949"/><stop offset=".6" stop-color="#d6249f"/><stop offset=".9" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig-g)"/><rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.4" cy="7.6" r="1.1" fill="#fff"/></svg></a>
+      <a href="https://www.airbnb.com/rooms/1608023407293236428" class="btn-ig-icon btn-airbnb" target="_blank" rel="noopener"
+         aria-label="TheGathering Silveira on Airbnb" title="TheGathering Silveira on Airbnb"><svg class="ig-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#FF5A5F"/><g transform="translate(5.2 5) scale(.567)"><path fill="#fff" d="M12.001 18.275c-1.353-1.697-2.148-3.184-2.413-4.457-.263-1.027-.16-1.848.291-2.465.477-.71 1.188-1.056 2.121-1.056s1.643.345 2.12 1.063c.446.61.558 1.432.286 2.465-.291 1.298-1.085 2.785-2.412 4.458zm9.601 1.14c-.185 1.246-1.034 2.28-2.2 2.783-2.253.98-4.483-.583-6.392-2.704 3.157-3.951 3.74-7.028 2.385-9.018-.795-1.14-1.933-1.695-3.394-1.695-2.944 0-4.563 2.49-3.927 5.382.37 1.565 1.352 3.343 2.917 5.332-.98 1.085-1.91 1.856-2.732 2.333-.636.344-1.245.558-1.828.609-2.679.399-4.778-2.2-3.825-4.88.132-.345.395-.98.845-1.961l.025-.053c1.464-3.178 3.242-6.79 5.285-10.795l.053-.132.58-1.116c.45-.822.635-1.19 1.351-1.643.346-.21.77-.315 1.246-.315.954 0 1.698.558 2.016 1.007.158.239.345.557.582.953l.558 1.089.08.159c2.041 4.004 3.821 7.608 5.279 10.794l.026.025.533 1.22.318.764c.243.613.294 1.222.213 1.858zm1.22-2.39c-.186-.583-.505-1.271-.9-2.094v-.03c-1.889-4.006-3.642-7.608-5.307-10.844l-.111-.163C15.317 1.461 14.468 0 12.001 0 9.56 0 8.522 1.705 7.463 3.91l-.081.16c-1.665 3.236-3.418 6.843-5.306 10.847v.053l-.559 1.22c-.21.504-.317.768-.345.847C-.172 20.74 2.611 24 5.98 24c.027 0 .132 0 .265-.027h.372c1.75-.213 3.554-1.325 5.384-3.317 1.829 1.989 3.635 3.104 5.382 3.317h.372c.133.027.239.027.265.027 3.37.003 6.152-3.261 4.802-6.975z"/></g></svg></a>
+    </div>
     <button class="btn btn-outline-light" onclick="openCinema('tour')">▶ Take a Tour</button>
   </div>
   <div class="scroll-line">Discover</div>
