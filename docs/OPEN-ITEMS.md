@@ -105,6 +105,16 @@ Either the portal table is stale or the mapping needs another look. Not resolved
 — confirm against the planta before editing, because the guest site renders
 these too.
 
+
+**2026-10-09: likely resolution.** Reading Anexo II by each room's colours
+and beds instead of Estar's Q numbers lines everything up: the master suite
+(king + banheira + double vanity) is the neutral room, **Planície**; Estar's
+Q03 "azul" (king) is **Ilha**; the two bunk-structure rooms are **Montanha**
+(red) and Q02 "verde", **Floresta**. That matches the guest site's suites,
+the photos and the portal's `bed:` values, and contradicts only the
+2026-09-28 pairing "Q01 Planície … Q04 Floresta", which looks like Estar's
+numbering rather than the house's. The guest site now uses this reading;
+confirm with the owners, then fix `TG_AMBIENTES` in `firebase-config.js`.
 ---
 
 ## Recently closed
