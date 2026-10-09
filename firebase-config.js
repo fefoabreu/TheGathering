@@ -88,7 +88,7 @@ const TG_SESSIONS_COLL  = "agentSessions";
 // ──────────────────────────────────────────────────────────────
 const TG_SOUNDTRACK = {
   name:    "TheGathering 🌊🌄",
-  what:    "The house's official trilha sonora, curated by the three owners — MPB and Brazilian sounds with sunset beach-house energy, meant to match the place.",
+  what:    "The house's official soundtrack: beach vibes and Brazilian MPB with sunset beach-house energy, made to match the place.",
   spotify: "https://open.spotify.com/playlist/6p1z0izahO4LRsymqqhA9N",
   apple:   "https://music.apple.com/us/playlist/thegathering/pl.u-55D66ZKsVADkDz",
 };

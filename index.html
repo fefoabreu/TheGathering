@@ -39,7 +39,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202610032000"></script>
+  <script src="firebase-config.js?v=202610091500"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
@@ -247,14 +247,19 @@
     }
     .track-mark { font-size:1.9rem; line-height:1; flex-shrink:0; }
     .track-copy { flex:1; min-width:220px; }
+    /* One line wherever it fits; where it cannot (phones), even lines rather
+       than a single orphaned word. */
+    .track-sub { text-wrap:balance; }
     .track-name {
       font-family:'Cinzel',serif; font-size:1.02rem; color:var(--ocean-deep);
       letter-spacing:.03em; margin-bottom:.2rem;
     }
     .track-sub { font-size:.87rem; color:var(--text-mid); line-height:1.6; }
-    .track-links { display:flex; gap:.6rem; flex-wrap:wrap; flex-shrink:0; }
+    /* Stacked, Apple Music first, both the same width. */
+    .track-links { display:flex; flex-direction:column; gap:.5rem; flex-shrink:0; }
+    .track-logo { width:18px; height:18px; flex-shrink:0; display:block; }
     .track-btn {
-      display:inline-flex; align-items:center; gap:.45rem; text-decoration:none;
+      display:inline-flex; align-items:center; justify-content:flex-start; gap:.55rem; text-decoration:none;
       padding:.62rem 1.15rem; border-radius:50px; font-size:.84rem; font-weight:600;
       background:#fff; color:var(--ocean-deep); border:1px solid rgba(13,33,55,.14);
       box-shadow:var(--sh-sm); transition:var(--ease);
@@ -263,7 +268,7 @@
     @media(max-width:650px){
       .track-strip { padding:1.2rem; gap:1rem; }
       .track-links { width:100%; }
-      .track-btn { flex:1; justify-content:center; }
+      .track-btn { justify-content:center; }
     }
 
     .scroll-line {
@@ -2201,8 +2206,8 @@
         <div class="track-sub" id="track-sub"></div>
       </div>
       <div class="track-links">
-        <a class="track-btn" id="track-spotify" target="_blank" rel="noopener">Spotify</a>
-        <a class="track-btn" id="track-apple" target="_blank" rel="noopener">Apple Music</a>
+        <a class="track-btn" id="track-apple" target="_blank" rel="noopener"><svg class="track-logo" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="am-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FA5C74"/><stop offset="1" stop-color="#FA233B"/></linearGradient></defs><rect width="24" height="24" rx="5.4" fill="url(#am-g)"/><path fill="#fff" d="M16.9 5.2v9.6c0 .5-.1 1-.4 1.4-.3.4-.8.7-1.3.8-.4.1-.8.2-1.2.2-1 0-1.8-.7-1.8-1.6 0-.8.6-1.5 1.5-1.7.4-.1.8-.2 1.2-.3.3-.1.5-.3.5-.6V8.3c0-.3-.2-.4-.5-.4l-5 1c-.3.1-.4.2-.4.5v6.8c0 .5-.1 1-.4 1.4-.3.4-.8.7-1.3.8-.4.1-.8.2-1.2.2-1 0-1.8-.7-1.8-1.6 0-.8.6-1.5 1.5-1.7.4-.1.8-.2 1.2-.3.3-.1.5-.3.5-.6V7.2c0-.4.3-.8.7-.9l6.8-1.4c.4-.1.8.1.8.5z"/></svg><span>Apple Music</span></a>
+        <a class="track-btn" id="track-spotify" target="_blank" rel="noopener"><svg class="track-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1DB954" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg><span>Spotify</span></a>
       </div>
     </div>
   </div>
@@ -2538,8 +2543,8 @@
     "🌿 Forest View": "🌿 Vista da Mata",
     "🌴 Suite Floresta": "🌴 Suíte Floresta",
     "Flex Bunks · 13.6 m² · tap to go back": "Beliches Flexíveis · 13,6 m² · toque para voltar",
-    "The house's official trilha sonora, curated by the three owners — MPB and Brazilian sounds with sunset beach-house energy, meant to match the place.":
-      "A trilha sonora oficial da casa, garimpada pelos três donos — MPB e som brasileiro com energia de fim de tarde na praia, feita para combinar com o lugar.",
+    "The house's official soundtrack: beach vibes and Brazilian MPB with sunset beach-house energy, made to match the place.":
+      "A trilha sonora oficial da casa: beach vibes e som brasileiro com energia de fim de tarde na praia, no alto astral da casa.",
     "The House": "A Casa",
     "Every Detail,": "Cada Detalhe,",
     "Considered.": "Pensado.",
