@@ -39,7 +39,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202610091700"></script>
+  <script src="firebase-config.js?v=202610091900"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
@@ -236,8 +236,15 @@
     .btn-primary:hover { background:#c86a34; transform:translateY(-2px); box-shadow:0 8px 32px rgba(224,120,64,.5); }
     .btn-outline-light { background:transparent; color:var(--text-light); padding:.9rem 2.2rem; border:1.5px solid rgba(249,244,236,.45); }
     .btn-outline-light:hover { border-color:var(--text-light); background:rgba(249,244,236,.1); transform:translateY(-2px); }
-    .btn-ig { display:inline-flex; align-items:center; justify-content:center; gap:.55rem; }
-    .ig-glyph { width:20px; height:20px; flex-shrink:0; display:block; }
+    /* Instagram's app icon, the same height as the pill buttons beside it. */
+    .btn-ig-icon {
+      width:51px; height:51px; flex:0 0 auto; border-radius:14px; overflow:hidden;
+      display:inline-flex; align-self:center;
+      box-shadow:0 4px 18px rgba(214,36,159,.35), 0 0 0 1.5px rgba(249,244,236,.25);
+      transition:var(--ease);
+    }
+    .btn-ig-icon:hover { transform:translateY(-2px) scale(1.04); box-shadow:0 8px 26px rgba(214,36,159,.5), 0 0 0 1.5px rgba(249,244,236,.45); }
+    .btn-ig-icon .ig-icon { width:100%; height:100%; display:block; }
 
     /* ══ HOUSE SOUNDTRACK ═════════════════════════════════════════
        A signature touch, so it gets its own strip under the amenities
@@ -1231,6 +1238,11 @@
       .hero { min-height:88vh; padding:2rem 1.25rem 3rem; }
       .hero-cta { flex-direction:column; align-items:stretch; gap:.7rem; padding:0 1.5rem; }
       .hero-cta a, .hero-cta button { width:100%; text-align:center; justify-content:center; }
+      /* Book Your Stay on its own line; Take a Tour and the Instagram icon share the next. */
+      .hero-cta { flex-direction:row; flex-wrap:wrap; }
+      .hero-cta .btn-primary { flex-basis:100%; }
+      .hero-cta button { flex:1; width:auto; }
+      .hero-cta a.btn-ig-icon { width:51px; flex:0 0 51px; }
 
       /* Was position:absolute;bottom:110px — it landed on top of the third
          CTA once "Take a Tour" was added. In flow it can never collide. */
@@ -1383,11 +1395,14 @@
   <div class="hero-cta">
     <!-- Bookings go through Estar Garopaba, the property manager. -->
     <a href="https://estargaropaba.com.br/" class="btn btn-primary" target="_blank" rel="noopener">Book Your Stay</a>
-    <!-- Instagram where it is seen, not only in the footer. "Explore the
-         House" just scrolled to the next section, which scrolling already does. -->
-    <a href="https://www.instagram.com/thegatheringsilveira/" class="btn btn-outline-light btn-ig" target="_blank" rel="noopener"
-       aria-label="TheGathering Silveira on Instagram"><svg class="ig-glyph" viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="ig-g" cx="30%" cy="107%" r="150%"><stop offset="0" stop-color="#fdf497"/><stop offset=".05" stop-color="#fdf497"/><stop offset=".45" stop-color="#fd5949"/><stop offset=".6" stop-color="#d6249f"/><stop offset=".9" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig-g)"/><rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.4" cy="7.6" r="1.1" fill="#fff"/></svg><span>Instagram</span></a>
     <button class="btn btn-outline-light" onclick="openCinema('tour')">▶ Take a Tour</button>
+    <!-- Instagram as its own app icon: the logo says it, so no label.
+         #weblink is Instagram's own opt-out from app links (see its
+         apple-app-site-association), so a phone without the app stays in
+         the browser. On touch devices it also opens in the same tab
+         (tgInstagramLinks), so Back always returns here. -->
+    <a href="https://www.instagram.com/thegatheringsilveira/#weblink" class="btn-ig-icon" data-ig target="_blank" rel="noopener"
+       aria-label="TheGathering Silveira on Instagram" title="@thegatheringsilveira on Instagram"><svg class="ig-icon" viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="ig-g" cx="30%" cy="107%" r="150%"><stop offset="0" stop-color="#fdf497"/><stop offset=".05" stop-color="#fdf497"/><stop offset=".45" stop-color="#fd5949"/><stop offset=".6" stop-color="#d6249f"/><stop offset=".9" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig-g)"/><rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.4" cy="7.6" r="1.1" fill="#fff"/></svg></a>
   </div>
   <div class="scroll-line">Discover</div>
 </section>
@@ -2271,7 +2286,7 @@
 <footer>
   <img src="assets/logo-circle.png" alt="The Gathering" class="foot-logo">
   <div class="foot-links">
-    <a href="https://www.instagram.com/thegatheringsilveira/" target="_blank" rel="noopener">📸 Instagram</a>
+    <a href="https://www.instagram.com/thegatheringsilveira/#weblink" data-ig target="_blank" rel="noopener">📸 Instagram</a>
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener">🏡 Airbnb</a>
     <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" target="_blank" rel="noopener">📐 Interior Plans</a>
     <a href="https://wa.me/5548992033535?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20TheGathering%20Silveira%20e%20gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20a%20casa." target="_blank" rel="noopener">💬 Contact</a>
@@ -2727,6 +2742,13 @@ if (typeof tgGuestLinks === 'function') {
 
 // Paint the soundtrack strip from the same object. Hidden if unset, so the
 // section never renders an empty box.
+// Instagram on a phone: a new tab that hands off to the app (or fails to)
+// can close itself and leave the guest nowhere. In the same tab, Back works.
+(function tgInstagramLinks() {
+  if (!matchMedia('(pointer:coarse)').matches) return;
+  document.querySelectorAll('a[data-ig]').forEach(a => a.removeAttribute('target'));
+})();
+
 (function renderSoundtrack() {
   if (typeof TG_SOUNDTRACK === 'undefined' || !TG_SOUNDTRACK.spotify) return;
   const el = document.getElementById('track-strip');

@@ -213,7 +213,7 @@ const TG_GATE_PASSWORD = "@tgs";
 // ──────────────────────────────────────────────────────────────
 const TG_HOUSE_LINKS = [
   { id:'instagram', guest:true,  icon:'📸', title:'Instagram',
-    url:'https://www.instagram.com/thegatheringsilveira/',
+    url:'https://www.instagram.com/thegatheringsilveira/#weblink',   // #weblink: stay in the browser
     handle:'@thegatheringsilveira',
     desc:'The house on Instagram — @thegatheringsilveira' },
   // Estar Garopaba manages the house: bookings, availability and guest
