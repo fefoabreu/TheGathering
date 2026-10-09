@@ -231,9 +231,17 @@ const TG_HOUSE_LINKS = [
     url:'mailto:TheGatheringSilveira@gmail.com',
     handle:'TheGatheringSilveira@gmail.com',
     desc:'TheGatheringSilveira@gmail.com' },
+  // The area, never the street. This file is public, so the exact address
+  // lives only in the owners-only house record (gathering/houseInfo); guests
+  // get it from Estar with their check-in details.
   { id:'maps', guest:true,  icon:'📍', title:'Google Maps',
-    url:'https://maps.google.com/?q=Rua+Augusto+Germano+Wilke,+Praia+da+Silveira,+Garopaba+SC+88490-000',
-    desc:'Rua Augusto Germano Wilke, s/n° — Praia da Silveira, Garopaba SC 88490-000' },
+    url:'https://maps.google.com/?q=Praia+da+Silveira,+Garopaba+SC',
+    desc:'Praia da Silveira, Garopaba SC — the exact address comes from Estar with check-in' },
+  // How guests reach Estar Garopaba: their WhatsApp, the same line as the
+  // "Fale conosco" button on estargaropaba.com.br, with a message naming the house.
+  { id:'contact', guest:true,  icon:'💬', title:'Contact — Estar Garopaba (WhatsApp)',
+    url:'https://wa.me/5548992033535?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20TheGathering%20Silveira%20e%20gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20a%20casa.',
+    desc:'Questions about staying here go to Estar Garopaba, on WhatsApp' },
   { id:'plans', guest:true,  icon:'📐', title:'Interior Plans (PDF)',
     url:'https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view',
     desc:'Architectural layouts — all 5 suites' },
@@ -251,8 +259,9 @@ const TG_HOUSE_LINKS = [
 /** The links a guest may be given. Sisay reads only this. */
 function tgGuestLinks() { return TG_HOUSE_LINKS.filter(l => l.guest); }
 
-// The house's own address, in one place for the same reason.
-const TG_HOUSE_ADDRESS = 'Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000';
+// The house's location as the public may know it: the neighbourhood, not the
+// street. The exact address is owners-only (gathering/houseInfo).
+const TG_HOUSE_ADDRESS = 'Praia da Silveira, Garopaba SC';
 
 
 // ──────────────────────────────────────────────────────────────

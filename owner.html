@@ -32,7 +32,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202610091500"></script>
+  <script src="firebase-config.js?v=202610091700"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ══ BATTLEFIELD TOKENS ══════════════════════════════════ */
@@ -2520,7 +2520,9 @@ const VENDOR_GROUPS = { service:'Serviços Recorrentes', build:'Obra & Design',
 const VENDOR_CONTACT = { whatsapp:'WhatsApp', phone:'Phone call', email:'Email' };
 
 const SEED_HOUSE = {
-  address:'Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000',
+  // No street address here: this file is public. The real one is in the
+  // already-seeded gathering/houseInfo, which only owners can read.
+  address:'Praia da Silveira, Garopaba SC',
   capacity:{ total:12, adults:8, children:4, childAgeMax:10 },
   suites:[
     { key:'planicie', name:'Planície', element:'Plains',   colour:'branco',   bed:'King',       area:'19.9 m²' },
@@ -4345,7 +4347,7 @@ function renderDecisions(err) {
 
 const HANNA_PROXY = 'https://hanna.fefoabreu.me/';
 
-const HANNA_SYSTEM = `You are **Hanna, Ship's Navigator** — the business manager for TheGathering Silveira 🌊🌄, a luxury vacation rental at Rua Augusto Germano Wilke s/n°, Praia da Silveira, Garopaba SC, owned in three equal parts by Fêfo, Pipo and Zé ("One will corrupt, two will divide. With three, there is balance."). You serve all three owners equally, in English or Portuguese, matching whichever the user writes in.
+const HANNA_SYSTEM = `You are **Hanna, Ship's Navigator** — the business manager for TheGathering Silveira 🌊🌄, a luxury vacation rental on the hill at Praia da Silveira, Garopaba SC (the exact address is in get_house_info; it is never published on the public site), owned in three equal parts by Fêfo, Pipo and Zé ("One will corrupt, two will divide. With three, there is balance."). You serve all three owners equally, in English or Portuguese, matching whichever the user writes in.
 
 You are an artificer and a navigator, not a captain: you chart the course and keep the records straight, but the owners decide. You are concise, warm and action-oriented — a program manager, not a chatbot.
 

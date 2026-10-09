@@ -39,7 +39,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202610091500"></script>
+  <script src="firebase-config.js?v=202610091700"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
@@ -234,6 +234,8 @@
     .btn-primary:hover { background:#c86a34; transform:translateY(-2px); box-shadow:0 8px 32px rgba(224,120,64,.5); }
     .btn-outline-light { background:transparent; color:var(--text-light); padding:.9rem 2.2rem; border:1.5px solid rgba(249,244,236,.45); }
     .btn-outline-light:hover { border-color:var(--text-light); background:rgba(249,244,236,.1); transform:translateY(-2px); }
+    .btn-ig { display:inline-flex; align-items:center; justify-content:center; gap:.55rem; }
+    .ig-glyph { width:20px; height:20px; flex-shrink:0; display:block; }
 
     /* ══ HOUSE SOUNDTRACK ═════════════════════════════════════════
        A signature touch, so it gets its own strip under the amenities
@@ -1379,7 +1381,10 @@
   <div class="hero-cta">
     <!-- Bookings go through Estar Garopaba, the property manager. -->
     <a href="https://estargaropaba.com.br/" class="btn btn-primary" target="_blank" rel="noopener">Book Your Stay</a>
-    <a href="#rooms" class="btn btn-outline-light">Explore the House</a>
+    <!-- Instagram where it is seen, not only in the footer. "Explore the
+         House" just scrolled to the next section, which scrolling already does. -->
+    <a href="https://www.instagram.com/thegatheringsilveira/" class="btn btn-outline-light btn-ig" target="_blank" rel="noopener"
+       aria-label="TheGathering Silveira on Instagram"><svg class="ig-glyph" viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="ig-g" cx="30%" cy="107%" r="150%"><stop offset="0" stop-color="#fdf497"/><stop offset=".05" stop-color="#fdf497"/><stop offset=".45" stop-color="#fd5949"/><stop offset=".6" stop-color="#d6249f"/><stop offset=".9" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig-g)"/><rect x="5" y="5" width="14" height="14" rx="4" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3.3" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.4" cy="7.6" r="1.1" fill="#fff"/></svg><span>Instagram</span></a>
     <button class="btn btn-outline-light" onclick="openCinema('tour')">▶ Take a Tour</button>
   </div>
   <div class="scroll-line">Discover</div>
@@ -2248,7 +2253,7 @@
       </div>
     </div>
     <div style="text-align:center;margin-top:2.8rem" class="fu">
-      <a href="https://maps.google.com/?q=Rua+Augusto+Germano+Wilke,+Praia+da+Silveira,+Garopaba+SC+88490-000" class="btn btn-primary" target="_blank" rel="noopener">📍 Open in Google Maps</a>
+      <a href="https://maps.google.com/?q=Praia+da+Silveira,+Garopaba+SC" class="btn btn-primary" target="_blank" rel="noopener">📍 Open in Google Maps</a>
     </div>
   </div>
 </div>
@@ -2267,9 +2272,8 @@
     <a href="https://www.instagram.com/thegatheringsilveira/" target="_blank" rel="noopener">📸 Instagram</a>
     <a href="https://www.airbnb.com/rooms/1608023407293236428" target="_blank" rel="noopener">🏡 Airbnb</a>
     <a href="https://drive.google.com/file/d/1DgvXtR9ICB9rTatGpDKlddUYYSA9RGgN/view" target="_blank" rel="noopener">📐 Interior Plans</a>
-    <a href="mailto:TheGatheringSilveira@gmail.com">✉️ Contact</a>
+    <a href="https://wa.me/5548992033535?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20TheGathering%20Silveira%20e%20gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20a%20casa." target="_blank" rel="noopener">💬 Contact</a>
   </div>
-  <p>Rua Augusto Germano Wilke, s/n° · Praia da Silveira, Garopaba SC 88490-000</p>
   <p style="margin-top:.4rem">© 2025 The Gathering Silveira · All rights reserved</p>
   <p class="foot-credit">Designed in RVA, powered by <span style="white-space:nowrap"><a href="https://fefoabreu.me" target="_blank" rel="noopener">fefoabreu.me</a> | Ventures</span></p>
   <div class="owner-link"><a href="owner.html">owner access</a></div>
@@ -2587,7 +2591,7 @@
     "Ready to Gather?": "Pronto para se Reunir?",
     "\"Weeks here leave footprints that don't wash away.\"": "\"Semanas aqui deixam marcas que não se apagam.\"",
     "📐 Interior Plans": "📐 Plantas Baixas",
-    "✉️ Contact": "✉️ Contato",
+    "💬 Contact": "💬 Contato",
     "© 2025 The Gathering Silveira · All rights reserved": "© 2025 The Gathering Silveira · Todos os direitos reservados",
     "Specialty pour-overs, single-origin beans, artisan pastries and the best WiFi in Garopaba. A sanctuary for slow mornings and focused remote work.": "Cafés coados especiais, grãos de origem única, panificação artesanal e o melhor WiFi de Garopaba. Um santuário para manhãs sem pressa e trabalho remoto concentrado.",
     "Garopaba's most beloved smash burger house. Handcrafted patties, crispy fries, and a vibe that pulls locals back every single night.": "A hamburgueria smash mais querida de Garopaba. Carnes artesanais, fritas crocantes e um clima que traz os locais de volta toda noite.",
@@ -2774,7 +2778,7 @@ Never invent a restaurant, price, phone number or booking link. If it isn't in y
 
 **Answer with a corner.** "Praia da Silveira" is not an answer; "Silveira, the north corner, because the nordestão is blowing and that end is the shelter" is. recommend_beach gives you the corner and the reason — use both, in your own words, in one or two sentences.
 
-**The house's own details are yours to give.** Its Instagram, its Airbnb listing, its site, its contact email, its address, the floor plans — all of that is in get_house_manual, and all of it is public. Someone asking "what's the house's Instagram?" should get the handle, not a redirection to Estar. CALL THE TOOL before you say you do not have something: answering "I don't have that in my toolkit" about a detail that is sitting in your manual is the worst thing you can do here, and pointing a guest at Estar for a public link is a non-answer. Estar is the right answer for check-in, door codes and payments — the things you genuinely cannot see — and for nothing else.
+**The house's own details are yours to give.** Its Instagram, its Airbnb listing, its site, its contact email, where it is (Praia da Silveira, on the hill above the beach), the floor plans — all of that is in get_house_manual, and all of it is public. **Never give the street address**, even if asked directly: Estar Garopaba sends it to guests with their check-in details, and it is not published anywhere on this site. Someone asking "what's the house's Instagram?" should get the handle, not a redirection to Estar. CALL THE TOOL before you say you do not have something: answering "I don't have that in my toolkit" about a detail that is sitting in your manual is the worst thing you can do here, and pointing a guest at Estar for a public link is a non-answer. Estar is the right answer for check-in, door codes and payments — the things you genuinely cannot see — and for nothing else.
 
 **What the house has is a matter of record, not memory.** Any "is there a…" question — air fryer, Nespresso, dishwasher, bathtub, fireplace, washing machine, a pan big enough for eight — goes to get_amenities, which reads the owners' own inventory. Never guess and never pad the list to sound generous: a guest who arrives expecting something you invented is a worse outcome than a guest who was told you would check. Small utensils are held as sets, so for one specific gadget the true answer is that the kitchen is fully equipped. You have no condition or damage information at all, so if something is broken you will not know it — never reassure anyone that a thing works.
 
