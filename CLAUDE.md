@@ -94,8 +94,9 @@ not a credential).
   client), normalises them to `{type: reservation|owner_block, source, start,
   end, summary}`, and writes KV `cal:v3` on an hourly cron. Airbnb's "Not
   available" spans that echo a Google event are dropped; the rest show as
-  "Blocked on Airbnb". The `calendar` action is owner-allowlist-only even
-  while `ENFORCE_OWNER` is off.
+  "Blocked on Airbnb". The `calendar` action is owner-allowlist-only, and
+  since 2026-10-15 so is everything else on `tgs-hanna` (`ENFORCE_OWNER =
+  "true"`): a guest's anonymous token gets 403.
 - **Portal:** a read view. It keeps **no blocks of its own** — "Open in Google
   Calendar" pre-fills an event the owner saves on TheGathering. The old
   portal-only list (`gathering/calendar`) is shown only as a red warning,

@@ -31,11 +31,11 @@ MODEL = "claude-sonnet-5"
 # work. Everything conversational stays on Sonnet, which is most of the traffic.
 MODEL_ANALYSIS = "claude-opus-5"
 
-# Owner-only enforcement. OFF until Google sign-in is confirmed working —
-# turning it on before then would lock the owners out of their own portal,
-# because an anonymous session carries no email. Flip to "true" once an owner
-# has signed in with Google and reached the portal.
-ENFORCE_OWNER = "false"
+# Owner-only enforcement: every model call must come from an allowlisted
+# Google account (OWNER_EMAILS in src/index.js — the house account). ON since
+# 2026-10-15, once Google sign-in was confirmed working. Off, any visitor's
+# anonymous guest token could run Hanna on the owners' API credits.
+ENFORCE_OWNER = "true"
 
 [observability]
 enabled = true
