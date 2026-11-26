@@ -3,7 +3,7 @@
 Living handoff. A fresh session (local or cloud) should read this after
 `CLAUDE.md` to know what is half-done. Update it as things close.
 
-Last reviewed: 2026-10-03.
+Last reviewed: 2026-11-26.
 
 **Nothing secret goes in this file.** No phone numbers, no codes, no WiFi. The
 repository is public.
@@ -64,6 +64,14 @@ site points to estargaropaba.com.br, and both agents send booking questions
 there. Once the listing is live, update the `airbnb` entry's `desc` in
 `TG_HOUSE_LINKS` and the "not published yet" lines in Sisay's and Hanna's
 prompts. The footer's "🏡 Airbnb" link still points at the listing.
+
+### 6a. Where the house's trash goes
+Sisay now answers trash day from the city's schedule (`TG_TRASH` in
+`firebase-config.js`: Silveira Monday to Saturday, no Sunday pickup). What she
+cannot say is where the house's own bin or lixeira is. An owner fills
+`TG_TRASH.houseBin` with one line, e.g. "the green bin by the gate". The
+schedule runs on an emergency contract from March 2026, so re-check the
+Prefeitura's "Coleta de lixo" page if guests report missed pickups.
 
 ---
 

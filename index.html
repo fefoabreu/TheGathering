@@ -39,7 +39,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202610091900"></script>
+  <script src="firebase-config.js?v=202611260900"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ── TOKENS ─────────────────────────────────────── */
@@ -2356,6 +2356,21 @@
       "Av. Atlântica s/n, Itapirubá Norte, Imbituba — 44 minutos, 41 km",
     "Rua Itagiba s/n, Praia do Porto, Imbituba — 40 minutes, 30 km":
       "Rua Itagiba s/n, Praia do Porto, Imbituba — 40 minutos, 30 km",
+    "The town\u2019s tourist desk and culture house: a rotating gallery of local artists, the fishermen\u2019s rancho, the library, whale bones and the story of the whaling years, with a terrace over the boat cove. Monday to Friday 09:00–20:00; Saturday 14:00–19:00. CLOSED Sunday. Entry: Free. Worth calling ahead to confirm.":
+      "O centro de atendimento ao turista e a casa de cultura da cidade: galeria de artistas locais que muda a cada quinze dias, o rancho dos pescadores, a biblioteca, ossos de baleia e a história dos tempos da caça, com um terraço sobre a enseada dos barcos. De segunda a sexta 09h–20h; sábado 14h–19h. FECHADO domingo. Entrada: gratuita. Vale ligar antes para confirmar.",
+    "R. Manoel de Araújo, 200, Centro Histórico, Garopaba — about 10 minutes, in town":
+      "R. Manoel de Araújo, 200, Centro Histórico, Garopaba — uns 10 minutos, no centro",
+    "\"Whale bones, fishermen and local painters, under one roof.\"":
+      "\"Ossos de baleia, pescadores e artistas locais, debaixo do mesmo teto.\"",
+    "A café-lounge in the Centro Histórico that runs film sessions on the culture of Garopaba and southern Brazil, with live music some nights. Same street as the Casa de Cultura. Wednesday 13:00–21:00; Thursday 13:00–22:00; Friday and Saturday 12:00–22:00; Sunday 12:00–20:00. CLOSED Monday and Tuesday. Worth calling ahead to confirm.":
+      "Um café-lounge no Centro Histórico com sessões de cinema sobre a cultura de Garopaba e do sul do Brasil, e música ao vivo em algumas noites. Na mesma rua da Casa de Cultura. Quarta 13h–21h; quinta 13h–22h; sexta e sábado 12h–22h; domingo 12h–20h. FECHADO segunda e terça. Vale ligar antes para confirmar.",
+    "R. Manoel de Araújo, 19, Centro Histórico, Garopaba — about 10 minutes, in town":
+      "R. Manoel de Araújo, 19, Centro Histórico, Garopaba — uns 10 minutos, no centro",
+    "\"A film about this coast, seen in this town.\"":
+      "\"Um filme sobre esta costa, visto nesta cidade.\"",
+    "Garopaba\u2019s first escape room: two rooms, 60 minutes, 2 to 8 players. Book on WhatsApp before you go. Worth calling ahead to confirm.":
+      "O primeiro escape room de Garopaba: duas salas, 60 minutos, de 2 a 8 jogadores. Reserve pelo WhatsApp antes de ir. Vale ligar antes para confirmar.",
+    "\"Sixty minutes. One door.\"": "\"Sessenta minutos. Uma porta.\"",
     "Experiences": "Experiências",
     "Suites": "Suítes",
     "Location": "Localização",
@@ -2703,6 +2718,8 @@ let SISAY_MANUAL = {
 // The soundtrack is DATA, shared with Hanna via firebase-config.js rather than
 // written into either system prompt — one definition, two agents.
 if (typeof TG_SOUNDTRACK !== 'undefined') SISAY_MANUAL.soundtrack = TG_SOUNDTRACK;
+// Trash collection, from the city's own schedule. Shared with Hanna the same way.
+if (typeof TG_TRASH !== 'undefined') SISAY_MANUAL.trash = TG_TRASH;
 // The house's own links, from the one shared list. Guest-safe entries only —
 // the filter is data, not Sisay's discretion, so the host dashboard and the
 // cameras can never reach a guest even if she is asked directly for them.
@@ -2965,11 +2982,13 @@ You once commanded the Weatherlight across the multiverse. You now keep this hou
 
 When you recommend a specific PLACE, the chips are how the guest goes deeper, so offer the obvious next moves: how to get there, what it costs and when it opens, a different option, or staying in. Each entry from get_rainy_day_options carries its own chips list, written for exactly that place — use it rather than inventing your own, and translate the labels to the guest's language.
 
-**Rain does not tie your hands.** Call get_weather when the day's plan depends on the sky, and ALWAYS before recommending a beach, a surf session or anything outdoors. If it comes back isRainyDay, do not wait to be asked twice and do not open by listing what you cannot do — lead with the indoor options from get_rainy_day_options. That tool holds real places: an indoor whale museum, a covered play area for children, a chocolate factory, and the house's own Cinema Mode for a family that would rather not drive in the rain. A guest asking "what do we do on a rainy day?" must never hear that your guide is focused on food and beaches. It is not a limitation of yours — it is a question you have a proper answer to.
+**Rain does not tie your hands.** Call get_weather when the day's plan depends on the sky, and ALWAYS before recommending a beach, a surf session or anything outdoors. If it comes back isRainyDay, do not wait to be asked twice and do not open by listing what you cannot do — lead with the indoor options from get_rainy_day_options. That tool holds real places: two whale museums, a covered play area for children, the Casa de Cultura with the town's tourist desk, Espaço Guinza's film sessions on the culture of Garopaba and southern Brazil, an escape room for a group, and the house's own Cinema Mode for a family that would rather not drive in the rain. Match the pick to who is asking: small children, Surfland; a group of teenagers or friends, the escape room; anyone curious about the place, the Casa de Cultura and Guinza, which are on the same street. A guest asking "what do we do on a rainy day?" must never hear that your guide is focused on food and beaches. It is not a limitation of yours — it is a question you have a proper answer to.
 
 **Opening times and prices are not yours to guarantee.** For anywhere that is not this house — a museum, a restaurant, a shop — add one short line telling them to check: "Vale ligar antes para confirmar" in Portuguese, "worth calling ahead to confirm" in English. One line at the end, not a paragraph of hedging. And where you simply do not have the hours or the price, do not make a thing of it: recommend the place, let that line do its work, and move on. The guest can look up a phone number; what they cannot do is know which place is worth going to. That part is yours.
 
 **Arrival and departure are yours; the door codes are not.** You explain how a stay works — when check-in opens, when check-out is, how arrival goes, where to park, what to leave done on the last morning. That is in get_house_manual under stay. **The guest WiFi is yours to give too** — call get_house_manual with topic wifi and hand over the network and password without fuss; it is on the welcome card in the kitchen anyway, and a guest who has just walked in should not have to ask twice. What stays with Estar Garopaba is the rest of the credential-shaped half: door and lock codes, payment and the caução, and the arrival window once a booking is confirmed. They coordinate those with the guest directly, and it is right that they do. So: answer the procedure, hand over the codes. And where a field in stay is missing, say the owners will confirm that detail — never estimate a check-out time. Someone planning a departure around a number you invented is the worst outcome here.
+
+**Trash day is yours to answer.** Call get_house_manual with topic trash. Silveira is collected Monday to Saturday, never on Sunday, and the city publishes days, not a pickup time, so never give an hour. Tell them to seal the bags and put them out on a collection morning, and never leave them out Saturday night or Sunday. Where the house's own bin is comes from houseBin; if it is empty, do not describe a spot, say the owners will confirm it. This is the city's schedule, not something to send to Estar.
 
 **Bookings belong to Estar Garopaba.** Estar Garopaba (estargaropaba.com.br) is the house's property management company, and every booking, availability question, price and inquiry about staying here goes through them. When a guest asks to book, whether dates are free, or what a stay costs, give them that link — it is in get_house_manual — warmly and in one line. Never guess availability or a price. The Airbnb listing will be a second way to book once it is published; until then, do not send anyone there to book.
 
@@ -3006,9 +3025,9 @@ const SISAY_TOOLS = [
   { name:'get_guide_cards', description:'The curated Garopaba Guide — restaurants, bars, coffee, surf, adventure. Optionally filter by category.',
     input_schema:{ type:'object', properties:{ category:{ type:'string',
       description:'coffee, burgers, sushi, cowork, poke, happy-hour, sandboarding, acougue, pizza' } } } },
-  { name:'get_house_manual', description:"How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity, rules, the house soundtrack, AND the house's own links and address: Instagram, the Airbnb listing, the house site, the contact email, the map, the floor plans. Call it for any 'what is the house's X' question, social handles included.",
+  { name:'get_house_manual', description:"How things work in the house — Frame TV, deck projector, Sonos, pool heating, capacity, rules, the house soundtrack, trash collection days (topic trash), AND the house's own links and address: Instagram, the Airbnb listing, the house site, the contact email, the map, the floor plans. Call it for any 'what is the house's X' question, social handles included.",
     input_schema:{ type:'object', properties:{ topic:{ type:'string',
-      description:'tv, projector, sonos, pool, wifi, house, checkin, stay, soundtrack, links, address' } } } },
+      description:'tv, projector, sonos, pool, wifi, house, checkin, stay, trash, soundtrack, links, address' } } } },
   /* The amenities projection, published from the owner portal. Sisay reads
      gathering/inventoryGuest, which is world-readable BY DESIGN and contains
      only guestFacing items stripped of condition, damage, valuables and photo
@@ -3020,9 +3039,9 @@ const SISAY_TOOLS = [
   TG_CHOICES_TOOL,
   { name:'get_weather', description:"Live weather at the house (Praia da Silveira) — right now plus three days. Returns a decided isRainyDay flag, so you never have to interpret weather codes. Call it before recommending a beach, a surf session or anything outdoors, and whenever the guest asks what to do today.",
     input_schema:{ type:'object', properties:{} } },
-  { name:'get_rainy_day_options', description:"Indoor and covered things to do near the house when the weather turns — an indoor whale museum, a covered children's play area, a chocolate factory, and the house's own Cinema Mode. Each option carries how to get there, what is known about hours and prices, and the follow-up chips to offer. Use this instead of saying your guide is focused on food and beaches.",
+  { name:'get_rainy_day_options', description:"Indoor and covered things to do near the house when the weather turns — two whale museums, a covered children's play area, the town's Casa de Cultura and tourist centre, Espaço Guinza's film sessions on local culture, an escape room, and the house's own Cinema Mode. Each option carries how to get there, what is known about hours and prices, and the follow-up chips to offer. Use this instead of saying your guide is focused on food and beaches.",
     input_schema:{ type:'object', properties:{ kind:{ type:'string',
-      description:"Optional filter: 'museum', 'kids', 'food', 'in-house'. Omit for all." } } } },
+      description:"Optional filter: 'museum', 'culture', 'kids', 'activity', 'in-house'. Omit for all." } } } },
   { name:'recommend_beach', description:"Which beach — and which CORNER of it — works right now, from the owners' own matrix of 13 beaches against the live wind and swell. Nearly every beach here is a pick-the-corner beach, so this is the single most useful thing you can do for a guest. Call it for any 'which beach', 'where should we swim/surf today', 'is it a beach day' question, and whenever someone is planning a day outdoors.",
     input_schema:{ type:'object', properties:{
       goodFor:{ type:'array', items:{type:'string'}, description:"What they need, from: toddlers, kids, kids-channel, kids-lagoon, kids-river, kids-rockpools, teens, swimming, swimming-ocean, surf-beginner, surf-intermediate, surf-advanced, longboard, sup, canoe, kayak, snorkel, kitesurf, windsurf, sandboard, dunes, walk, quiet, scene, sunset, sunrise, shade, picnic, food-on-beach, whales-winter, off-the-beaten-path. Pick 1-3 that match what they actually said." },
@@ -3320,9 +3339,13 @@ async function sisayRunTool(name, input) {
           do we get there?". Consistency like that belongs in data, not in the
           model's discretion. */
       const pt = sisayLang() === 'pt';
+      // Dated events (a festival week) drop out once they are over, so she
+      // can never send anyone to last month's screening.
+      const today = new Date().toISOString().slice(0, 10);
       const list = picked.map(o => Object.assign({}, o, {
         chips: (pt && o.chipsPt) ? o.chipsPt : o.chips,
         chipsPt: undefined,
+        events: o.events ? o.events.filter(e => !e.until || e.until >= today) : undefined,
       }));
       const caveat = (typeof TG_HOURS_CAVEAT !== 'undefined')
         ? TG_HOURS_CAVEAT[sisayLang()] || TG_HOURS_CAVEAT.en : '';

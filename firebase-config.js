@@ -386,6 +386,122 @@ const TG_RAINY_DAY = [
             + 'same as Só 4x4 Kids, which rents electric ride-on cars and is not covered.',
   },
   {
+    id: 'casa-cultura',
+    kind: 'culture',
+    name: 'Casa de Cultura e CAT (Centro de Atendimento ao Turista)',
+    where: 'R. Manoel de Araújo, 200, Centro Histórico, Garopaba',
+    driveApprox: 'about 10 minutes, in town',
+    what: 'The town’s tourist centre and culture house in one building: the tourist '
+        + 'information desk, a gallery of local and regional artists that changes about every '
+        + 'fifteen days, the fishermen’s collective rancho, the municipal library, whale '
+        + 'bones and panels on the years Garopaba lived from whaling, and a terrace over the '
+        + 'boat cove.',
+    whyRainy: 'Indoors, free, in the old village, and five minutes on foot from Espaço Guinza '
+            + 'on the same street, so it pairs into an afternoon: the culture house, then a '
+            + 'coffee. The desk is also the place to ask what is on in town that week.',
+    cardCopy: 'The town’s tourist desk and culture house: a rotating gallery of local '
+            + 'artists, the fishermen’s rancho, the library, whale bones and the story of '
+            + 'the whaling years, with a terrace over the boat cove.',
+    hours: 'Monday to Friday 09:00–20:00; Saturday 14:00–19:00. CLOSED Sunday.',
+    price: 'Free.',
+    phone: '(48) 3254-8150',
+    instagram: '@turismogaropaba',
+    maps: 'https://maps.google.com/?q=Casa+de+Cultura+Garopaba+Rua+Manoel+de+Araujo+200',
+    chips: [
+      { label: 'How do we get there?', send: 'How do we get to the Casa de Cultura in the Centro Histórico?' },
+      { label: 'Coffee nearby',        send: 'Where can we get a coffee near the Casa de Cultura?' },
+      { label: 'Something for kids',   send: 'What can the children do indoors today?' },
+      { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
+    ],
+    chipsPt: [
+      { label: 'Como chegar?',       send: 'Como chegamos na Casa de Cultura no Centro Histórico?' },
+      { label: 'Um café perto',      send: 'Onde tomar um café perto da Casa de Cultura?' },
+      { label: 'Algo pras crianças', send: 'O que as crianças podem fazer em lugar coberto hoje?' },
+      { label: 'Ficar em casa',      send: 'Preferimos ficar em casa — monta um dia de cinema.' },
+    ],
+    verified: 'Address, hours, free entry and contents from the official tourism site '
+            + '(visitegaropaba.tur.br, "Casa de Cultura e CAT"), read 2026-11-26. That page also '
+            + 'shows a generic ticket button that contradicts "free"; treat entry as free.',
+  },
+  {
+    id: 'guinza',
+    kind: 'culture',
+    name: 'Espaço Guinza',
+    where: 'R. Manoel de Araújo, 19, Centro Histórico, Garopaba',
+    driveApprox: 'about 10 minutes, in town',
+    what: 'A café and lounge in the old village that hosts film sessions about the culture of '
+        + 'Garopaba and southern Brazil, plus live music. Coffee, cakes, burgers and drinks.',
+    whyRainy: 'A film about this coast, seen in this town, on the day the beach is off. '
+            + 'Same street as the Casa de Cultura, so the two make one outing.',
+    cardCopy: 'A café-lounge in the Centro Histórico that runs film sessions on the culture of '
+            + 'Garopaba and southern Brazil, with live music some nights. Same street as the '
+            + 'Casa de Cultura.',
+    hours: 'Wednesday 13:00–21:00; Thursday 13:00–22:00; Friday and Saturday 12:00–22:00; '
+         + 'Sunday 12:00–20:00. CLOSED Monday and Tuesday.',
+    unknowns: 'Film sessions are not on a fixed weekly calendar: check @espacoguinza on '
+            + 'Instagram for what is showing. Do not promise a screening on a given night.',
+    events: [
+      { until: '2026-11-28',
+        what: 'FICA 2026, the Festival Internacional de Cinema Ambiental de Garopaba: free '
+            + 'sessions at Guinza from 19:00, 23–28 November; closing session Saturday 28 '
+            + 'November from 18:30. Programme on @fica.garopaba.' },
+    ],
+    phone: '+55 48 99148-2869',
+    instagram: '@espacoguinza',
+    maps: 'https://maps.google.com/?q=Espaco+Guinza+Rua+Manoel+de+Araujo+19+Garopaba',
+    chips: [
+      { label: 'What is showing?',  send: 'Is there a film session at Espaço Guinza this week?' },
+      { label: 'How do we get there?', send: 'How do we get to Espaço Guinza?' },
+      { label: 'The culture house too', send: 'Tell me about the Casa de Cultura on the same street.' },
+      { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
+    ],
+    chipsPt: [
+      { label: 'O que está passando?', send: 'Tem sessão de cinema no Espaço Guinza esta semana?' },
+      { label: 'Como chegar?',         send: 'Como chegamos no Espaço Guinza?' },
+      { label: 'A Casa de Cultura',    send: 'Me fala da Casa de Cultura na mesma rua.' },
+      { label: 'Ficar em casa',        send: 'Preferimos ficar em casa — monta um dia de cinema.' },
+    ],
+    verified: 'Film sessions on local and southern-Brazilian culture: owner knowledge '
+            + '(2026-11-26). Address, phone, hours and Instagram from its Restaurant Guru listing '
+            + '(updated Nov 2026); one older listing puts it on the SC-434, so the Centro '
+            + 'Histórico address is the current one. FICA 2026 dates from the festival’s press '
+            + 'coverage, Nov 2026.',
+  },
+  {
+    id: 'enredos-escape',
+    kind: 'activity',
+    name: 'Enredos Escape Room',
+    where: 'Santa Rita, 400, Garopaba',
+    what: 'Garopaba’s first escape room. Two rooms: "Sala de Interrogatório", held at the '
+        + 'airport on suspicion of smuggling with 60 minutes to get out, and "A Mensagem Presa", '
+        + 'built around messages in bottles that the sea keeps bringing in. 2 to 8 players.',
+    whyRainy: 'An hour indoors that a group of teenagers or adults will talk about all week, '
+            + 'and the house sleeps exactly the kind of group it is made for.',
+    cardCopy: 'Garopaba’s first escape room: two rooms, 60 minutes, 2 to 8 players. Book '
+            + 'on WhatsApp before you go.',
+    booking: 'By WhatsApp only, before going: there are no walk-ins.',
+    unknowns: 'Hours, price and a minimum age are not confirmed. Say so plainly and send them '
+            + 'to the WhatsApp to book.',
+    phone: '+55 48 98418-9280',
+    whatsapp: 'https://wa.me/5548984189280',
+    maps: 'https://maps.google.com/?q=Enredos+Escape+Room+Garopaba',
+    chips: [
+      { label: 'How do we book?',   send: 'How do we book the escape room?' },
+      { label: 'Which room?',       send: 'Which of the two escape rooms should we pick?' },
+      { label: 'Something calmer',  send: 'Something calmer for a rainy afternoon?' },
+      { label: 'We would rather stay in', send: 'We would rather stay at the house — set up a movie day.' },
+    ],
+    chipsPt: [
+      { label: 'Como reservar?',  send: 'Como reservamos o escape room?' },
+      { label: 'Qual sala?',      send: 'Qual das duas salas do escape room a gente escolhe?' },
+      { label: 'Algo mais calmo', send: 'Algo mais tranquilo para uma tarde de chuva?' },
+      { label: 'Ficar em casa',   send: 'Preferimos ficar em casa — monta um dia de cinema.' },
+    ],
+    verified: 'Venue, rooms, player count and WhatsApp booking from its Mundo Escape listing '
+            + '(mundoescape.com.br), read 2026-11-26; reviews there from July 2026. The owners '
+            + 'named it as a rainy-day pick on 2026-11-26.',
+  },
+  {
     id: 'cinema',
     kind: 'in-house',
     name: 'Cinema Mode, at the house',
@@ -456,6 +572,12 @@ const TG_RAINY_CARD_STYLE = {
     flavor: '"The old whaling station, kept as a reminder."' },
   'surfland-kids': { emoji: '🛝', color: 'green',
     flavor: '"Let them run. You sit down."' },
+  'casa-cultura':  { emoji: '🏛️', color: 'gold',
+    flavor: '"Whale bones, fishermen and local painters, under one roof."' },
+  'guinza':        { emoji: '🎞️', color: 'red',
+    flavor: '"A film about this coast, seen in this town."' },
+  'enredos-escape': { emoji: '🔐', color: 'black',
+    flavor: '"Sixty minutes. One door."' },
 };
 
 function tgRainyGuideCards() {
@@ -482,7 +604,7 @@ function tgRainyGuideCards() {
       color: style.color,
       description: bits.join(' '),
       address: o.where + (o.driveApprox ? ' — ' + o.driveApprox : ''),
-      tags: ['rainy-day', 'indoor', 'family', 'museum'],
+      tags: ['rainy-day', 'indoor', o.kind],
       flavor: style.flavor,
       active: true,
       order: 100 + i,          // after the curated deck, never displacing it
@@ -492,6 +614,41 @@ function tgRainyGuideCards() {
     };
   });
 }
+
+// ──────────────────────────────────────────────────────────────
+//  Trash collection at Praia da Silveira
+// ──────────────────────────────────────────────────────────────
+//  A guest asked Sisay what day the trash goes out and she had nothing.
+//  This is the city's own schedule, read off the Prefeitura's PDF, so both
+//  agents answer from one copy. The city publishes DAYS, not times: never
+//  give a pickup hour. Where the house's own bin is stays null until an
+//  owner says, and nobody guesses at it.
+// ──────────────────────────────────────────────────────────────
+const TG_TRASH = {
+  area: 'Silveira (Garopaba)',
+  collectionDays: 'Monday to Saturday',
+  collectionDaysPt: 'de segunda a sábado',
+  noCollection: 'Sunday',
+  noCollectionPt: 'domingo',
+  pickupTime: null,   // the city does not publish one; never invent it
+  whenToPutOut: 'On a collection day, in the morning, before the truck passes. The city '
+              + 'asks for bags to be out ahead of the truck and does not publish a time.',
+  rules: [
+    'Seal bags well: loose ones get opened by dogs, gulls and the wind.',
+    'Nothing is collected on Sunday. Do not leave bags out on Saturday night or Sunday: they '
+      + 'sit on the street until Monday. Hold them inside and put them out Monday morning.',
+    'Separate recyclables from food waste where you can; the city asks for it.',
+    'Leaving on a Sunday? Bag it, seal it, and leave it where the house keeps its trash; '
+      + 'it goes out on Monday.',
+  ],
+  houseBin: null,     // where the house's bin / lixeira is, from an owner
+  cityContact: 'Prefeitura de Garopaba, Infraestrutura: (48) 3254-8127, also on WhatsApp.',
+  verified: 'Prefeitura de Garopaba, "Cronograma da Coleta Domiciliar" (PDF on '
+          + 'garopaba.atende.net, page "Coleta de lixo"), read 2026-11-26: Silveira is collected '
+          + 'Monday to Saturday, never Sunday. The service runs on an emergency contract (Moraes '
+          + 'Locação, Contrato 011/2026, March 2026) while a permanent one is tendered, so re-check '
+          + 'the page if guests report missed pickups.',
+};
 
 // ──────────────────────────────────────────────────────────────
 //  The stay — arrival, departure, and how the house runs
@@ -513,7 +670,7 @@ const TG_STAY = {
   arrival:       null,   // how a guest actually gets in and parks
   departure:     null,   // what to leave done: dishes, towels, windows, keys
   parking:       null,
-  trash:         null,   // collection days, where the bins live
+  trash:         TG_TRASH,   // city collection days; houseBin still null
   quietHours:    null,
   earlyLateNote: 'Early check-in and late check-out are sometimes possible — Estar arranges it.',
 

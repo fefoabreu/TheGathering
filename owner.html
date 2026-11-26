@@ -32,7 +32,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js?v=202610091900"></script>
+  <script src="firebase-config.js?v=202611260900"></script>
   <script src="agent-ui.js?v=202609281000"></script>
   <style>
     /* ══ BATTLEFIELD TOKENS ══════════════════════════════════ */
@@ -4379,6 +4379,8 @@ You are an artificer and a navigator, not a captain: you chart the course and ke
 
 **⚖️ Contratos e Litígio — read it, never reconstruct it.** The governance doc "TheGathering Silveira 🌊🌄" carries a section titled **⚖️ Contratos e Litígio**, covering the Estar Garopaba contract items and rate table, and a **Guarda-Corpo** matter. Anything touching the Estar contract or its rates, the guarda-corpo, railing or deck safety, the glazing suppliers, or any legal or contractual question at all, is answered FROM that section — call search_property_docs, or analyse_document when the question is what something means, and read what is actually there. Deliberately, this prompt does not carry its contents: the section holds status, opinion and open decisions that change, so anything you state from memory will be wrong sooner than you think, and any legal position you improvise is worse than none. Read it, then answer. Where it lists open decisions, put them to the owners plainly and help them think through the trade-offs — that is the most useful thing you do here. You are not their lawyer: report what the document says and what it implies, flag where it is ambiguous, and leave the judgement to the advogada in the vendor directory (whose entry carries a standing instruction about who to notify before first contact — surface that whenever she comes up). Owners-only, always: the guest concierge knows nothing of this and it never reaches a guest.
 
+**What Sisay tells guests about the town comes from the same place.** Trash collection at Silveira (Monday to Saturday, never Sunday, no published time) and the rainy-day list (whale museums, Surfland's covered kids space, the Casa de Cultura and tourist centre, Espaço Guinza's film sessions, the Enredos escape room, Cinema Mode) are in get_house_info. They live in firebase-config.js (TG_TRASH, TG_RAINY_DAY), which both of you read, so a correction there reaches Sisay the moment it is published. When an owner tells you something new for guests, like where the house's trash bin is, say it goes into that shared file and record it as a task if nobody is editing code right now; do not claim Sisay already knows it.
+
 **The house's own links live in get_house_info, not in the archive.** Instagram, the Airbnb listing and the host dashboard, the house site, the contact email, the Eufy cameras, the Drive folder, the floor plans, the map, the address. These are one cheap tool call away, so never search the archive for them and never say you do not have one — call get_house_info and read it off. A question as small as "what's the house's Instagram?" should be answered in one line, immediately.
 
 **Where things live — go to the archive FIRST, not last.** The portal holds four narrow things: bookings, calendar blocks, vendor records and house projects. Everything the owners actually wrote down — people, companies, conversations, plans, agreements, costs, who said what — lives in the Drive. So a question about a NAME you do not recognise is an archive question, and search_property_docs is your opening move, not your fallback. Do not walk the portal tools first hoping one of them knows: a DJ the owners were courting was never going to be in the vendor table, and checking it, then mail, then the calendar before opening the document that had him is three wrong answers before the right one. Portal tools first only when the question is plainly about a booking, a blocked date, a listed vendor or a tracked project.
@@ -4459,7 +4461,7 @@ const HANNA_TOOLS = [
   { name:'update_task', description:'Mark a project done or not done by its title.',
     input_schema:{ type:'object', required:['title'], properties:{
       title:{type:'string'}, done:{type:'boolean'} } } },
-  { name:'get_house_info', description:"Suites, capacity, house rules, the Estar management terms, the house soundtrack, and the house's own links and address — Instagram, the Airbnb listing and host dashboard, the site, the contact email, the Eufy cameras, the Drive folder, the floor plans, the map. Call it for any 'what is the house's X' question, social handles and portal links included.",
+  { name:'get_house_info', description:"Suites, capacity, house rules, the Estar management terms, the house soundtrack, trash collection days at Silveira, the rainy-day list Sisay gives guests, and the house's own links and address — Instagram, the Airbnb listing and host dashboard, the site, the contact email, the Eufy cameras, the Drive folder, the floor plans, the map. Call it for any 'what is the house's X' question, social handles and portal links included.",
     input_schema:{ type:'object', properties:{} } },
   TG_CHOICES_TOOL,
   { name:'analyse_document', description:"Pull a document from the Drive and reason over it — contract review, clause implications, what an obligation actually commits the owners to. Use this rather than search_property_docs when the question is 'what does this MEAN' rather than 'what does it say'. Routed to a stronger model, so reach for it when the thinking is the point.",
@@ -4695,6 +4697,13 @@ async function hannaRunTool(name, input) {
 
     case 'get_house_info': return { ...(storeGet('house') || {}),
                                     soundtrack: (typeof TG_SOUNDTRACK !== 'undefined' ? TG_SOUNDTRACK : undefined),
+                                    // What Sisay tells guests, from the same shared data — so an owner
+                                    // asking "what does Sisay say about trash day?" gets the same answer.
+                                    trash:    (typeof TG_TRASH !== 'undefined' ? TG_TRASH : undefined),
+                                    rainyDay: (typeof TG_RAINY_DAY !== 'undefined'
+                                      ? TG_RAINY_DAY.map(o => ({ id:o.id, kind:o.kind, name:o.name, where:o.where,
+                                          hours:o.hours, price:o.price, phone:o.phone, unknowns:o.unknowns,
+                                          events:o.events, verified:o.verified })) : undefined),
                                     // The full link list, owner-only entries included — she serves
                                     // the owners, so she gets the host dashboard and the cameras too.
                                     links:   (typeof TG_HOUSE_LINKS   !== 'undefined' ? TG_HOUSE_LINKS   : undefined),
